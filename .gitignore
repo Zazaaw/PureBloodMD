@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# keep the env template
+!.env.example
+
+# local editor/agent pointer (AGENTS.md is the shared one)
+CLAUDE.md
