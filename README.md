@@ -1,72 +1,240 @@
-# PureBloodMD 🩺
+<div align="center">
 
-Dating app parodi khusus dokter: swipe dokter di **Triage**, match, lalu chat di **Consults**.
-Dibangun dengan Next.js 16, Tailwind v4 + **p441z style kit**, dan **Supabase** (auth, database, realtime chat, storage foto).
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.png">
+  <img src="docs/assets/logo-light.png" alt="PureBloodMD" width="360">
+</picture>
 
-## Fitur (flow dari prototipe `belajar2.html`)
+### Doctors marrying doctors. Est. post-call.
 
-- **Triage**: 480 dokter di Indonesia (16 spesialisasi termasuk General Practitioner dan Medical Student, masing-masing 15 cewek + 15 cowok) plus 33 negara lain (tiap spesialisasi 1 cewek + 1 cowok per negara), filter gender, negara, **radar** (lokasi perangkat, dibulatkan ~1 km, orang lain cuma lihat jarak) dengan radius 5-100 km, spesialisasi, auskultasi detak jantung (suara), tombol discharge / defibrillate / stat consult, shortcut keyboard ← → ↑, modal "Code Pink" saat match.
-- **Consults**: chat realtime + **kirim foto** (bucket privat, metadata/GPS dibuang, foto dari orang lain diblur sampai di-tap). Aturan **Bumble**: di match cewek x cowok, dokter cewek wajib chat duluan (dikunci di database). **Kuota 10 bubble** per percakapan, lalu paywall **VIP Rp 50.000** (mode demo, tidak ada pembayaran asli). Dokter bot otomatis membalas dengan jokes spesialisasinya.
-- **Passport**: kredensial STR (privat), edit profil dengan preview kartu live, foto wajib, status VIP (bisa dimatikan), daftar dokter yang diblokir, dark mode, logout.
-- **Keamanan**: **Report** (pelecehan seksual, foto eksplisit tanpa diminta, kekerasan verbal, ancaman, ujaran kebencian, profil palsu, scam, di bawah umur, kekhawatiran self-harm, lainnya) dan **Block** dari Triage maupun chat. Report otomatis ikut memblokir (bisa dimatikan). Laporan masuk ke tabel `reports` untuk ditinjau di Supabase Dashboard.
-- **VIP berlangganan** (demo, tanpa pembayaran asli): Indonesia Rp 50.000/bulan, Rp 130.000/3 bulan, Rp 550.000/tahun; negara lain US$20/bulan, US$50/3 bulan, US$230/tahun. **Cancel subscription** = VIP tetap aktif sampai akhir periode yang sudah dibayar, lalu mati.
-- **Unmatch** dan **Delete chat** (hapus riwayat untuk kedua pihak; kuota bubble tetap terhitung). **Consult tanpa pesan 30 hari otomatis terhapus** (pg_cron tiap jam). Foto chat yang terhapus dibersihkan dari storage dengan `npm run db:cleanup` (jadwalkan harian saat deploy).
-- **Daftar aman**: CAPTCHA Cloudflare Turnstile, wajib setuju [Terms](/terms) & [Privacy](/privacy) + konfirmasi umur 21+ (versi Terms dan waktu persetujuan disimpan di akun). Email konfirmasi bergaya PureBloodMD (`supabase/templates/confirm-signup.html`).
-- **Chat**: emoji picker, 12 stiker medis, kirim foto, dan peringatan otomatis kalau pesan terlihat berisi data pribadi (nomor HP, NIK, rekening, OTP, email).
-- **Status online**: titik hijau di avatar (Realtime Presence; bot disimulasikan bergiliran tiap 30 menit).
-- Setiap profil **wajib punya foto** (dicek di database dan di form).
+A parody dating app where doctors only match with doctors.<br>
+Swipe in **Triage**, defibrillate the ones who make your heart skip, then flirt in **Consults**.
 
-## Setup Supabase (sekali saja)
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Auth%20%C2%B7%20Postgres%20%C2%B7%20Realtime-3ecf8e?logo=supabase&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v4-38bdf8?logo=tailwindcss&logoColor=white)
+![PWA](https://img.shields.io/badge/PWA-installable-cb1a4a)
 
-1. **Buat tabel.** Buka Supabase Dashboard > SQL Editor > New query. Jalankan file di `supabase/migrations/` **berurutan**, satu per satu: `0001_init.sql`, `0002_vip_toggle.sql`, `0003_safety_media_radar.sql`, `0004_subscriptions_unmatch_expiry.sql`.
-2. **Isi 420 dokter.** Pilih salah satu:
-   - `npm run db:seed` (pakai `SUPABASE_SERVICE_ROLE_KEY` dari `.env.local`, hanya jalan di laptop kamu), atau
-   - tempel isi `supabase/seed.sql` di SQL Editor, lalu Run.
-3. **Isi key publik** di `.env.local`:
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
-   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<Project Settings > API Keys > publishable / anon>
-   ```
-   Jangan pernah taruh `service_role` di variabel `NEXT_PUBLIC_`.
-4. **Auth > URL Configuration**: tambahkan `http://localhost:3333/auth/callback` ke Redirect URLs.
-   (Opsional untuk testing cepat: Auth > Providers > Email, matikan "Confirm email".)
+</div>
 
-## Email konfirmasi & CAPTCHA
+<p align="center">
+  <img src="docs/assets/triage.jpg" alt="Triage deck" width="190">
+  <img src="docs/assets/swipe.jpg" alt="Dragging a card shows the PRESCRIBED stamp" width="190">
+  <img src="docs/assets/chart.jpg" alt="Full chart sheet" width="190">
+  <img src="docs/assets/chat.jpg" alt="Consult chat" width="190">
+</p>
 
-1. **Template email**: Supabase Dashboard > Authentication > Emails > Templates > **Confirm signup**. Subject: `Confirm your email to scrub in`. Body: isi `supabase/templates/confirm-signup.html`.
-2. **Site URL**: Authentication > URL Configuration > Site URL = `http://localhost:3333` (ganti ke domain saat deploy). Link di email memakai `/auth/confirm?token_hash=...`, jadi tetap jalan walau email dibuka di HP lain.
-3. **Pengiriman email**: SMTP bawaan Supabase dibatasi (kuota kecil per jam, hanya untuk testing). Untuk produksi pasang SMTP sendiri (mis. Resend) di Authentication > Emails > SMTP Settings.
-4. **CAPTCHA**: `.env.local` berisi kunci TES Turnstile (selalu lolos, ada tulisan "For testing only"). Untuk produksi buat site di Cloudflare > Turnstile dan ganti kuncinya. Supaya API Supabase juga terlindungi langsung, aktifkan CAPTCHA di Authentication > Attack Protection dengan secret yang sama, lalu set `SUPABASE_AUTH_CAPTCHA=on`.
+---
 
-## PWA (install ke HP)
+## About
 
-- Manifest: `src/app/manifest.ts`, ikon di `public/icons/` + `src/app/apple-icon.png`.
-- Service worker: `public/sw.js` (aktif **hanya di production**: `npm run build && npm start`). Aset build di-cache, halaman publik bisa dibaca offline, halaman lain jatuh ke `public/offline.html`. Data pribadi (chat, profil, Supabase) tidak pernah di-cache.
-- Install: Android/Chrome lewat tombol "Install app" di Passport; iPhone lewat Safari > Share > Add to Home Screen. HTTPS wajib saat deploy (localhost dikecualikan).
+Every doctor knows the problem: your dates don't understand why your pager goes off during dessert, and your in-laws ask why you're "still at the hospital" at 2 AM. **PureBloodMD** fixes that with a strict MD x MD covenant. Only doctors, residents, GPs and medical students get a Doctor Passport.
 
-## Menjalankan
+Under the jokes it is a complete, working dating app:
 
+- Real accounts, email confirmation and CAPTCHA
+- Realtime chat with photos and stickers
+- Verified badges and subscriptions
+- Safety tools that protect members, and the people who run the app
+
+The comedy is part of the product. Every specialty has its own one-liners, bot doctors reply in character, and the UI speaks fluent hospital.
+
+> **Parody, not a medical service.** Nothing in the app is medical advice. VIP payments are a demo: no real money is charged.
+
+## Founders
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <h3>Faiz Hazim Hawari</h3>
+      Co-founder
+    </td>
+    <td align="center" width="50%">
+      <h3>Sonya Maysalva</h3>
+      Co-founder
+    </td>
+  </tr>
+</table>
+
+## Features
+
+### 🩺 Triage (swipe)
+- **Drag to swipe** with prescription stamps:
+  - right: **PRESCRIBED** (like)
+  - left: **DISCHARGED** (pass)
+  - up: **DEFIBRILLATED ⚡** (Super Like)
+- **Super Like:** one per profile. Free members get 1 a day, VIP gets 5. The other doctor sees a **"Superliked you"** ribbon, and those doctors appear first in their deck.
+- **Rewind:** undo your last pass or like. Free members get 1 a day, VIP is unlimited. Super Likes and matches can't be rewound.
+- **Compact cards:** the photo and actions always fit on one screen. Tap ⓘ (or press ↓) for the **full chart**: vitals, bio, tags, and a heartbeat you can auscultate.
+- **Photos:** up to 4 per doctor. Tap the left or right side of the photo to browse, Stories style.
+- **Filters:**
+  - looking for
+  - verified doctors only
+  - country (34 countries)
+  - **radar** radius 5 to 100 km
+  - specialty
+  - must-have MD traits
+- **Keyboard:** `←` pass, `↑` Super Like, `→` like, `↓` full chart.
+
+### 💬 Consults (chat)
+- Realtime messages, **photos** (private bucket, signed URLs), an **emoji picker** and **medical stickers**.
+- **Bumble rule:** in a female x male match, she makes the first incision. This is enforced in the database.
+- **10 free bubbles** per consult, then the VIP paywall.
+- **Personal info guard:**
+  - phone numbers and chat-app links are masked with `****` automatically
+  - a warning appears before you send anything that looks like an NIK, a bank account or an OTP
+- **Unmatch** and **delete chat** for both sides. Consults with no messages for 30 days are deleted automatically.
+- **Online dot** through Realtime Presence.
+
+### 🪪 Doctor Passport (profile)
+- Status at a glance (badge, plan, photos), then tabs: **Profile · Badge · VIP · Settings**.
+- **Live preview** of your own triage card while you edit.
+- A sticky save bar that tells you when you have unsaved changes.
+- Private credentials (STR, alma mater, class year), never shown to other doctors.
+
+<p align="center">
+  <img src="docs/assets/passport.jpg" alt="Doctor Passport" width="240">
+  <img src="docs/assets/email.jpg" alt="Confirmation email" width="240">
+</p>
+
+### ✅ Verified badge
+The blue badge means a human reviewed **both** the doctor's ID (KTP or passport) and their medical license (STR/SIP, or a student card for medical students). Documents go to a private bucket that members can never read.
+
+### 👑 VIP (demo)
+| Plan | Indonesia | Other countries |
+|---|---|---|
+| Monthly | Rp 50.000 | US$ 20 |
+| 3 months | Rp 130.000 | US$ 50 |
+| Annual | Rp 550.000 | US$ 230 |
+
+VIP includes unlimited bubbles, 5 Super Likes a day and unlimited rewinds. If you cancel, VIP stays active until the end of the period you paid for.
+
+### 🛡️ Safety
+- **Report:** sexual harassment, unsolicited explicit photos, verbal abuse, threats, hate speech, fake profiles, scams, underage users, self-harm concerns, and other.
+- **Block:** works from both Triage and chat.
+- **Signup protection:** sign up requires a Cloudflare Turnstile **CAPTCHA**, accepting the **Terms & Privacy Policy**, and confirming you are **21+**. The accepted terms version is stored on the account.
+- **Terms:** clear rules about no financial transactions and no sharing of personal information. The terms also limit the founders' liability for transactions or information exchanged between members.
+- **Location privacy:** radar locations are rounded to about 1 km, and other members only ever see a distance.
+
+### 📱 Installable app (PWA)
+- Manifest, app icons and an offline page.
+- A service worker in production that never caches personal data.
+- Mobile-first layout with a MagicUI dock for navigation.
+
+## Tech stack
+
+| Layer | Tools |
+|---|---|
+| Framework | Next.js 16 (App Router, Turbopack, `proxy.ts`), React 19, TypeScript |
+| UI | Tailwind CSS v4, p441z style kit, Phosphor Icons, MagicUI Dock, Motion, Sonner |
+| Typography | Plus Jakarta Sans + JetBrains Mono on a golden-ratio scale ([spec](docs/typography.md)) |
+| Backend | Supabase: Auth, Postgres with Row Level Security, Realtime, Storage, pg_cron |
+| Email | Resend SMTP with a Gmail-safe template |
+| Security | Cloudflare Turnstile, RLS on every table, security-definer RPCs |
+
+The game rules live **in the database**, not just the UI. These are all enforced by Postgres triggers and RPCs, so a modified client can't skip them:
+- the Bumble rule
+- the bubble quota
+- Super Like and Rewind limits
+- contact-info masking
+- verified flags that members cannot set on themselves
+
+## Getting started
+
+### 1. Requirements
+- Node.js 20+ (developed on Node 24)
+- A Supabase project (the free tier works)
+
+### 2. Install
 ```bash
-export PATH="$HOME/.local/node/bin:$PATH"   # Node 24 dipasang di ~/.local/node
+git clone https://github.com/zazaaw/purebloodmd.git
+cd purebloodmd
 npm install
-npm run dev        # http://localhost:3333
+cp .env.example .env.local
 ```
 
-## Struktur
+### 3. Environment variables (`.env.local`)
+
+| Variable | Where to find it | Exposed to browser |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase > Project Settings > API | yes |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase > API Keys > publishable | yes |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase > API Keys > secret (seeding only) | **no** |
+| `SUPABASE_ACCESS_TOKEN` | supabase.com/dashboard/account/tokens (for `supabase:push`) | **no** |
+| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3333` locally, your domain in production | yes |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Cloudflare > Turnstile (test keys work locally) | site key only |
+| `SMTP_HOST` `SMTP_PORT` `SMTP_USER` `SMTP_PASS` `SMTP_FROM` | Resend: `smtp.resend.com`, `465`, `resend`, API key, sender on a verified domain | **no** |
+
+> Never put the service role key, access token or SMTP password in a `NEXT_PUBLIC_` variable.
+
+### 4. Database
+```bash
+# Apply migrations in order (0001 ... 0006) through the Supabase Management API
+npm run supabase:push -- sql 0001
+npm run supabase:push -- sql 0002
+# ...up to 0006
+
+# Add the bot doctors: 480 in Indonesia + 1,056 across 33 more countries
+npm run db:seed
+
+# Site URL, redirect URLs, SMTP and the branded confirmation email
+npm run supabase:push -- email
+```
+You can also paste each file from `supabase/migrations/` into the Supabase SQL Editor, in order.
+
+### 5. Run
+```bash
+npm run dev     # http://localhost:3333
+```
+
+## Scripts
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Dev server on port 3333 |
+| `npm run build` / `npm start` | Production build / server (also turns on the service worker) |
+| `npm run lint` | ESLint |
+| `npm run db:seed` | Adds missing bot doctors. It never deletes, because matches and chats cascade |
+| `npm run db:cleanup` | Removes chat photos whose messages were deleted |
+| `npm run supabase:push -- sql 00NN` | Applies a migration |
+| `npm run supabase:push -- email` | Pushes URLs, SMTP settings and the email template |
+
+## Project structure
 
 ```
-supabase/migrations/0001_init.sql   skema, RLS, trigger Bumble + kuota, RPC swipe/inbox, realtime, storage
-supabase/seed.sql | seed-doctors.json   420 dokter bot
-src/proxy.ts                        refresh sesi Supabase + proteksi route
-src/app/page.tsx                    landing
-src/app/(auth)/                     login, signup
-src/app/onboarding/                 bikin Doctor Passport
-src/app/(app)/discover/             Triage (deck swipe)
-src/app/(app)/chat/                 Consults (inbox + chat realtime)
-src/app/(app)/passport/             profil & kredensial
-src/components/ui, effects/         p441z style kit (disalin apa adanya)
-docs/typography.md                  spec sheet tipografi (skala golden ratio)
+src/
+  app/
+    (auth)/            login, signup (CAPTCHA + terms consent)
+    onboarding/        create your Doctor Passport
+    (app)/discover/    Triage: swipe deck, filters, radar, rewind
+    (app)/chat/        Consults: inbox + realtime chat room
+    (app)/passport/    profile, verification, VIP, settings
+    terms/ privacy/    legal pages
+  components/          doctor card, dock, dialogs, pickers, skeletons
+  components/ui/       p441z style kit (vendored)
+  lib/                 constants, auth, captcha, stickers, legal text
+  proxy.ts             session refresh + route protection
+supabase/
+  migrations/          0001 to 0006: schema, RLS, triggers, RPCs
+  templates/           confirmation email
+  seed-doctors*.json   bot roster
+scripts/               seed, cleanup, supabase push
+docs/                  typography spec, README assets
 ```
 
-Dibuat oleh Faiz Hazim Hawari · skill-typography
-Dibuat oleh Faiz Hazim Hawari · skill-ui-ux
+## Contributing
+
+Design rules and project conventions are in [AGENTS.md](AGENTS.md):
+- greyscale surfaces with a single rose accent
+- style kit components first
+- the role-based type scale
+- no em dashes in UI copy
+
+Run `npm run lint` and `npm run build` before opening a pull request.
+
+---
+
+<p align="center">
+  Made with ☕ and questionable sleep schedules by <b>Faiz Hazim Hawari</b> & <b>Sonya Maysalva</b>.
+</p>
