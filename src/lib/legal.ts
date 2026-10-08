@@ -6,7 +6,7 @@
  * NOTE: written as a solid starting point, not legal advice. Have an
  * Indonesian lawyer review it before a real public launch.
  */
-export const TERMS_VERSION = "2026-10-08.2";
+export const TERMS_VERSION = "2026-10-08.3";
 export const LEGAL_UPDATED = "8 October 2026";
 export const CONTACT_EMAIL = "safety@purebloodmd.app";
 
@@ -77,7 +77,7 @@ export const TERMS: LegalSection[] = [
     body: [
       "You are solely responsible for your interactions with other users, online and offline. We do not screen users and cannot guarantee anyone's behavior.",
       "If you meet someone: meet in a public place, tell a friend where you are going, arrange your own transport, and leave if you feel unsafe. In an emergency in Indonesia call 112.",
-      "Use Report and Block whenever something feels wrong. Reports are confidential.",
+      "Use Report and Block whenever something feels wrong. Reports are confidential. You can attach up to 4 screenshots as evidence, and a copy of the conversation is kept with the report so it survives the chat ending.",
     ],
   },
   {
@@ -85,7 +85,7 @@ export const TERMS: LegalSection[] = [
     title: "7. Your content",
     body: [
       "You keep ownership of the photos and messages you post. You give us a limited license to store, display and process them only to run the app (for example, showing your profile and delivering your messages).",
-      "Chat photos are visible only to the two people in the conversation. Conversations with no messages for 30 days are deleted automatically, and Delete chat or Unmatch deletes them for both people.",
+      "Chat photos are visible only to the two people in the conversation. A conversation with no messages for 24 hours ends automatically (we call it asystole): the chat is deleted for both people and you may see each other in triage again. Delete chat or Unmatch also deletes it for both people.",
     ],
   },
   {
@@ -123,7 +123,7 @@ export const TERMS: LegalSection[] = [
     id: "ending",
     title: "12. Ending your account",
     body: [
-      "You can stop using the app at any time. We may suspend or end your account if you break these Terms or if needed to protect users or comply with the law.",
+      "You can deactivate your account in Passport > Settings at any time: you are hidden from triage and consults until you reactivate. You can also delete your account there, which permanently deletes your profile, photos, matches and messages. We may suspend or end your account if you break these Terms or if needed to protect users or comply with the law.",
     ],
   },
   {
@@ -143,13 +143,13 @@ export const PRIVACY: LegalSection[] = [
     title: "1. What we collect",
     body: [
       [
-        "Account: email address, password (stored hashed by our auth provider), and the date you accepted these Terms",
+        "Account: email address, password (stored hashed by our auth provider), the country you chose at sign-up, and the date you accepted these Terms",
         "Profile: name, photo, age, gender, who you are looking for, specialty, hospital, country, bio and tags",
         "Credentials you enter (STR/NIM, alma mater, class year): stored privately and never shown to other users",
         "Verification documents, only if you request the badge: a photo of your ID (KTP or passport), a selfie holding it, and your medical license or student card. Stored in a private bucket only our reviewers can open, and deleted after the decision. Your ID is specific personal data under UU PDP and is used only to verify you",
         "Up to 4 profile photos, your Super Likes and the people who Super Liked you",
         "Approximate location: only when you tap Radar, rounded to about 1 km. Other users never see it, only a distance",
-        "Messages, photos and stickers you send, swipes, matches, blocks and reports",
+        "Messages, photos and stickers you send, swipes, matches, blocks and reports, including any screenshots you attach to a report and a copy of the reported conversation",
         "Technical data needed for security, such as CAPTCHA results and sign-in records",
       ],
     ],
@@ -172,7 +172,7 @@ export const PRIVACY: LegalSection[] = [
     id: "keep",
     title: "4. How long we keep it",
     body: [
-      "Conversations are deleted after 30 days without messages, or immediately when you use Delete chat or Unmatch. Reports are kept as long as needed to investigate and keep the community safe. When you delete your account, your profile, matches and messages are deleted.",
+      "Conversations are deleted after 24 hours without a message, or immediately when you use Delete chat or Unmatch. Reports, their screenshots and the conversation copy are kept as long as needed to investigate and keep the community safe. When you delete your account (Passport > Settings), your profile, photos, matches and messages are deleted right away.",
     ],
   },
   {

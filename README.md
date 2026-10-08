@@ -84,7 +84,8 @@ The comedy is part of the product. Every specialty has its own one-liners, bot d
 - **Personal info guard:**
   - phone numbers and chat-app links are masked with `****` automatically
   - a warning appears before you send anything that looks like an NIK, a bank account or an OTP
-- **Unmatch** and **delete chat** for both sides. Consults with no messages for 30 days are deleted automatically.
+- **Unmatch** and **delete chat** for both sides.
+- **Asystole:** a consult with no message for 24 hours flatlines. The room is deleted, and the two doctors can meet again in triage for a second chance. A live countdown in the chat shows how long is left.
 - **Online dot** through Realtime Presence.
 
 ### 🪪 Doctor Passport (profile)
@@ -112,7 +113,10 @@ VIP includes unlimited bubbles, 5 Super Likes a day and unlimited rewinds. If yo
 
 ### 🛡️ Safety
 - **Report:** sexual harassment, unsolicited explicit photos, verbal abuse, threats, hate speech, fake profiles, scams, underage users, self-harm concerns, and other.
+  - Attach up to 4 screenshots as evidence. They go to a private bucket that only reviewers can open, with location data stripped.
+  - A copy of the conversation is saved with the report, so the evidence survives the chat ending.
 - **Block:** works from both Triage and chat.
+- **Account control:** deactivate (hidden from everyone, reversible) or permanently delete your account from Passport > Settings.
 - **Signup protection:** sign up requires a Cloudflare Turnstile **CAPTCHA**, accepting the **Terms & Privacy Policy**, and confirming you are **21+**. The accepted terms version is stored on the account.
 - **Terms:** clear rules about no financial transactions and no sharing of personal information. The terms also limit the founders' liability for transactions or information exchanged between members.
 - **Location privacy:** radar locations are rounded to about 1 km, and other members only ever see a distance.
@@ -170,10 +174,10 @@ cp .env.example .env.local
 
 ### 4. Database
 ```bash
-# Apply migrations in order (0001 ... 0006) through the Supabase Management API
+# Apply migrations in order (0001 ... 0007) through the Supabase Management API
 npm run supabase:push -- sql 0001
 npm run supabase:push -- sql 0002
-# ...up to 0006
+# ...up to 0007
 
 # Add the bot doctors: 480 in Indonesia + 1,056 across 33 more countries
 npm run db:seed
@@ -216,7 +220,7 @@ src/
   lib/                 constants, auth, captcha, stickers, legal text
   proxy.ts             session refresh + route protection
 supabase/
-  migrations/          0001 to 0006: schema, RLS, triggers, RPCs
+  migrations/          0001 to 0007: schema, RLS, triggers, RPCs
   templates/           confirmation email
   seed-doctors*.json   bot roster
 scripts/               seed, cleanup, supabase push
