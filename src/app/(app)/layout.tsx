@@ -1,4 +1,5 @@
 import { AppNav } from "@/components/app-nav";
+import { PausedBanner } from "@/components/paused-banner";
 import { PresenceProvider } from "@/components/presence";
 import { SetupNotice } from "@/components/setup-notice";
 import { requireProfile } from "@/lib/auth";
@@ -22,7 +23,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <PresenceProvider meId={profile.id}>
       <AppNav country={profile.country ?? "ID"} name={profile.display_name} photo={profile.photo_url} isVip={profile.is_vip} consults={count ?? 0} />
-      <div className="lg:pl-24">{children}</div>
+      <div className="lg:pl-24">
+        {profile.deactivated_at ? <PausedBanner /> : null}
+        {children}
+      </div>
     </PresenceProvider>
   );
 }

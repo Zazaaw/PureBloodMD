@@ -30,6 +30,8 @@ export type Profile = {
   replies: string[];
   opener: string | null;
   is_vip: boolean;
+  /** Set while the member has paused their account (hidden from triage and consults). */
+  deactivated_at?: string | null;
   /** Up to 3 extra photos; the card shows [photo_url, ...gallery]. */
   gallery: string[];
   /** Badge only when BOTH are true (ID + medical license reviewed). */
@@ -59,7 +61,7 @@ export type InboxRow = {
   last_sender: string | null;
   /** Counted on the match: survives "delete chat", drives the quota and Bumble rule. */
   bubble_count: number;
-  /** Auto-delete date (30 days after the last message). */
+  /** Flatline time: 24 hours after the last message (or the match, if nobody wrote). */
   expires_at: string;
 };
 

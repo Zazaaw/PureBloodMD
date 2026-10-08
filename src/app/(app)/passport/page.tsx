@@ -11,9 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import PageHeader from "@/components/ui/page-header";
 import { requireProfile } from "@/lib/auth";
-import { PLANS, SPECIALTIES, VIP_PERKS, formatMoney } from "@/lib/constants";
+import { PLANS, SPECIALTIES, VIP_PERKS, countryName, formatMoney } from "@/lib/constants";
 import type { BlockedRow, Credentials, VerificationRequest } from "@/lib/types";
 import { isVerified } from "@/lib/verified";
+import { AccountCard } from "./account-card";
 import { CredentialsForm } from "./credentials-form";
 import { PassportForm } from "./passport-form";
 import { PassportShell } from "./passport-shell";
@@ -170,7 +171,7 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
         <Card>
           <CardHeader>
             <CardTitle>Sign out</CardTitle>
-            <CardDescription>Your matches and chats wait for you. Unless 30 days pass in silence.</CardDescription>
+            <CardDescription>Your matches wait for you. Unless 24 hours pass in silence: then the consult flatlines.</CardDescription>
           </CardHeader>
           <CardContent>
             <form action="/auth/signout" method="post">
@@ -178,6 +179,7 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
             </form>
           </CardContent>
         </Card>
+        <AccountCard userId={userId} paused={Boolean(profile.deactivated_at)} />
       </div>
     ),
   };
@@ -191,7 +193,7 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
         />
         <PassportShell
           initialTab={initialTab}
-          me={{ name: profile.display_name, photo: profile.photo_url, subtitle: `${profile.specialty_title} · ${profile.hospital}`, verified }}
+          me={{ name: profile.display_name, photo: profile.photo_url, subtitle: `${profile.specialty_title} · ${profile.hospital} · ${countryName(profile.country ?? "ID")}`, verified }}
           status={status}
           panels={panels}
         />
