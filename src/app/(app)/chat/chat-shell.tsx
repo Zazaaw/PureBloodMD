@@ -101,12 +101,15 @@ export function ChatShell({ meId, inbox, children }: { meId: string; inbox: Inbo
                       <span className="shrink-0 text-caption text-muted-foreground tabular-nums" suppressHydrationWarning>{timeLabel(r.last_at ?? r.matched_at)}</span>
                     </span>
                     {(() => {
-                      const days = Math.ceil((new Date(r.expires_at).getTime() - Date.now()) / 86_400_000);
-                      return days <= 7 ? (
-                        <span className="block text-caption text-amber-600 dark:text-amber-400" suppressHydrationWarning>
-                          Auto-deletes in {Math.max(days, 0)} {days === 1 ? "day" : "days"} unless someone texts
+                      const hours = Math.max(0, Math.ceil((new Date(r.expires_at).getTime() - Date.now()) / 3_600_000));
+                      return (
+                        <span
+                          className={cn("block text-caption", hours <= 6 ? "text-red-500" : "text-muted-foreground")}
+                          suppressHydrationWarning
+                        >
+                          {hours <= 1 ? "Flatlines within the hour" : `Flatlines in ${hours}h`} unless someone texts
                         </span>
-                      ) : null;
+                      );
                     })()}
                     <span className="block truncate text-body-sm text-muted-foreground">
                       {r.last_at

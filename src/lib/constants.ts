@@ -2,7 +2,6 @@
 export const FREE_BUBBLE_CAP = 10;
 
 /** Bumble window: hours a new match has before the first incision is "due". */
-export const BUMBLE_WINDOW_HOURS = 24;
 
 export const SPECIALTIES = {
   Cardiology: { code: "Sp.JP", title: "Cardiologist", joke: "High hemodynamic chemistry" },
@@ -115,7 +114,8 @@ export function formatMoney(amount: number, currency: "IDR" | "USD" | string) {
 }
 
 /** Consults with no message for this long are deleted automatically (pg_cron). */
-export const CONSULT_TTL_DAYS = 30;
+/** Asystole: a consult with no message for this long flatlines (room deleted, both can meet again). */
+export const CONSULT_TTL_HOURS = 24;
 
 /** What VIP unlocks; shown in the VIP dialog and on Passport. */
 export const VIP_PERKS = [

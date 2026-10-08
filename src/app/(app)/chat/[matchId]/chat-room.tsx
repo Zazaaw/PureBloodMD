@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ChatCircleSlash, Crown, DotsThreeVertical, Flag, HeartBreak, ImageSquare, LockSimple, PaperPlaneRight, Prohibit, SealCheck, ShieldWarning, Smiley, Timer } from "@phosphor-icons/react";
+import { ArrowLeft, ChatCircleSlash, Crown, DotsThreeVertical, Flag, HeartBreak, ImageSquare, LockSimple, PaperPlaneRight, Prohibit, SealCheck, ShieldWarning, Smiley, Heartbeat } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { ChatImage } from "@/components/chat-image";
 import { EmojiStickerPicker } from "@/components/emoji-sticker-picker";
@@ -16,11 +16,12 @@ import { StatusPill } from "@/components/status-pill";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { VipDialog } from "@/components/vip-dialog";
-import { BUMBLE_WINDOW_HOURS, CONSULT_TTL_DAYS, FREE_BUBBLE_CAP, QUICK_FLIRTS } from "@/lib/constants";
+import { CONSULT_TTL_HOURS, FREE_BUBBLE_CAP, QUICK_FLIRTS } from "@/lib/constants";
 import { sounds } from "@/lib/sounds";
 import { detectPersonalInfo, parseSticker, stickerBody, willMaskNumbers } from "@/lib/stickers";
 import { createClient } from "@/lib/supabase/client";
 import type { Gender, InboxRow, Message } from "@/lib/types";
+import { prepareImage } from "@/lib/image";
 import { cn } from "@/lib/utils";
 
 type Me = { id: string; gender: Gender; isVip: boolean; name: string; country: string };
@@ -35,36 +36,11 @@ function useCountdown(endsAt: number) {
   const h = String(Math.floor(left / 3_600_000)).padStart(2, "0");
   const m = String(Math.floor((left % 3_600_000) / 60_000)).padStart(2, "0");
   const s = String(Math.floor((left % 60_000) / 1000)).padStart(2, "0");
-  return { label: `${h}:${m}:${s}`, expired: left === 0 };
+  return { label: `${h}:${m}:${s}`, expired: left === 0, left };
 }
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-
-/**
- * Re-encode photos to JPEG (max 1600px) before upload. Besides saving data,
- * this strips EXIF metadata, including GPS coordinates. GIFs are sent as-is.
- */
-async function prepareImage(file: File) {
-  const bitmap = await createImageBitmap(file);
-  const { width, height } = bitmap;
-  if (file.type === "image/gif") {
-    bitmap.close();
-    return { blob: file as Blob, type: file.type, ext: "gif", width, height };
-  }
-  const scale = Math.min(1, 1600 / Math.max(width, height));
-  const w = Math.round(width * scale);
-  const h = Math.round(height * scale);
-  const canvas = document.createElement("canvas");
-  canvas.width = w;
-  canvas.height = h;
-  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, w, h);
-  bitmap.close();
-  const blob = await new Promise<Blob>((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("encode failed"))), "image/jpeg", 0.85)
-  );
-  return { blob, type: "image/jpeg", ext: "jpg", width: w, height: h };
-}
 
 const clock = (iso: string) => new Date(iso).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 
@@ -86,7 +62,7 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
   const bubblesRef = useRef(room.bubble_count);
   const seen = useRef(new Set(initialMessages.map((m) => m.id)));
   const [lastActivity, setLastActivity] = useState(
-    () => new Date(room.expires_at).getTime() - CONSULT_TTL_DAYS * 86_400_000
+    () => new Date(room.expires_at).getTime() - CONSULT_TTL_HOURS * 3_600_000
   );
   const menuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -97,18 +73,17 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const online = useIsOnline(room.other_id, room.other_is_bot);
-  const countdown = useCountdown(new Date(room.matched_at).getTime() + BUMBLE_WINDOW_HOURS * 3_600_000);
+  // Asystole: every message restarts the 24-hour clock; at zero the consult flatlines.
+  const countdown = useCountdown(lastActivity + CONSULT_TTL_HOURS * 3_600_000);
+  const [flatlinedByServer, setFlatlinedByServer] = useState(false);
+  const flatlined = countdown.expired || flatlinedByServer;
 
   // Bumble protocol: in a female x male match, the female doctor opens.
   const mustWait = bubbles === 0 && me.gender === "male" && room.other_gender === "female";
   const herMove = bubbles === 0 && me.gender === "female" && room.other_gender === "male";
   const used = bubbles;
-  const expiresOn = new Date(lastActivity + CONSULT_TTL_DAYS * 86_400_000).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-  });
   const quotaGone = !isVip && used >= FREE_BUBBLE_CAP;
-  const locked = mustWait || quotaGone;
+  const locked = mustWait || quotaGone || flatlined;
 
   const firstName = useMemo(() => room.other_name.replace(/^dr\.\s*/i, "").split(/[ ,]/)[0], [room.other_name]);
 
@@ -157,7 +132,7 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
       )
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "matches" }, (payload) => {
         if ((payload.old as { id?: string }).id === room.match_id) {
-          toast("This consult has ended.");
+          toast("This consult has ended. If it flatlined, you can meet again in triage.");
           router.push("/chat");
           router.refresh();
         }
@@ -242,9 +217,11 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
 
     if (error) {
       if (error.message.includes("quota_exhausted")) setVipOpen(true);
+      else if (error.message.includes("consult_expired")) setFlatlinedByServer(true);
+      else if (error.message.includes("account_paused")) toast.error("One of you has paused their account. Messages are on hold.");
       else if (error.message.includes("bumble_wait")) toast("The female doctor makes the first incision. Hang tight.");
       else if (error.message.includes("blocked") || error.code === "23503") toast.error("This consult is closed.");
-      else toast.error("Message flatlined. Try again.");
+      else toast.error("Message failed to send. Try again.");
       return false;
     }
 
@@ -370,7 +347,7 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
                 </button>
               ))}
               <p className="border-t px-3 pb-1.5 pt-2 text-caption text-muted-foreground" suppressHydrationWarning>
-                Auto-deletes {expiresOn} if nobody texts
+                Flatlines in {countdown.label} unless someone texts
               </p>
             </div>
           ) : null}
@@ -378,14 +355,18 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
       </header>
 
       <div className="flex flex-wrap items-center justify-between gap-2 border-b bg-muted/40 px-4 py-2 text-caption">
-        <span className="flex items-center gap-2 text-muted-foreground">
-          <Timer className="size-4 shrink-0" />
-          <span className="hidden sm:inline">Female doctors make the first incision. Window</span>
-          <span className="sm:hidden">First incision</span>
-          <span className="font-mono font-semibold text-foreground tabular-nums" suppressHydrationWarning>{countdown.expired ? "expired" : countdown.label}</span>
-          <span aria-hidden className="hidden md:inline">·</span>
-          <span className="hidden md:inline" title={`Consults with no messages for ${CONSULT_TTL_DAYS} days are deleted automatically`} suppressHydrationWarning>
-            Auto-deletes {expiresOn} if silent
+        <span
+          className="flex items-center gap-2 text-muted-foreground"
+          title={`A consult with no message for ${CONSULT_TTL_HOURS} hours flatlines: the chat is deleted and you can meet again in triage.`}
+        >
+          <Heartbeat className={cn("size-4 shrink-0", !flatlined && "text-primary")} />
+          <span className="hidden sm:inline">No message for 24h and this consult flatlines. Asystole in</span>
+          <span className="sm:hidden">Asystole in</span>
+          <span
+            className={cn("font-mono font-semibold tabular-nums", countdown.left < 3 * 3_600_000 ? "text-red-500" : "text-foreground")}
+            suppressHydrationWarning
+          >
+            {flatlined ? "flatlined" : countdown.label}
           </span>
         </span>
         <span className="flex items-center gap-2">
@@ -496,10 +477,18 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
         </div>
       ) : null}
 
-      {mustWait ? (
+      {flatlined ? (
+        <div role="status" className="flex flex-wrap items-center gap-3 border-t bg-muted/40 px-4 py-3 text-body-sm">
+          <Heartbeat className="size-5 shrink-0 text-muted-foreground" />
+          <span className="min-w-0 flex-1">
+            <strong>Flatlined.</strong> 24 hours without a message, so this consult is closing. {firstName} can show up in your triage again for a second chance.
+          </span>
+          <Button size="sm" variant="outline" onClick={() => { router.push("/chat"); router.refresh(); }}>Back to consults</Button>
+        </div>
+      ) : mustWait ? (
         <p className="flex items-center gap-2 border-t bg-muted/40 px-4 py-3 text-body-sm">
           <LockSimple className="size-4 shrink-0" />
-          <span><strong>Asystole mode:</strong> wait for {firstName} to initiate CPR before responding.</span>
+          <span><strong>Waiting for CPR:</strong> {firstName} makes the first incision. If nobody writes within 24 hours, the consult flatlines.</span>
         </p>
       ) : null}
 
