@@ -18,7 +18,10 @@ const env = Object.fromEntries(
 const token = process.env.SUPABASE_ACCESS_TOKEN || env.SUPABASE_ACCESS_TOKEN;
 const url = env.NEXT_PUBLIC_SUPABASE_URL || "";
 const ref = url.replace(/^https:\/\//, "").split(".")[0];
-const site = env.NEXT_PUBLIC_SITE_URL || "http://localhost:3333";
+// Site URL = production (fallback for links); every listed origin may receive confirmation links.
+const local = env.NEXT_PUBLIC_SITE_URL || "http://localhost:3333";
+const site = (env.SITE_URL_PRODUCTION || local).replace(/\/$/, "");
+const origins = [...new Set([site, local.replace(/\/$/, "")])];
 if (!token || !ref) {
   console.error("Missing SUPABASE_ACCESS_TOKEN (supabase.com/dashboard/account/tokens) or NEXT_PUBLIC_SUPABASE_URL in .env.local");
   process.exit(1);
@@ -47,8 +50,8 @@ async function patchAuth(body, what) {
 async function pushEmail() {
   // 1. URLs are allowed on every plan.
   await patchAuth(
-    { site_url: site, uri_allow_list: [`${site}/auth/callback`, `${site}/auth/confirm`, `${site}/**`].join(",") },
-    `Site URL (${site}) and redirect URLs`
+    { site_url: site, uri_allow_list: origins.flatMap((o) => [`${o}/auth/callback`, `${o}/auth/confirm`, `${o}/**`]).join(",") },
+    `Site URL (${site}) and redirect URLs for ${origins.join(", ")}`
   );
 
   // 2. Custom templates need a custom SMTP sender on the free plan.

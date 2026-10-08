@@ -69,7 +69,8 @@ export async function signUp(_: AuthState, formData: FormData): Promise<AuthStat
   const { data, error } = await supabase.auth.signUp({
     ...creds,
     options: {
-      emailRedirectTo: `${origin}/auth/callback?next=/onboarding`,
+      // The email button appends &token_hash=...; /auth/confirm verifies it on this same site.
+      emailRedirectTo: `${origin}/auth/confirm?next=/onboarding`,
       captchaToken: captchaBySupabase() ? token : undefined,
       // Proof of consent, stored on the auth user.
       data: { terms_version: TERMS_VERSION, terms_accepted_at: new Date().toISOString(), age_confirmed_21: true, country },

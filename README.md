@@ -167,6 +167,7 @@ cp .env.example .env.local
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase > API Keys > secret (seeding only) | **no** |
 | `SUPABASE_ACCESS_TOKEN` | supabase.com/dashboard/account/tokens (for `supabase:push`) | **no** |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3333` locally, your domain in production | yes |
+| `SITE_URL_PRODUCTION` | Your deployed URL, e.g. `https://pureblood.vercel.app`. Becomes the Supabase Site URL, and both it and localhost may receive confirmation links | no |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Cloudflare > Turnstile (test keys work locally) | site key only |
 | `SMTP_HOST` `SMTP_PORT` `SMTP_USER` `SMTP_PASS` `SMTP_FROM` | Resend: `smtp.resend.com`, `465`, `resend`, API key, sender on a verified domain | **no** |
 
