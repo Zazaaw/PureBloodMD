@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<title>Offline · PureBloodMD</title>
+<!-- Static on purpose: served by the service worker for any page that can't load offline. -->
+<style>
+  :root { --bg: #ffffff; --fg: #0a0a0a; --muted: #737373; --border: #e5e5e5; --primary: #cb1a4a; --on-primary: #fafafa; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0a0a0a; --fg: #fafafa; --muted: #a3a3a3; --border: #262626; --primary: #e8476f; --on-primary: #171717; } }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--bg); color: var(--fg); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         display: grid; place-items: center; padding: calc(env(safe-area-inset-top) + 24px) 16px calc(env(safe-area-inset-bottom) + 24px); }
+  main { max-width: 22rem; text-align: center; }
+  .brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.272rem; letter-spacing: -0.02em; }
+  .brand small { font-size: 0.786rem; font-weight: 700; letter-spacing: 0.12em; color: var(--muted); }
+  svg.mark { width: 36px; height: 36px; }
+  .wifi { display: block; margin: 40px auto 16px; width: 40px; height: 40px; color: var(--muted); }
+  h1 { margin: 0; font-size: 1.618rem; line-height: 1.25; letter-spacing: -0.01em; }
+  p { margin: 8px 0 0; color: var(--muted); line-height: 1.618; }
+  button { margin-top: 24px; height: 36px; padding: 0 16px; border: 0; border-radius: 6px; background: var(--primary); color: var(--on-primary);
+           font: inherit; font-weight: 600; font-size: 0.887rem; cursor: pointer; }
+</style>
+</head>
+<body>
+<main>
+  <span class="brand">
+    <svg class="mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <defs>
+        <mask id="a"><rect width="32" height="32" fill="#fff"/><circle cx="16" cy="23.2" r="2.7" fill="#000"/></mask>
+        <mask id="b"><rect width="32" height="32" fill="#fff"/><circle cx="16" cy="8.8" r="2.7" fill="#000"/></mask>
+      </defs>
+      <circle cx="12.4" cy="16" r="8" stroke="currentColor" stroke-width="2.3" mask="url(#a)"/>
+      <circle cx="19.6" cy="16" r="8" stroke="currentColor" stroke-width="2.3" mask="url(#b)"/>
+      <path d="M16 11.2c0 0-2.6 3.1-2.6 5.1a2.6 2.6 0 0 0 5.2 0c0-2-2.6-5.1-2.6-5.1z" fill="var(--primary)"/>
+    </svg>
+    <span>PureBlood <small>MD</small></span>
+  </span>
+  <!-- Phosphor "WifiSlash" (regular), MIT --><svg class="wifi" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M213.92,210.62a8,8,0,1,1-11.84,10.76l-52-57.15a60,60,0,0,0-57.41,7.24,8,8,0,1,1-9.42-12.93A75.43,75.43,0,0,1,128,144c1.28,0,2.55,0,3.82.1L104.9,114.49A108,108,0,0,0,61,135.31,8,8,0,0,1,49.73,134,8,8,0,0,1,51,122.77a124.27,124.27,0,0,1,41.71-21.66L69.37,75.4a155.43,155.43,0,0,0-40.29,24A8,8,0,0,1,18.92,87,171.87,171.87,0,0,1,58,62.86L42.08,45.38A8,8,0,1,1,53.92,34.62ZM128,192a12,12,0,1,0,12,12A12,12,0,0,0,128,192ZM237.08,87A172.3,172.3,0,0,0,106,49.4a8,8,0,1,0,2,15.87A158.33,158.33,0,0,1,128,64a156.25,156.25,0,0,1,98.92,35.37A8,8,0,0,0,237.08,87ZM195,135.31a8,8,0,0,0,11.24-1.3,8,8,0,0,0-1.3-11.24,124.25,124.25,0,0,0-51.73-24.2A8,8,0,1,0,150,114.24,108.12,108.12,0,0,1,195,135.31Z"/></svg>
+  <h1>No signal in the basement</h1>
+  <p>Even doctors lose reception near radiology. Your consults are safe; we&rsquo;ll reconnect as soon as you have internet.</p>
+  <button type="button" onclick="location.reload()">Try again</button>
+</main>
+</body>
+</html>
