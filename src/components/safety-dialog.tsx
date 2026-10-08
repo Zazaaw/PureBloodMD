@@ -1,14 +1,19 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Flag, Prohibit, ShieldCheck } from "@phosphor-icons/react";
+import { useRef, useState, useTransition } from "react";
+import { Flag, ImageSquare, LockSimple, Paperclip, Prohibit, ShieldCheck, X } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { Textarea } from "@/components/form/field";
 import { Modal } from "@/components/modal";
 import { Button } from "@/components/ui/button";
 import { REPORT_REASONS, type ReportReason } from "@/lib/constants";
+import { prepareImage } from "@/lib/image";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+
+const MAX_EVIDENCE = 4;
+const EVIDENCE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+type Evidence = { path: string; preview: string; name: string };
 
 type Props = {
   open: boolean;
@@ -30,14 +35,47 @@ export function SafetyDialog({ open, onClose, target, matchId, mode, onBlocked }
   const [reason, setReason] = useState<ReportReason | null>(null);
   const [details, setDetails] = useState("");
   const [alsoBlock, setAlsoBlock] = useState(true);
+  const [evidence, setEvidence] = useState<Evidence[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [pending, start] = useTransition();
   const supabase = createClient();
 
   const close = () => {
+    evidence.forEach((e) => URL.revokeObjectURL(e.preview));
     setReason(null);
     setDetails("");
     setAlsoBlock(true);
+    setEvidence([]);
     onClose();
+  };
+
+  /** Screenshots go to a private bucket the reporter can't read back; only reviewers can. */
+  const addEvidence = async (files: FileList | null) => {
+    if (!files?.length) return;
+    const room = MAX_EVIDENCE - evidence.length;
+    const picked = Array.from(files).slice(0, room);
+    if (files.length > room) toast(`Up to ${MAX_EVIDENCE} screenshots per report.`);
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) return toast.error("Session expired. Sign in again.");
+    setUploading(true);
+    for (const file of picked) {
+      if (!EVIDENCE_TYPES.includes(file.type)) {
+        toast.error(`${file.name}: use a JPG, PNG or WebP screenshot.`);
+        continue;
+      }
+      try {
+        const img = await prepareImage(file, 2400);
+        const path = `${data.user.id}/${crypto.randomUUID()}.${img.ext}`;
+        const { error } = await supabase.storage.from("report-evidence").upload(path, img.blob, { contentType: img.type });
+        if (error) throw error;
+        setEvidence((list) => [...list, { path, preview: URL.createObjectURL(img.blob), name: file.name }]);
+      } catch {
+        toast.error(`Could not attach ${file.name}. Try again.`);
+      }
+    }
+    setUploading(false);
+    if (fileRef.current) fileRef.current.value = "";
   };
 
   const submitReport = () =>
@@ -53,6 +91,7 @@ export function SafetyDialog({ open, onClose, target, matchId, mode, onBlocked }
         p_details: details,
         p_match: matchId ?? null,
         p_block: alsoBlock,
+        p_evidence: evidence.map((e) => e.path),
       });
       if (error) {
         toast.error(error.message.includes("too_many_reports") ? "Too many reports today. Try again tomorrow." : "Report failed. Try again.");
@@ -76,7 +115,7 @@ export function SafetyDialog({ open, onClose, target, matchId, mode, onBlocked }
     });
 
   return (
-    <Modal open={open} onClose={close} labelledBy="safety-title" className="max-w-lg">
+    <Modal open={open} onClose={close} labelledBy="safety-title" className="max-h-[90dvh] max-w-lg overflow-y-auto">
       {mode === "block" ? (
         <>
           <Prohibit className="size-8 text-red-500" />
@@ -101,7 +140,7 @@ export function SafetyDialog({ open, onClose, target, matchId, mode, onBlocked }
             Reports are confidential. {target.name} will not know who reported them.
           </p>
 
-          <fieldset className="mt-4 grid max-h-[45dvh] gap-2 overflow-y-auto pr-1">
+          <fieldset className="mt-4 grid max-h-[32dvh] gap-2 overflow-y-auto pr-1">
             <legend className="sr-only">What happened?</legend>
             {REPORT_REASONS.map((r) => (
               <label
@@ -136,8 +175,59 @@ export function SafetyDialog({ open, onClose, target, matchId, mode, onBlocked }
             maxLength={1000}
             value={details}
             onChange={(e) => setDetails(e.target.value)}
-            placeholder="What happened, and when? The conversation is attached to the report automatically."
+            placeholder="What happened, and when? A copy of your conversation is attached to the report automatically."
           />
+
+          <div className="mt-4">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-body-sm font-medium">Evidence (optional)</span>
+              <span className="text-caption text-muted-foreground tabular-nums">{evidence.length} / {MAX_EVIDENCE}</span>
+            </div>
+            <p className="mt-0.5 text-caption text-muted-foreground">
+              Screenshots of messages, photos or profiles. Up to {MAX_EVIDENCE}, JPG, PNG or WebP.
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {evidence.map((e) => (
+                <div key={e.path} className="relative size-16 overflow-hidden rounded-lg border bg-muted">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- local blob preview */}
+                  <img src={e.preview} alt={e.name} className="size-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      URL.revokeObjectURL(e.preview);
+                      setEvidence((list) => list.filter((x) => x.path !== e.path));
+                    }}
+                    aria-label={`Remove ${e.name}`}
+                    className="absolute right-0.5 top-0.5 grid size-5 place-items-center rounded-full bg-black/60 text-white"
+                  >
+                    <X weight="bold" className="size-3" />
+                  </button>
+                </div>
+              ))}
+              {evidence.length < MAX_EVIDENCE ? (
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploading}
+                  className="grid size-16 place-items-center rounded-lg border border-dashed text-muted-foreground transition-colors duration-200 hover:border-foreground/40 hover:text-foreground disabled:opacity-50"
+                  aria-label="Attach screenshots"
+                >
+                  {uploading ? <ImageSquare className="size-5 animate-pulse" /> : <Paperclip className="size-5" />}
+                </button>
+              ) : null}
+              <input
+                ref={fileRef}
+                type="file"
+                accept={EVIDENCE_TYPES.join(",")}
+                multiple
+                hidden
+                onChange={(e) => addEvidence(e.target.files)}
+              />
+            </div>
+            <p className="mt-2 flex items-center gap-1.5 text-caption text-muted-foreground">
+              <LockSimple className="size-3.5 shrink-0" /> Only our safety team can open these. Location data is removed.
+            </p>
+          </div>
 
           <label className="mt-4 flex items-center gap-2 text-body-sm">
             <input type="checkbox" checked={alsoBlock} onChange={(e) => setAlsoBlock(e.target.checked)} className="accent-[hsl(var(--primary))]" />
@@ -152,7 +242,7 @@ export function SafetyDialog({ open, onClose, target, matchId, mode, onBlocked }
           ) : null}
 
           <div className="mt-6 grid gap-2 sm:grid-cols-2">
-            <Button variant="destructive" onClick={submitReport} disabled={!reason || pending}>
+            <Button variant="destructive" onClick={submitReport} disabled={!reason || pending || uploading}>
               {pending ? "Sending…" : "Send report"}
             </Button>
             <Button variant="ghost" onClick={close}>Cancel</Button>
