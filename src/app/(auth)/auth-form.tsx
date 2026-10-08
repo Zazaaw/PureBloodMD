@@ -121,6 +121,12 @@ export function AuthForm({ mode, action, captcha }: Props) {
         <p role="alert" className="text-body-sm text-red-500">Error: {state.error}</p>
       ) : null}
 
+      {isLogin && state.unconfirmed ? (
+        <Button type="submit" name="intent" value="resend" variant="outline" className="w-full" disabled={pending}>
+          <EnvelopeSimple /> Resend confirmation email
+        </Button>
+      ) : null}
+
       <Button type="submit" className="w-full" disabled={pending || blocked}>
         {pending ? "Scrubbing in…" : isLogin ? "Sign in" : "Create account"}
       </Button>

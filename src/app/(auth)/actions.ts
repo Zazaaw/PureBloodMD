@@ -7,7 +7,7 @@ import { COUNTRY_CODES } from "@/lib/constants";
 import { TERMS_VERSION } from "@/lib/legal";
 import { createClient } from "@/lib/supabase/server";
 
-export type AuthState = { error?: string; notice?: string; email?: string; country?: string };
+export type AuthState = { error?: string; notice?: string; email?: string; country?: string; unconfirmed?: boolean };
 
 function readCredentials(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -19,7 +19,8 @@ function readCredentials(formData: FormData) {
 
 const captchaToken = (fd: FormData) => String(fd.get("cf-turnstile-response") ?? "");
 
-export async function signIn(_: AuthState, formData: FormData): Promise<AuthState> {
+export async function signIn(state: AuthState, formData: FormData): Promise<AuthState> {
+  if (formData.get("intent") === "resend") return resendConfirmation(formData);
   const creds = readCredentials(formData);
   if ("error" in creds) return creds;
 
@@ -31,6 +32,7 @@ export async function signIn(_: AuthState, formData: FormData): Promise<AuthStat
   if (error) {
     return {
       email: creds.email,
+      unconfirmed: error.message.includes("Email not confirmed"),
       error: error.message.includes("Email not confirmed")
         ? "Confirm your email first. Check your inbox for the link."
         : error.message.toLowerCase().includes("captcha")
@@ -93,4 +95,32 @@ export async function signUp(_: AuthState, formData: FormData): Promise<AuthStat
     email: creds.email,
     notice: "We sent a confirmation email. Open it and tap “Confirm my email” to build your passport.",
   };
+}
+
+/** "Email not confirmed" on sign-in: send a fresh confirmation link to that address. */
+async function resendConfirmation(formData: FormData): Promise<AuthState> {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Enter a valid email address.", email };
+  const hdrs = await headers();
+  const origin = hdrs.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3333";
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email,
+    options: {
+      emailRedirectTo: `${origin}/auth/confirm?next=/onboarding`,
+      captchaToken: captchaBySupabase() ? captchaToken(formData) : undefined,
+    },
+  });
+  if (error) {
+    const msg = error.message.toLowerCase();
+    return {
+      email,
+      unconfirmed: true,
+      error: msg.includes("security purposes") || msg.includes("rate limit")
+        ? "A link was sent very recently. Wait a minute, then try again."
+        : "Could not send a new link. Try again in a minute.",
+    };
+  }
+  return { email, notice: "We sent a fresh confirmation link. The old one no longer matters." };
 }
