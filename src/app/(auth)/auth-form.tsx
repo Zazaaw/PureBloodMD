@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { useActionState, useCallback, useState } from "react";
 import { EnvelopeSimple } from "@phosphor-icons/react";
+import { Select } from "@/components/form/field";
+import { PasswordInput } from "@/components/form/password-input";
 import { Turnstile } from "@/components/turnstile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { COUNTRY_CODES, countryName } from "@/lib/constants";
 import type { AuthState } from "./actions";
 
 type Props = {
@@ -20,6 +23,8 @@ export function AuthForm({ mode, action, captcha }: Props) {
   const [token, setToken] = useState<string | null>(null);
   const [agree, setAgree] = useState(false);
   const [adult, setAdult] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const onToken = useCallback((t: string | null) => setToken(t), []);
   const isLogin = mode === "login";
 
@@ -38,7 +43,8 @@ export function AuthForm({ mode, action, captcha }: Props) {
     );
   }
 
-  const blocked = (captcha && !token) || (!isLogin && (!agree || !adult));
+  const mismatch = !isLogin && confirm.length > 0 && confirm !== password;
+  const blocked = (captcha && !token) || (!isLogin && (!agree || !adult || mismatch || confirm.length === 0));
 
   return (
     <form action={formAction} className="space-y-4" noValidate>
@@ -48,16 +54,48 @@ export function AuthForm({ mode, action, captcha }: Props) {
       </div>
       <div className="grid gap-2">
         <label htmlFor="password" className="text-body-sm font-medium">Password</label>
-        <Input
+        <PasswordInput
           id="password"
           name="password"
-          type="password"
           autoComplete={isLogin ? "current-password" : "new-password"}
           required
           minLength={8}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
         {!isLogin ? <p className="text-caption text-muted-foreground">At least 8 characters. Unlike your handwriting, make it strong.</p> : null}
       </div>
+
+      {!isLogin ? (
+        <>
+          <div className="grid gap-2">
+            <label htmlFor="password_confirm" className="text-body-sm font-medium">Confirm password</label>
+            <PasswordInput
+              id="password_confirm"
+              name="password_confirm"
+              autoComplete="new-password"
+              required
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              aria-invalid={mismatch}
+              aria-describedby="password_confirm_hint"
+              className={mismatch ? "border-red-500 focus-visible:ring-red-500" : undefined}
+            />
+            <p id="password_confirm_hint" className={mismatch ? "text-caption text-red-500" : "text-caption text-muted-foreground"} aria-live="polite">
+              {mismatch ? "Passwords don't match. Check for a typo." : confirm && confirm === password ? "Passwords match." : "Type it once more, no copy-paste diagnosis."}
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <label htmlFor="country" className="text-body-sm font-medium">Country</label>
+            <Select id="country" name="country" defaultValue={state.country ?? "ID"} autoComplete="country">
+              {COUNTRY_CODES.map((c) => (
+                <option key={c} value={c}>{countryName(c)}</option>
+              ))}
+            </Select>
+            <p className="text-caption text-muted-foreground">Where you practice. It sets your triage deck and VIP pricing, and you can change it later in Passport.</p>
+          </div>
+        </>
+      ) : null}
 
       {!isLogin ? (
         <div className="space-y-2.5 rounded-lg border p-3">

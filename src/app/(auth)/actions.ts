@@ -3,10 +3,11 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { captchaBySupabase, verifyCaptcha } from "@/lib/captcha";
+import { COUNTRY_CODES } from "@/lib/constants";
 import { TERMS_VERSION } from "@/lib/legal";
 import { createClient } from "@/lib/supabase/server";
 
-export type AuthState = { error?: string; notice?: string; email?: string };
+export type AuthState = { error?: string; notice?: string; email?: string; country?: string };
 
 function readCredentials(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -44,16 +45,23 @@ export async function signUp(_: AuthState, formData: FormData): Promise<AuthStat
   const creds = readCredentials(formData);
   if ("error" in creds) return creds;
 
+  const country = String(formData.get("country") ?? "");
+  const back = { email: creds.email, country };
+  if (formData.get("password_confirm") !== creds.password) {
+    return { ...back, error: "Passwords don't match. Check for a typo." };
+  }
+  if (!(COUNTRY_CODES as readonly string[]).includes(country)) return { ...back, error: "Choose your country." };
+
   // Consent is checked on the server too: a disabled checkbox is not a contract.
   if (formData.get("agree_terms") !== "on" || formData.get("confirm_age") !== "on") {
-    return { email: creds.email, error: "Please accept the Terms and confirm you are 21 or older." };
+    return { ...back, error: "Please accept the Terms and confirm you are 21 or older." };
   }
 
   const hdrs = await headers();
   const token = captchaToken(formData);
   if (!captchaBySupabase()) {
     const check = await verifyCaptcha(token, hdrs.get("cf-connecting-ip") ?? hdrs.get("x-forwarded-for")?.split(",")[0]);
-    if (!check.ok) return { email: creds.email, error: check.reason };
+    if (!check.ok) return { ...back, error: check.reason };
   }
 
   const origin = hdrs.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3333";
@@ -64,13 +72,13 @@ export async function signUp(_: AuthState, formData: FormData): Promise<AuthStat
       emailRedirectTo: `${origin}/auth/callback?next=/onboarding`,
       captchaToken: captchaBySupabase() ? token : undefined,
       // Proof of consent, stored on the auth user.
-      data: { terms_version: TERMS_VERSION, terms_accepted_at: new Date().toISOString(), age_confirmed_21: true },
+      data: { terms_version: TERMS_VERSION, terms_accepted_at: new Date().toISOString(), age_confirmed_21: true, country },
     },
   });
   if (error) {
     const msg = error.message.toLowerCase();
     return {
-      email: creds.email,
+      ...back,
       error: msg.includes("rate limit")
         ? "Too many sign-ups right now, our email desk is on a break. Try again in an hour."
         : msg.includes("already registered")
