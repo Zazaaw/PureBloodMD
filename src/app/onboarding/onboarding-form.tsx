@@ -20,7 +20,7 @@ const SEEKING = [
   { label: "Both", value: "all" },
 ] as const;
 
-export function OnboardingForm({ userId }: { userId: string }) {
+export function OnboardingForm({ userId, defaultCountry }: { userId: string; defaultCountry: string }) {
   const [state, action, pending] = useActionState(createPassport, {});
   const [specialty, setSpecialty] = useState<SpecialtyKey>("Cardiology");
   const [titles, setTitles] = useState<Record<string, string>>({});
@@ -86,7 +86,7 @@ export function OnboardingForm({ userId }: { userId: string }) {
             <Input id="hospital" name="hospital" required placeholder="RSUP Harapan Kita" defaultValue={v.hospital} />
           </Field>
           <Field id="country" label="Country" hint="Distance comes from the radar in Triage, not from your city." error={e.country}>
-            <Select id="country" name="country" defaultValue={v.country ?? "ID"}>
+            <Select id="country" name="country" defaultValue={v.country ?? defaultCountry}>
               {COUNTRY_CODES.map((c) => (
                 <option key={c} value={c}>{countryName(c)}</option>
               ))}
