@@ -23,7 +23,7 @@ import { getAppFlags } from "@/lib/flags";
 import { cn } from "@/lib/utils";
 
 const HERO_DOCTORS = ["Aurelia", "Keenan", "Nadya", "Raditya", "Clarissa"].map(doctor);
-const FLOATERS = ["Michelle", "Aris", "Alana"].map(doctor) as [LandingDoctor, LandingDoctor, LandingDoctor];
+const FLOATERS = ["Michelle", "Aris"].map(doctor) as [LandingDoctor, LandingDoctor];
 const DECK_DOCTORS = ["Stella", "Brandon", "Jessica", "Dimas", "Vania"].map(doctor);
 
 function MarqueeRow({ doctors, hidden }: { doctors: LandingDoctor[]; hidden?: boolean }) {
