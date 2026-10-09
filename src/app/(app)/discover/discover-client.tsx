@@ -9,7 +9,6 @@ import {
   Flag,
   ArrowUUpLeft,
   HeartStraight,
-  Info,
   Prohibit,
   Lightning,
   Pill,
@@ -89,7 +88,6 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
   const [syncPct, setSyncPct] = useState(94);
   const [showFilters, setShowFilters] = useState(false);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
-  const [chartOpen, setChartOpen] = useState(false);
   // The last swipe the server confirmed: what Rewind would undo.
   const [lastSwiped, setLastSwiped] = useState<{ doc: Profile; dir: Direction; matched: boolean } | null>(null);
   const [rewinds, setRewinds] = useState<RewindQuota>(rewindQuota);
@@ -270,11 +268,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
-      if (["INPUT", "SELECT", "TEXTAREA"].includes(target.tagName) || match || radarOpen || chartOpen) return;
-      if (e.key === "ArrowDown" && current) {
-        e.preventDefault();
-        setChartOpen(true);
-      }
+      if (["INPUT", "SELECT", "TEXTAREA"].includes(target.tagName) || match || radarOpen) return;
       if (e.key === "ArrowLeft") swipe("left");
       if (e.key === "ArrowRight") swipe("right");
       if (e.key === "ArrowUp") {
@@ -284,7 +278,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [swipe, match, radarOpen, chartOpen, current]);
+  }, [swipe, match, radarOpen]);
 
   /** Undo the last pass or like (not Super Likes, not matches). Free: 1 a day, VIP: unlimited. */
   const rewind = async () => {
@@ -566,11 +560,11 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
                   transition: drag && !leaving ? "none" : "transform 300ms var(--ease-reveal), opacity 300ms ease-out",
                 }}
                 className={cn(
-                  "relative cursor-grab touch-none select-none overflow-hidden rounded-xl border bg-card shadow-sm active:cursor-grabbing",
+                  "relative overflow-hidden rounded-xl border bg-card shadow-sm",
                   current.superliked_me && "border-amber-500/60 ring-2 ring-amber-500/30"
                 )}
               >
-                <DoctorPhotoPanel doc={current} online={currentOnline} priority tapNav className="aspect-[4/5]" nameClassName="pr-16">
+                <DoctorPhotoPanel doc={current} online={currentOnline} priority tapNav className="aspect-[4/5] cursor-grab touch-none select-none active:cursor-grabbing">
                   {/* Prescription stamps: they ink in as the card is dragged. */}
                   <span
                     aria-hidden
@@ -593,14 +587,6 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
                   >
                     DEFIBRILLATED ⚡
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => setChartOpen(true)}
-                    aria-label={`Open ${current.display_name.split(",")[0]}'s full chart`}
-                    className="absolute bottom-5 right-5 z-20 grid size-10 place-items-center rounded-full bg-white/20 text-white backdrop-blur transition-colors duration-200 hover:bg-white/30"
-                  >
-                    <Info weight="bold" className="size-5" />
-                  </button>
                 </DoctorPhotoPanel>
 
                 {/* Actions right under the photo: reachable without scrolling. */}
@@ -649,15 +635,19 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
                   >
                     <Pill weight="fill" />
                   </Button>
-                  <Button
-                    variant="outline"
-                    className="size-11 rounded-full text-sky-500 [&_svg:not([class*='size-'])]:size-5"
-                    onClick={() => setChartOpen(true)}
-                    aria-label="Open full chart"
-                    title="Full chart (↓)"
-                  >
-                    <Info weight="bold" />
-                  </Button>
+                </div>
+
+                {/* Full chart, right on the card: scroll down to read it. */}
+                <div data-no-drag className="space-y-4 border-t p-5">
+                  <DoctorDetails doc={current} />
+                  <div className="flex justify-center gap-1 border-t pt-3">
+                    <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setSafety({ mode: "report", doc: current })}>
+                      <Flag /> Report
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setSafety({ mode: "block", doc: current })}>
+                      <Prohibit /> Block
+                    </Button>
+                  </div>
                 </div>
               </article>
             ) : (
@@ -703,65 +693,14 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
               </p>
               <p className="flex flex-wrap items-center justify-center gap-x-3">
                 <span>{filtered.length} doctors in triage</span>
-                <span className="lg:hidden">Drag the card to swipe</span>
+                <span className="lg:hidden">Drag the photo to swipe, scroll for the full chart</span>
                 <span className="flex items-center gap-1"><SealCheck weight="fill" className="size-3.5 text-sky-500" /> ID and license verified</span>
               </p>
-              <p className="hidden lg:block">Keys: ← pass, ↑ super like, → like, ↓ full chart. Or drag the card.</p>
+              <p className="hidden lg:block">Keys: ← pass, ↑ super like, → like. Or drag the photo.</p>
             </div>
           </section>
         </div>
       </BlurFade>
-
-      <Modal
-        open={chartOpen && !!current}
-        onClose={() => setChartOpen(false)}
-        labelledBy="chart-title"
-        className="mb-0 mt-auto max-h-[88dvh] w-full max-w-none overflow-y-auto rounded-b-none p-0 pb-[env(safe-area-inset-bottom)] sm:m-auto sm:max-h-[85dvh] sm:w-[calc(100%-2rem)] sm:max-w-md sm:rounded-xl"
-      >
-        {current ? (
-          <>
-            <div className="sticky top-0 z-10 flex items-center gap-3 border-b bg-card/95 px-5 py-3 backdrop-blur">
-              <DoctorPhoto src={current.photo_url} fallback={current.photo_fallback_url} alt="" size={40} className="size-10 shrink-0" />
-              <div className="min-w-0 flex-1">
-                <h2 id="chart-title" className="font-semibold leading-tight">
-                  {current.display_name}
-                  {isVerified(current) ? <SealCheck weight="fill" aria-label="Verified" className="ml-1 inline size-4 align-[-0.15em] text-sky-500" /> : null}
-                </h2>
-                <p className="text-caption text-muted-foreground">
-                  {current.specialty_title}, {current.age}
-                  {current.distance_km != null ? ` · ${Number(current.distance_km).toFixed(1)} km away` : ""}
-                </p>
-              </div>
-              <Button variant="ghost" size="icon" aria-label="Close chart" onClick={() => setChartOpen(false)}>
-                <X />
-              </Button>
-            </div>
-            <div className="space-y-4 p-5">
-              <p className="text-body-sm text-muted-foreground">{current.hospital}</p>
-              <DoctorDetails doc={current} />
-              <div className="flex justify-center gap-1 border-t pt-3">
-                <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => { setChartOpen(false); setSafety({ mode: "report", doc: current }); }}>
-                  <Flag /> Report
-                </Button>
-                <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => { setChartOpen(false); setSafety({ mode: "block", doc: current }); }}>
-                  <Prohibit /> Block
-                </Button>
-              </div>
-            </div>
-            <div className="sticky bottom-0 flex items-center justify-center gap-4 border-t bg-card/95 py-3 backdrop-blur">
-              <Button variant="outline" className="size-12 rounded-full [&_svg:not([class*='size-'])]:size-5" aria-label="Discharge (pass)" onClick={() => { setChartOpen(false); swipe("left"); }}>
-                <X weight="bold" />
-              </Button>
-              <Button className="size-14 rounded-full bg-amber-400 text-neutral-900 hover:bg-amber-400/90 [&_svg:not([class*='size-'])]:size-6" aria-label="Defibrillate: Super Like" onClick={() => { setChartOpen(false); swipe("super"); }}>
-                <Lightning weight="fill" />
-              </Button>
-              <Button variant="secondary" className="size-12 rounded-full text-primary [&_svg:not([class*='size-'])]:size-5" aria-label="Prescribe (like)" onClick={() => { setChartOpen(false); swipe("right"); }}>
-                <Pill weight="fill" />
-              </Button>
-            </div>
-          </>
-        ) : null}
-      </Modal>
 
       <Modal open={radarOpen} onClose={() => setRadarOpen(false)} labelledBy="radar-title" className="text-center">
         <div className="mx-auto grid size-16 place-items-center rounded-full bg-primary/10 text-primary">
@@ -792,11 +731,23 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
       <Modal open={!!match} onClose={() => setMatch(null)} labelledBy="match-title" className="text-center">
         {match ? (
           <>
-            <StatusPill status="cancelled" className="mx-auto">Code pink: resuscitation match</StatusPill>
-            <h2 id="match-title" className="mt-4 text-h5 font-extrabold">It&apos;s a clinical match!</h2>
-            <p className="mt-2 text-body-sm text-muted-foreground">
-              Your vital signs synchronized. Both STR licenses have been cross-verified for pureblood offspring potential.
-            </p>
+            {me.intent === "connect" ? (
+              <>
+                <StatusPill status="upcoming" className="mx-auto">Colleague connected</StatusPill>
+                <h2 id="match-title" className="mt-4 text-h5 font-extrabold">New colleague on your ward!</h2>
+                <p className="mt-2 text-body-sm text-muted-foreground">
+                  You both swiped right. Say hi, talk shop, swap referral tips. Write within 24 hours or the connection flatlines.
+                </p>
+              </>
+            ) : (
+              <>
+                <StatusPill status="cancelled" className="mx-auto">Code pink: resuscitation match</StatusPill>
+                <h2 id="match-title" className="mt-4 text-h5 font-extrabold">It&apos;s a clinical match!</h2>
+                <p className="mt-2 text-body-sm text-muted-foreground">
+                  Your vital signs synchronized. Both STR licenses have been cross-verified for pureblood offspring potential.
+                </p>
+              </>
+            )}
             <div className="my-6 flex items-center justify-center">
               <DoctorPhoto src={me.photo_url} alt="You" size={80} className="ring-4 ring-card" />
               <span className="z-10 -mx-3 grid size-10 place-items-center rounded-full bg-primary text-primary-foreground">
@@ -809,7 +760,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
             </div>
             <div className="grid gap-2">
               <Button asChild>
-                <Link href={`/chat/${match.matchId}`}>Initiate resuscitation (chat now)</Link>
+                <Link href={`/chat/${match.matchId}`}>{me.intent === "connect" ? "Say hi now" : "Initiate resuscitation (chat now)"}</Link>
               </Button>
               <Button variant="ghost" onClick={() => setMatch(null)}>Keep screening doctors</Button>
             </div>

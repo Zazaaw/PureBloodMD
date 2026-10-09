@@ -1,7 +1,7 @@
 import { PageHeaderSkeleton } from "@/components/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 
-/** Mirrors Triage: filter column (desktop), then the deck card: photo and the action row, meta lines. */
+/** Mirrors Triage: filter column (desktop), then the deck card: photo, action row, full chart, meta lines. */
 export default function Loading() {
   return (
     <main className="pb-dock mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:pb-10" aria-busy="true" aria-label="Loading doctors">
@@ -39,7 +39,13 @@ export default function Loading() {
               <Skeleton className="size-14 rounded-full" />
               <Skeleton className="size-16 rounded-full" />
               <Skeleton className="size-14 rounded-full" />
-              <Skeleton className="size-11 rounded-full" />
+            </div>
+            <div className="space-y-4 border-t p-5">
+              <Skeleton className="h-12 rounded-lg" />
+              <div className="grid grid-cols-3 gap-2">
+                <Skeleton className="h-16 rounded-lg" /><Skeleton className="h-16 rounded-lg" /><Skeleton className="h-16 rounded-lg" />
+              </div>
+              <Skeleton className="h-24 rounded-lg" />
             </div>
           </div>
           <Skeleton className="mx-auto mt-3 h-3.5 w-64 max-w-full" />
