@@ -14,7 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     );
   }
 
-  const { supabase, profile } = await requireProfile();
+  const { supabase, profile, flags } = await requireProfile();
   const { count } = await supabase
     .from("matches")
     .select("id", { count: "exact", head: true })
@@ -22,7 +22,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <PresenceProvider meId={profile.id}>
-      <AppNav country={profile.country ?? "ID"} name={profile.display_name} photo={profile.photo_url} isVip={profile.is_vip} consults={count ?? 0} />
+      <AppNav country={profile.country ?? "ID"} name={profile.display_name} photo={profile.photo_url} isVip={profile.is_vip} vipEnabled={flags.vipEnabled} consults={count ?? 0} />
       <div className="lg:pl-24">
         {profile.deactivated_at ? <PausedBanner /> : null}
         {children}

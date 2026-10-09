@@ -13,11 +13,14 @@ import { PASSPORT_TABS, type PassportTab, type Tile } from "./tabs";
  * tab switch; the active tab is mirrored in ?tab= for deep links.
  */
 export function PassportShell({
+  tabs = PASSPORT_TABS,
   initialTab,
   me,
   status,
   panels,
 }: {
+  /** Tabs to show (VIP is hidden while the program is switched off). */
+  tabs?: readonly PassportTab[];
   initialTab: PassportTab;
   me: { name: string; photo: string; subtitle: string; verified: boolean };
   status: { verification: Tile; vip: Tile; photos: Tile };
@@ -33,7 +36,7 @@ export function PassportShell({
     window.history.replaceState(null, "", url);
   }
 
-  const icons = { Badge: SealCheck, VIP: Crown, Profile: Images } as const;
+  const icons: Record<string, typeof SealCheck> = { Badge: SealCheck, Plan: Crown, Photos: Images };
 
   return (
     <>
@@ -51,7 +54,7 @@ export function PassportShell({
 
         <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:flex-1">
           {[status.verification, status.vip, status.photos].map((t) => {
-            const Icon = icons[t.tab as keyof typeof icons] ?? SealCheck;
+            const Icon = icons[t.label] ?? SealCheck;
             return (
               <button
                 key={t.label}
@@ -80,11 +83,11 @@ export function PassportShell({
 
       <div className="sticky top-0 z-30 -mx-4 mt-6 bg-background/85 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6">
         <div role="tablist" aria-label="Passport sections">
-          <PillTabs tabs={PASSPORT_TABS} value={tab} onChange={(t) => go(t as PassportTab)} />
+          <PillTabs tabs={tabs} value={tab} onChange={(t) => go(t as PassportTab)} />
         </div>
       </div>
 
-      {PASSPORT_TABS.map((t) => (
+      {tabs.map((t) => (
         <div key={t} role="tabpanel" aria-label={t} hidden={tab !== t} className="mt-4">
           {panels[t]}
         </div>

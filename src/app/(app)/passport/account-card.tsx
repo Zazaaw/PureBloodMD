@@ -13,7 +13,7 @@ import { createClient } from "@/lib/supabase/client";
 const CONFIRM_WORD = "DELETE";
 
 /** Pause (hide everywhere, reversible) or permanently delete the account. */
-export function AccountCard({ userId, paused }: { userId: string; paused: boolean }) {
+export function AccountCard({ userId, paused, vipEnabled }: { userId: string; paused: boolean; vipEnabled: boolean }) {
   const router = useRouter();
   const supabase = createClient();
   const [pending, start] = useTransition();
@@ -94,8 +94,8 @@ export function AccountCard({ userId, paused }: { userId: string; paused: boolea
         <ul className="mt-3 space-y-1.5 text-body-sm text-muted-foreground">
           <li>You disappear from everyone&apos;s triage and consults.</li>
           <li>Nobody can message you, and you can&apos;t message anyone.</li>
-          <li>Consults still flatline after 24 hours without a message.</li>
-          <li>Your VIP keeps running. Cancel it in the VIP tab if you want.</li>
+          <li>Consults still end on schedule: 24 hours if nobody has written, 30 days of silence otherwise.</li>
+          {vipEnabled ? <li>Your VIP keeps running. Cancel it in the VIP tab if you want.</li> : null}
         </ul>
         <div className="mt-6 grid gap-2 sm:grid-cols-2">
           <Button onClick={() => setActive(false)} disabled={pending}>{pending ? "Pausing…" : "Deactivate"}</Button>

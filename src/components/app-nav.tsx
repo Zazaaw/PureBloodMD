@@ -22,6 +22,8 @@ type Props = {
   name: string;
   photo: string;
   isVip: boolean;
+  /** VIP program switch (app_config). Off during launch: no crown, no plans dialog. */
+  vipEnabled: boolean;
   consults: number;
 };
 
@@ -49,7 +51,7 @@ function ActiveDot({ vertical }: { vertical: boolean }) {
  * desktop, a floating bottom dock on phones (hidden inside a chat room so the
  * composer gets the full height).
  */
-export function AppNav({ country, name, photo, isVip, consults }: Props) {
+export function AppNav({ country, name, photo, isVip, vipEnabled, consults }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
@@ -90,6 +92,7 @@ export function AppNav({ country, name, photo, isVip, consults }: Props) {
 
       <span aria-hidden className={vertical ? "my-0.5 h-px w-8 bg-border" : "mx-0.5 h-8 w-px bg-border"} />
 
+      {vipEnabled ? (
       <DockIcon className="group hover:bg-accent">
         <button
           type="button"
@@ -101,6 +104,7 @@ export function AppNav({ country, name, photo, isVip, consults }: Props) {
         </button>
         {vertical ? <Tip>{isVip ? "VIP subscription" : "VIP plans"}</Tip> : null}
       </DockIcon>
+      ) : null}
 
       <DockIcon className="group hover:bg-accent">
         <button
@@ -152,7 +156,7 @@ export function AppNav({ country, name, photo, isVip, consults }: Props) {
         {renderDock(false)}
       </nav>
 
-      <VipDialog open={vipOpen} country={country} onClose={() => setVipOpen(false)} onChange={() => router.refresh()} />
+      {vipEnabled ? <VipDialog open={vipOpen} country={country} onClose={() => setVipOpen(false)} onChange={() => router.refresh()} /> : null}
     </>
   );
 }

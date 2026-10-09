@@ -32,9 +32,9 @@ const fmtDate = (d: string) => new Date(d).toLocaleDateString("en-GB", { day: "n
 
 export default async function PassportPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const { tab } = await searchParams;
-  const initialTab = PASSPORT_TABS.find((t) => t.toLowerCase() === tab?.toLowerCase()) ?? "Profile";
-
-  const { supabase, profile, userId, subscription } = await requireProfile();
+  const { supabase, profile, userId, subscription, flags } = await requireProfile();
+  const tabs = flags.vipEnabled ? PASSPORT_TABS : PASSPORT_TABS.filter((t) => t !== "VIP");
+  const initialTab = tabs.find((t) => t.toLowerCase() === tab?.toLowerCase()) ?? "Profile";
   const [{ data: cred }, { data: blocked }, { data: request }] = await Promise.all([
     supabase.from("credentials").select("*").eq("profile_id", profile.id).maybeSingle<Credentials>(),
     supabase.rpc("get_blocked"),
@@ -57,7 +57,9 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
       : request?.status === "pending"
         ? { tab: "Badge", label: "Badge", value: "In review", hint: "1 to 2 working days", tone: "warn" }
         : { tab: "Badge", label: "Badge", value: "Not verified", hint: "Get the blue badge", tone: "todo" },
-    vip: subscription?.active
+    vip: !flags.vipEnabled
+      ? { tab: "Settings", label: "Plan", value: "Free launch", hint: `${flags.dailySwipeLimit} swipes, 1 Super Like a day`, tone: "done" }
+      : subscription?.active
       ? { tab: "VIP", label: "Plan", value: cancelling ? "VIP, ending" : "VIP", hint: `${cancelling ? "Ends" : "Renews"} ${fmtDate(subscription.period_end)}`, tone: cancelling ? "warn" : "done" }
       : { tab: "VIP", label: "Plan", value: "Free", hint: "10 bubbles per consult", tone: "todo" },
     photos: {
@@ -70,7 +72,7 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
   };
 
   const panels: Record<PassportTab, React.ReactNode> = {
-    Profile: <PassportForm userId={userId} profile={profile} />,
+    Profile: <PassportForm userId={userId} profile={profile} countries={flags.activeCountries} />,
 
     Badge: (
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
@@ -171,7 +173,7 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
         <Card>
           <CardHeader>
             <CardTitle>Sign out</CardTitle>
-            <CardDescription>Your matches wait for you. Unless 24 hours pass in silence: then the consult flatlines.</CardDescription>
+            <CardDescription>Your matches wait for you. A new match flatlines if nobody writes within 24 hours; a consult ends after 30 days of silence.</CardDescription>
           </CardHeader>
           <CardContent>
             <form action="/auth/signout" method="post">
@@ -179,7 +181,7 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
             </form>
           </CardContent>
         </Card>
-        <AccountCard userId={userId} paused={Boolean(profile.deactivated_at)} />
+        <AccountCard userId={userId} paused={Boolean(profile.deactivated_at)} vipEnabled={flags.vipEnabled} />
       </div>
     ),
   };
@@ -194,6 +196,7 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
         <PassportShell
           initialTab={initialTab}
           me={{ name: profile.display_name, photo: profile.photo_url, subtitle: `${profile.specialty_title} · ${profile.hospital} · ${countryName(profile.country ?? "ID")}`, verified }}
+          tabs={tabs}
           status={status}
           panels={panels}
         />

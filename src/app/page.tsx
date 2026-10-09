@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getAppFlags, type AppFlags } from "@/lib/flags";
 import Image from "next/image";
 import { ChatCircleDots, Cards, Crown } from "@phosphor-icons/react/dist/ssr";
 import { Logo } from "@/components/logo";
@@ -13,25 +14,37 @@ const HERO_PHOTOS = [
   { src: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80", alt: "Dr. Nadya Kartika, psychiatrist" },
 ];
 
-const RULES = [
-  {
-    icon: Cards,
-    title: "Triage, then defibrillate",
-    body: "Swipe through 1,500+ doctors in 34 countries and 16 specialties, from cardiologists to koas. Right swipe delivers a 200-joule shock of interest.",
-  },
-  {
-    icon: ChatCircleDots,
-    title: "Female doctors make the first incision",
-    body: "In every female x male match, she texts first. He waits in asystole until CPR begins.",
-  },
-  {
-    icon: Crown,
-    title: "10 free bubbles per consult",
-    body: "After that, the prescription quota is depleted. VIP plans start at Rp 50.000 or US$20 a month. Cancel anytime.",
-  },
-];
+function rules(flags: AppFlags) {
+  const worldwide = flags.activeCountries.length > 1;
+  return [
+    {
+      icon: Cards,
+      title: "Triage, then defibrillate",
+      body: worldwide
+        ? "Swipe through 1,500+ doctors in 34 countries and 16 specialties, from cardiologists to koas. Right swipe delivers a 200-joule shock of interest."
+        : "Swipe through 480+ doctors across Indonesia in 16 specialties, from cardiologists to koas. Right swipe delivers a 200-joule shock of interest.",
+    },
+    {
+      icon: ChatCircleDots,
+      title: "Female doctors make the first incision",
+      body: "In every female x male match, she texts first. Nobody writes within 24 hours? The consult flatlines, and you get a second chance in triage.",
+    },
+    flags.vipEnabled
+      ? {
+          icon: Crown,
+          title: "10 free bubbles per consult",
+          body: "After that, the prescription quota is depleted. VIP plans start at Rp 50.000 or US$20 a month. Cancel anytime.",
+        }
+      : {
+          icon: Crown,
+          title: "Free during launch",
+          body: `${flags.dailySwipeLimit} swipes and 1 Super Like a day, unlimited chat. No subscription, no paywall, just rounds.`,
+        },
+  ];
+}
 
-export default function Landing() {
+export default async function Landing() {
+  const RULES = rules(await getAppFlags());
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6">
       <header className="flex h-16 items-center justify-between">
