@@ -109,7 +109,7 @@ The comedy is part of the product. Every specialty has its own one-liners, bot d
 ### ✅ Verified badge
 The blue badge means a human reviewed **both** the doctor's ID (KTP or passport) and their medical license (STR/SIP, or a student card for medical students). Documents go to a private bucket that members can never read.
 
-- **Verification desk (`/admin`):** a developer-only dashboard. Admins are listed in `public.admin_emails`. It shows each request with the member's credentials and the three documents through short-lived signed links. **Approve** adds the badge; **Needs another look** sends the member a note.
+- **Verification (`/admin/verification`):** a developer-only dashboard. Admins are listed in `public.admin_emails`. It shows each request with the member's credentials and the three documents through short-lived signed links. **Approve** adds the badge; **Needs another look** sends the member a note.
 - **Emails from the database:** pg_net calls Resend directly, so the web app needs no extra secrets. Members get three emails:
   - "being evaluated, verdict within 3 days" when they submit
   - "Congrats, you're verified" when approved
@@ -130,6 +130,20 @@ PureBloodMD is in its free launch phase, controlled by switches in the `app_conf
 update public.app_config set value = 'true' where key = 'vip_enabled';                  -- bring VIP back
 update public.app_config set value = '["ID","MY","SG"]' where key = 'active_countries';  -- open more countries
 ```
+
+### 🛠️ Admin dashboard (`/admin`)
+Only accounts listed in `public.admin_emails` can open it; everyone else gets a 404, and every admin function in the database checks the same list.
+
+| Section | What you can do |
+|---|---|
+| **Overview** | Members, active today, verified share, pending verifications, open reports, bans, matches/messages/EMR today, 14-day sign-up chart, romance vs connect |
+| **Verification** | Compare ID, selfie and license side by side; approve (blue badge + email) or send back with a note (email) |
+| **Reports** | Reporter and reported member, reason (severe ones in red), details, screenshot evidence, the saved chat copy; mark reviewing, dismiss, resolve or ban |
+| **Users** | Search by name, email or hospital; filter verified / unverified / reported / banned / paused; open a member to see email, sign-ins, credentials, documents, reports, EMR posts and moderation history; ban, unban, grant or revoke the badge |
+| **EMR** | Newest member posts and replies with photos; remove a post |
+| **Settings** | Launch switches (VIP, daily swipe limit, open countries), add or remove admins, and the audit log of every admin action |
+
+**Bans** hide the member everywhere, block sign-in (`auth.users.banned_until`), close their open reports and email them the reason (`supabase/templates/account-banned.html`). Banned members who still have a session land on `/banned`.
 
 ### 👑 VIP (switched off during launch)
 | Plan | Indonesia | Other countries |
@@ -206,10 +220,10 @@ cp .env.example .env.local
 
 ### 4. Database
 ```bash
-# Apply migrations in order (0001 ... 0010) through the Supabase Management API
+# Apply migrations in order (0001 ... 0014) through the Supabase Management API
 npm run supabase:push -- sql 0001
 npm run supabase:push -- sql 0002
-# ...up to 0010
+# ...up to 0014
 
 # Add the bot doctors: 480 in Indonesia + 1,056 across 33 more countries
 npm run db:seed
@@ -252,7 +266,7 @@ src/
   lib/                 constants, auth, captcha, stickers, legal text
   proxy.ts             session refresh + route protection
 supabase/
-  migrations/          0001 to 0010: schema, RLS, triggers, RPCs
+  migrations/          0001 to 0014: schema, RLS, triggers, RPCs
   templates/           confirmation email
   seed-doctors*.json   bot roster
 scripts/               seed, cleanup, supabase push
