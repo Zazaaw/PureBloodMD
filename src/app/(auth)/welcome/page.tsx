@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, Cards, ChatCircleDots, IdentificationCard, SealCheck } from "@phosphor-icons/react/dist/ssr";
+import { InstallApp } from "@/components/pwa";
 import { Button } from "@/components/ui/button";
 import { getUserId } from "@/lib/auth";
 import { getAppFlags } from "@/lib/flags";
@@ -71,6 +72,8 @@ export default async function WelcomePage() {
         </Link>
       </Button>
       <p className="mt-3 text-caption text-muted-foreground">You&apos;re signed in on this device. No need to log in again.</p>
+
+      <InstallApp mobileOnly title="Tip: add it to your home screen" className="mt-6" />
     </div>
   );
 }

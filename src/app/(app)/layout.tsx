@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { FlashToast } from "@/components/flash-toast";
 import { PausedBanner } from "@/components/paused-banner";
 import { PresenceProvider } from "@/components/presence";
+import { InstallNudge } from "@/components/pwa";
 import { SetupNotice } from "@/components/setup-notice";
 import { requireProfile } from "@/lib/auth";
 import { getSupabaseEnv } from "@/lib/env";
@@ -31,6 +32,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         {profile.deactivated_at ? <PausedBanner /> : null}
         {children}
       </div>
+      <InstallNudge />
     </PresenceProvider>
   );
 }
