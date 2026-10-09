@@ -7,7 +7,8 @@ import BlurFade from "@/components/effects/blur-fade";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import { PostCard } from "@/components/emr/post-card";
 import { ProfileActions } from "@/components/emr/profile-actions";
-import { PROFILE_TABS, ProfileTabs, type ProfileTab } from "@/components/emr/profile-tabs";
+import { PROFILE_TABS, type ProfileTab } from "@/components/emr/profile-tab-list";
+import { ProfileTabs } from "@/components/emr/profile-tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/ui/page-header";
@@ -58,6 +59,20 @@ export default async function DoctorProfilePage({
   // Blocked either way, or paused: the profile simply does not exist for you.
   if (!doc || blocked || (doc.deactivated_at && !isMe)) notFound();
 
+  // Reposts: newest repost first, posts fetched in one go and put back in that order.
+  const reposted = async () => {
+    const { data: rp } = await supabase
+      .from("emr_reposts")
+      .select("post_id, created_at")
+      .eq("profile_id", id)
+      .order("created_at", { ascending: false })
+      .limit(EMR_PAGE);
+    const ids = (rp ?? []).map((r: { post_id: string }) => r.post_id);
+    if (!ids.length) return { data: [] };
+    const { data } = await supabase.from("emr_posts").select(EMR_SELECT).in("id", ids).is("deleted_at", null);
+    const byId = new Map(((data ?? []) as unknown as { id: string }[]).map((p) => [p.id, p]));
+    return { data: ids.map((x) => byId.get(x)).filter(Boolean) };
+  };
   const own = () => supabase.from("emr_posts").select(EMR_SELECT).eq("author_id", id).is("deleted_at", null).order("created_at", { ascending: false });
   const count = (replies: boolean) => {
     const q = supabase.from("emr_posts").select("id", { count: "exact", head: true }).eq("author_id", id).is("deleted_at", null);
@@ -76,6 +91,7 @@ export default async function DoctorProfilePage({
           .maybeSingle<{ id: string }>(),
     tab === "Threads" ? own().is("parent_id", null).limit(EMR_PAGE)
       : tab === "Replies" ? own().not("parent_id", "is", null).limit(EMR_PAGE)
+      : tab === "Reposts" ? reposted()
       : own().limit(100),
   ]);
 
@@ -190,7 +206,9 @@ export default async function DoctorProfilePage({
             <Empty>
               {tab === "Threads"
                 ? isMe ? "You have not posted a thread yet. Your chart is still blank." : "No threads yet. Quiet on the ward."
-                : isMe ? "Your replies to other doctors show up here." : "No replies yet."}
+                : tab === "Reposts"
+                  ? isMe ? "Posts you repost show up here." : "No reposts yet."
+                  : isMe ? "Your replies to other doctors show up here." : "No replies yet."}
             </Empty>
           )}
         </div>

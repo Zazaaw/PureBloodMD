@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { ChatCircle, Flag, HeartStraight, SealCheck, Trash } from "@phosphor-icons/react";
+import { ChatCircle, Flag, HeartStraight, Repeat, SealCheck, Trash } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import { SafetyDialog } from "@/components/safety-dialog";
@@ -34,6 +34,8 @@ export function PostCard({ post, me, variant = "feed", inlineReply, replyingTo, 
   const router = useRouter();
   const [liked, setLiked] = useState(post.liked);
   const [likes, setLikes] = useState(post.like_count);
+  const [reposted, setReposted] = useState(post.reposted);
+  const [reposts, setReposts] = useState(post.repost_count ?? 0);
   const [replying, setReplying] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -56,6 +58,23 @@ export function PostCard({ post, me, variant = "feed", inlineReply, replyingTo, 
       }
       setLiked(row.liked);
       setLikes(row.like_count);
+    });
+  };
+
+  const toggleRepost = () => {
+    setReposted(!reposted);
+    setReposts((n) => n + (reposted ? -1 : 1));
+    startTransition(async () => {
+      const { data, error } = await createClient().rpc("toggle_emr_repost", { p_post: post.id });
+      const row = (data as { reposted: boolean; repost_count: number }[] | null)?.[0];
+      if (error || !row) {
+        setReposted(reposted);
+        setReposts(post.repost_count ?? 0);
+        return void toast.error("Could not repost. Try again.");
+      }
+      setReposted(row.reposted);
+      setReposts(row.repost_count);
+      toast.success(row.reposted ? "Reposted to your profile." : "Repost removed.");
     });
   };
 
@@ -149,6 +168,26 @@ export function PostCard({ post, me, variant = "feed", inlineReply, replyingTo, 
               <ChatCircle className="size-5" />
               {post.reply_count > 0 ? <span className="tabular-nums">{post.reply_count}</span> : null}
             </Link>
+          )}
+
+          {mine ? (
+            reposts > 0 ? (
+              <span className="flex h-9 items-center gap-1.5 px-2 text-body-sm" aria-label={`${reposts} reposts`}>
+                <Repeat className="size-5" /> <span className="tabular-nums">{reposts}</span>
+              </span>
+            ) : null
+          ) : (
+            <button
+              type="button"
+              onClick={toggleRepost}
+              disabled={pending}
+              aria-pressed={reposted}
+              aria-label={reposted ? "Undo repost" : "Repost"}
+              className={cn("flex h-9 items-center gap-1.5 rounded-full px-2 text-body-sm transition-colors hover:bg-accent", reposted && "text-emerald-500")}
+            >
+              <Repeat weight={reposted ? "bold" : "regular"} className="size-5" />
+              {reposts > 0 ? <span className="tabular-nums">{reposts}</span> : null}
+            </button>
           )}
 
           {mine ? (

@@ -131,12 +131,15 @@ export type EmrPost = {
   images: EmrImage[];
   reply_count: number;
   like_count: number;
+  repost_count: number;
   /** Set when the author deleted a post that already had replies. */
   deleted_at: string | null;
   created_at: string;
   author: EmrAuthor;
   /** Filled in by hydratePosts. */
   liked: boolean;
+  /** Filled in by hydratePosts: I reposted it. */
+  reposted: boolean;
   /** Signed URLs, same order as images. */
   urls: string[];
 };

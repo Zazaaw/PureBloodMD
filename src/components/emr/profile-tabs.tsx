@@ -3,8 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import PillTabs from "@/components/ui/pill-tabs";
 
-export const PROFILE_TABS = ["Threads", "Replies", "Photos"] as const;
-export type ProfileTab = (typeof PROFILE_TABS)[number];
+import { PROFILE_TABS, type ProfileTab } from "./profile-tab-list";
 
 /** Kit PillTabs driving ?tab=, so each tab is a shareable, server-rendered URL. */
 export function ProfileTabs({ value }: { value: ProfileTab }) {
