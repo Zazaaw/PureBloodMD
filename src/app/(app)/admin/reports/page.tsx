@@ -27,7 +27,7 @@ const TABS = [
   { key: "actioned", label: "Actioned" },
   { key: "dismissed", label: "Dismissed" },
 ] as const;
-const SEVERE = new Set(["sexual_harassment", "unsolicited_explicit_content", "threats", "underage", "scam_or_spam", "self_harm"]);
+const SEVERE = new Set(["sexual_harassment", "unsolicited_explicit_content", "threats", "underage", "scam_or_spam", "self_harm", "impersonation"]);
 const reasonLabel = (r: string) => REPORT_REASONS.find((x) => x.value === r)?.label ?? r;
 const fmt = (d: string) => new Date(d).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
