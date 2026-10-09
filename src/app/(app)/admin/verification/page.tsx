@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { FilePdf } from "@phosphor-icons/react/dist/ssr";
 import BlurFade from "@/components/effects/blur-fade";
 import { DoctorPhoto } from "@/components/doctor-photo";
@@ -26,8 +25,6 @@ const fmt = (d: string) => new Date(d).toLocaleString("en-GB", { day: "numeric",
 /** Developer dashboard: check ID + license, then approve (blue badge + email) or reject with a note (email). */
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const { supabase } = await requireProfile();
-  const { data: isAdmin } = await supabase.rpc("is_admin");
-  if (!isAdmin) notFound();
 
   const { status: raw } = await searchParams;
   const status = STATUSES.find((s) => s === raw) ?? "pending";
@@ -46,10 +43,9 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const urlFor = new Map((signed ?? []).map((s) => [s.path, s.signedUrl ?? undefined]));
 
   return (
-    <main className="pb-dock mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:pb-10">
-      <BlurFade>
+    <BlurFade>
         <PageHeader
-          title="Verification desk"
+          title="Verification"
           subtitle="Check that the ID, the selfie and the medical license belong to the same real doctor. Approving adds the blue badge and emails them."
         />
 
@@ -57,7 +53,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           {STATUSES.map((s) => (
             <Link
               key={s}
-              href={s === "pending" ? "/admin" : `/admin?status=${s}`}
+              href={s === "pending" ? "/admin/verification" : `/admin/verification?status=${s}`}
               aria-current={s === status ? "page" : undefined}
               className={cn(
                 "whitespace-nowrap rounded-full px-5 py-1.5 text-sm font-medium capitalize transition-all duration-300",
@@ -144,7 +140,6 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
             ))}
           </ul>
         )}
-      </BlurFade>
-    </main>
+    </BlurFade>
   );
 }
