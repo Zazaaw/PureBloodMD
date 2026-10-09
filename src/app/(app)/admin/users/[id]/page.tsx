@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowSquareOut, FilePdf, SealCheck } from "@phosphor-icons/react/dist/ssr";
 import BlurFade from "@/components/effects/blur-fade";
 import { DoctorPhoto } from "@/components/doctor-photo";
+import { DotPattern } from "@/components/effects/dot-pattern";
+import { FounderBadge } from "@/components/founder-badge";
 import { StatusPill } from "@/components/status-pill";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,13 +52,16 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
     <BlurFade>
       <Link href="/admin/users" className="mb-4 inline-flex items-center gap-1.5 text-body-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> All users</Link>
 
-      <Card>
-        <CardContent className="flex flex-wrap items-start gap-5 p-5 sm:p-6">
-          <DoctorPhoto src={p.photo_url} fallback={p.photo_fallback_url} alt="" size={88} className="size-22 shrink-0 rounded-xl" />
+      <Card className="relative overflow-hidden">
+        <DotPattern width={18} height={18} cr={1} className="text-foreground/[0.06] [mask-image:linear-gradient(to_left,white,transparent_60%)]" />
+        <span aria-hidden className={`absolute -right-20 -top-20 size-64 rounded-full blur-3xl ${p.banned_at ? "bg-red-500/15" : "bg-primary/10"}`} />
+        <CardContent className="relative flex flex-wrap items-start gap-5 p-5 sm:p-6">
+          <DoctorPhoto src={p.photo_url} fallback={p.photo_fallback_url} alt="" size={88} className="size-22 shrink-0 rounded-xl ring-4 ring-background shadow-md" />
           <div className="min-w-0 flex-1 space-y-1">
             <h1 className="flex flex-wrap items-center gap-2 text-h5 font-bold">
               {p.display_name}
               {verified ? <SealCheck weight="fill" className="size-5 text-sky-500" aria-label="Verified" /> : null}
+              {p.is_founder ? <FounderBadge /> : null}
             </h1>
             <p className="text-body-sm text-muted-foreground">{p.specialty_title} ({SPECIALTIES[p.specialty]?.code}) · {p.hospital} · {countryName(p.country ?? "ID")}</p>
             <p className="text-body-sm break-all">{d.email ?? "No email"} {d.email_confirmed_at ? <StatusPill status="completed">email confirmed</StatusPill> : <StatusPill status="pending">email unconfirmed</StatusPill>}</p>

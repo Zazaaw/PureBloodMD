@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Flag, SealCheck } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, ChatCircleDots, ClipboardText, Flag, HeartStraight, Prohibit, SealCheck, UserPlus, Users } from "@phosphor-icons/react/dist/ssr";
 import BlurFade from "@/components/effects/blur-fade";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import { StatusPill } from "@/components/status-pill";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import PageHeader from "@/components/ui/page-header";
 import { requireProfile } from "@/lib/auth";
 import { REPORT_REASONS } from "@/lib/constants";
 import { timeAgo } from "@/lib/time";
+import { cn } from "@/lib/utils";
+import { AdminHero } from "./hero";
 
 export const metadata: Metadata = { title: "Admin" };
 
@@ -22,7 +23,7 @@ const reasonLabel = (r: string) => REPORT_REASONS.find((x) => x.value === r)?.la
 
 /** Admin home: the numbers that matter, and what is waiting for a human. */
 export default async function AdminOverview() {
-  const { supabase } = await requireProfile();
+  const { supabase, profile } = await requireProfile();
   const [{ data: stats }, { data: pending }, { data: reports }] = await Promise.all([
     supabase.rpc("admin_stats"),
     supabase.rpc("admin_list_verifications", { p_status: "pending" }),
@@ -32,46 +33,69 @@ export default async function AdminOverview() {
   const peak = Math.max(1, ...s.signups_14d.map((d) => d.n));
 
   const tiles = [
-    { label: "Members", value: s.users, hint: `+${s.new_7d} this week` },
-    { label: "Active today", value: s.active_24h, hint: "signed in, last 24h" },
-    { label: "Verified", value: s.verified, hint: `${s.users ? Math.round((s.verified / s.users) * 100) : 0}% of members` },
-    { label: "Pending verification", value: s.pending_verifications, hint: "waiting for review", href: "/admin/verification", alert: s.pending_verifications > 0 },
-    { label: "Open reports", value: s.open_reports, hint: "need a decision", href: "/admin/reports", alert: s.open_reports > 0 },
-    { label: "Banned", value: s.banned, hint: `${s.paused} paused by themselves`, href: "/admin/users?filter=banned" },
-    { label: "Matches today", value: s.matches_24h, hint: `${s.messages_24h} messages by members` },
-    { label: "EMR posts today", value: s.emr_posts_24h, hint: "by members", href: "/admin/emr" },
+    { label: "Members", value: s.users, hint: `+${s.new_7d} this week`, icon: Users, href: "/admin/users" },
+    { label: "New this week", value: s.new_7d, hint: "fresh passports", icon: UserPlus, href: "/admin/users" },
+    { label: "Verified", value: s.verified, hint: `${s.users ? Math.round((s.verified / s.users) * 100) : 0}% of members`, icon: SealCheck, href: "/admin/users?filter=verified" },
+    { label: "Pending verification", value: s.pending_verifications, hint: "waiting for review", href: "/admin/verification", alert: s.pending_verifications > 0, icon: SealCheck },
+    { label: "Open reports", value: s.open_reports, hint: "need a decision", href: "/admin/reports", alert: s.open_reports > 0, icon: Flag },
+    { label: "Banned", value: s.banned, hint: `${s.paused} paused by themselves`, href: "/admin/users?filter=banned", icon: Prohibit },
+    { label: "Matches today", value: s.matches_24h, hint: `${s.messages_24h} messages by members`, icon: HeartStraight },
+    { label: "EMR posts today", value: s.emr_posts_24h, hint: "by members", href: "/admin/emr", icon: ClipboardText },
   ];
 
   return (
     <BlurFade>
-      <PageHeader title="Overview" subtitle="Members, safety queues and activity at a glance." />
+      <AdminHero
+        name={profile.display_name}
+        founder={Boolean(profile.is_founder)}
+        queues={[
+          { href: "/admin/verification", label: s.pending_verifications === 1 ? "verification waiting" : "verifications waiting", n: s.pending_verifications },
+          { href: "/admin/reports", label: s.open_reports === 1 ? "open report" : "open reports", n: s.open_reports },
+        ]}
+        pulse={[
+          { label: "Members", value: s.users.toLocaleString("id-ID") },
+          { label: "Active 24h", value: s.active_24h.toLocaleString("id-ID") },
+          { label: "Matches 24h", value: s.matches_24h.toLocaleString("id-ID") },
+          { label: "Messages 24h", value: s.messages_24h.toLocaleString("id-ID") },
+        ]}
+      />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {tiles.map((t) => {
-          const body = (
-            <>
-              <p className="text-overline font-semibold uppercase text-muted-foreground">{t.label}</p>
-              <p className={`mt-1 text-h4 font-bold tabular-nums ${t.alert ? "text-primary" : ""}`}>{t.value.toLocaleString("id-ID")}</p>
-              <p className="text-caption text-muted-foreground">{t.hint}</p>
-            </>
-          );
-          return t.href ? (
-            <Link key={t.label} href={t.href} className="rounded-xl border bg-card p-4 shadow-sm transition-colors duration-200 hover:bg-accent">{body}</Link>
-          ) : (
-            <div key={t.label} className="rounded-xl border bg-card p-4 shadow-sm">{body}</div>
+      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {tiles.map((t, i) => {
+          const Icon = t.icon;
+          return (
+            <BlurFade key={t.label} delay={i * 0.04}>
+              <Link
+                href={t.href ?? "/admin"}
+                className={cn(
+                  "group relative block h-full overflow-hidden rounded-xl border bg-card p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md",
+                  t.alert && "border-primary/40"
+                )}
+              >
+                {t.alert ? <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-primary to-primary/40" /> : null}
+                <span className="flex items-start justify-between gap-2">
+                  <span className="text-overline font-semibold uppercase text-muted-foreground">{t.label}</span>
+                  <span className={cn("grid size-8 shrink-0 place-items-center rounded-lg", t.alert ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground")}>
+                    <Icon weight={t.alert ? "fill" : "regular"} className="size-4" />
+                  </span>
+                </span>
+                <span className={cn("mt-2 block text-h4 font-bold tabular-nums", t.alert && "text-primary")}>{t.value.toLocaleString("id-ID")}</span>
+                <span className="block text-caption text-muted-foreground">{t.hint}</span>
+              </Link>
+            </BlurFade>
           );
         })}
       </div>
 
       <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <Card>
-          <CardHeader><CardTitle>Sign-ups, last 14 days</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><UserPlus className="size-5" /> Sign-ups, last 14 days</CardTitle></CardHeader>
           <CardContent>
             <div className="flex h-36 items-end gap-1.5" role="img" aria-label={`Sign-ups per day: ${s.signups_14d.map((d) => d.n).join(", ")}`}>
               {s.signups_14d.map((d) => (
                 <div key={d.day} className="flex flex-1 flex-col items-center gap-1">
                   <span className="text-caption tabular-nums text-muted-foreground">{d.n || ""}</span>
-                  <span className="w-full rounded-t-sm bg-primary/80" style={{ height: `${Math.max(2, (d.n / peak) * 100)}px` }} />
+                  <span className="w-full rounded-t-md bg-linear-to-t from-primary/60 to-primary transition-all duration-500" style={{ height: `${Math.max(2, (d.n / peak) * 100)}px` }} />
                 </div>
               ))}
             </div>
@@ -82,7 +106,7 @@ export default async function AdminOverview() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle>Here for</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><ChatCircleDots className="size-5" /> Here for</CardTitle></CardHeader>
           <CardContent className="space-y-3">
             {[["Romance", s.romance], ["Connect", s.connect]].map(([label, n]) => (
               <div key={label as string}>

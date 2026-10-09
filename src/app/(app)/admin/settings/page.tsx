@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { GearSix } from "@phosphor-icons/react/dist/ssr";
 import BlurFade from "@/components/effects/blur-fade";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import PageHeader from "@/components/ui/page-header";
 import { requireProfile } from "@/lib/auth";
+import { SectionHero } from "../hero";
 import { AdminsForm, LaunchSwitches } from "./settings-forms";
 
 export const metadata: Metadata = { title: "Admin settings" };
@@ -21,7 +22,18 @@ export default async function AdminSettingsPage() {
 
   return (
     <BlurFade>
-      <PageHeader title="Settings" subtitle="Switches take effect immediately, no redeploy. Every change is logged below." />
+      <SectionHero
+        icon={<GearSix weight="fill" />}
+        eyebrow="Control room"
+        title="Settings"
+        subtitle="Switches take effect immediately, no redeploy. Every change is logged below."
+        chips={[
+          { label: "VIP", value: c.vip_enabled ? "On" : "Off", tone: c.vip_enabled ? "ok" : "muted" },
+          { label: "swipes a day", value: c.daily_swipe_limit ?? 20, tone: "muted" },
+          { label: (c.active_countries ?? ["ID"]).length === 1 ? "country open" : "countries open", value: (c.active_countries ?? ["ID"]).length, tone: "muted" },
+          { label: "admins", value: (admins ?? []).length, tone: "muted" },
+        ]}
+      />
       <div className="grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <Card>
           <CardHeader><CardTitle>Launch switches</CardTitle><CardDescription>Stored in app_config, read by the app and enforced by the database.</CardDescription></CardHeader>

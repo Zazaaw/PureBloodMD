@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { MagnifyingGlass, SealCheck } from "@phosphor-icons/react/dist/ssr";
+import { MagnifyingGlass, SealCheck, Users } from "@phosphor-icons/react/dist/ssr";
 import BlurFade from "@/components/effects/blur-fade";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import { StatusPill } from "@/components/status-pill";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import PageHeader from "@/components/ui/page-header";
 import { requireProfile } from "@/lib/auth";
+import { SectionHero } from "../hero";
 import { countryName } from "@/lib/constants";
 import { timeAgo } from "@/lib/time";
 import { cn } from "@/lib/utils";
@@ -55,7 +55,13 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
 
   return (
     <BlurFade>
-      <PageHeader title="Users" subtitle={`${total.toLocaleString("id-ID")} ${filter === "all" ? "members" : filter}${q ? ` matching “${q}”` : ""}. Demo bots are not listed.`} />
+      <SectionHero
+        icon={<Users weight="fill" />}
+        eyebrow="Members"
+        title="Users"
+        subtitle={`Every real member (demo bots are hidden). Search, filter, open one to ban, unban or manage the badge.${q ? ` Matching “${q}”.` : ""}`}
+        chips={[{ label: filter === "all" ? "members" : filter, value: total.toLocaleString("id-ID"), tone: filter === "banned" || filter === "reported" ? "alert" : "muted" }]}
+      />
 
       <form action="/admin/users" className="mb-4 flex gap-2">
         {filter !== "all" ? <input type="hidden" name="filter" value={filter} /> : null}

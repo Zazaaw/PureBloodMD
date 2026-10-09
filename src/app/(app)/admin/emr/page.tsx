@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ImageSquare } from "@phosphor-icons/react/dist/ssr";
+import { ClipboardText, ImageSquare } from "@phosphor-icons/react/dist/ssr";
 import BlurFade from "@/components/effects/blur-fade";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import { StatusPill } from "@/components/status-pill";
-import PageHeader from "@/components/ui/page-header";
 import { requireProfile } from "@/lib/auth";
+import { SectionHero } from "../hero";
 import { timeAgo } from "@/lib/time";
 import { RpcButton } from "../ban-dialog";
 
@@ -29,9 +29,15 @@ export default async function AdminEmrPage({ searchParams }: { searchParams: Pro
 
   return (
     <BlurFade>
-      <PageHeader
+      <SectionHero
+        icon={<ClipboardText weight="fill" />}
+        eyebrow="Community"
         title="EMR moderation"
         subtitle="Newest posts and replies. Remove anything with patient data, harassment, scams or spam; it is logged."
+        chips={[
+          { label: "posts shown", value: rows.length, tone: "muted" },
+          { label: "with photos", value: rows.filter((p) => p.images.length).length, tone: "muted" },
+        ]}
         action={
           <Link href={members === "0" ? "/admin/emr" : "/admin/emr?members=0"} className="text-body-sm font-medium text-muted-foreground underline-offset-4 hover:underline">
             {members === "0" ? "Members only" : "Include demo bots"}

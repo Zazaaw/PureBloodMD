@@ -326,6 +326,7 @@
   --animate-heartbeat: heartbeat 1.1s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   --animate-float: float 7s ease-in-out infinite;
   --animate-ecg: ecg 1.6s linear infinite;
+  --animate-ecg-long: ecg-long 3.2s linear infinite;
 
   /* Defibrillator flash on a right swipe */
   @keyframes shock {
@@ -343,6 +344,12 @@
   /* The loader's ECG trace sweeping across (stroke-dasharray = path length). */
   @keyframes ecg {
     0%   { stroke-dashoffset: 320; }
+    100% { stroke-dashoffset: 0; }
+  }
+
+  /* Admin hero: a trace that runs the full width of the banner. */
+  @keyframes ecg-long {
+    0%   { stroke-dashoffset: 1400; }
     100% { stroke-dashoffset: 0; }
   }
 

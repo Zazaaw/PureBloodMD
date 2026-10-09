@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { FilePdf } from "@phosphor-icons/react/dist/ssr";
+import { FilePdf, SealCheck } from "@phosphor-icons/react/dist/ssr";
 import BlurFade from "@/components/effects/blur-fade";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import { StatusPill } from "@/components/status-pill";
 import { Card, CardContent } from "@/components/ui/card";
-import PageHeader from "@/components/ui/page-header";
 import { requireProfile } from "@/lib/auth";
+import { SectionHero } from "../hero";
 import { cn } from "@/lib/utils";
 import { ReviewActions } from "./review-actions";
 
@@ -44,9 +44,12 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
   return (
     <BlurFade>
-        <PageHeader
+        <SectionHero
+          icon={<SealCheck weight="fill" />}
+          eyebrow="Doctor check"
           title="Verification"
           subtitle="Check that the ID, the selfie and the medical license belong to the same real doctor. Approving adds the blue badge and emails them."
+          chips={[{ label: "waiting", value: pendingCount, tone: pendingCount ? "alert" : "ok" }, { label: `shown (${status})`, value: rows.length, tone: "muted" }]}
         />
 
         <nav aria-label="Status" className="mb-6 flex w-full items-center overflow-x-auto rounded-full border bg-card p-1 shadow-sm md:w-fit">

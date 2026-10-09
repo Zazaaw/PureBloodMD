@@ -18,11 +18,10 @@ const ITEMS = [
 export function AdminNav({ counts }: { counts: { verification: number; reports: number } }) {
   const pathname = usePathname();
   return (
-    <div className="mb-6">
-      <p className="mb-2 text-overline font-semibold uppercase text-muted-foreground">PureBloodMD admin</p>
+    <div className="sticky top-0 z-30 -mx-4 mb-6 border-b bg-background/80 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6">
       <nav
         aria-label="Admin sections"
-        className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden"
+        className="flex gap-1 overflow-x-auto rounded-full border bg-card/80 p-1 shadow-sm [scrollbar-width:none] md:w-fit [&::-webkit-scrollbar]:hidden"
       >
         {ITEMS.map((item) => {
           const active = item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
@@ -34,8 +33,8 @@ export function AdminNav({ counts }: { counts: { verification: number; reports: 
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-body-sm font-medium transition-colors duration-200",
-                active ? "border-foreground bg-foreground text-background" : "bg-card text-muted-foreground hover:text-foreground"
+                "flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-body-sm font-medium transition-all duration-200",
+                active ? "bg-foreground text-background shadow-sm" : "text-muted-foreground hover:bg-accent hover:text-foreground"
               )}
             >
               <Icon weight={active ? "fill" : "regular"} className="size-4" />

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, CheckCircle, Eye, XCircle } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, CheckCircle, Eye, Flag, XCircle } from "@phosphor-icons/react/dist/ssr";
 import BlurFade from "@/components/effects/blur-fade";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import { StatusPill } from "@/components/status-pill";
 import { Card, CardContent } from "@/components/ui/card";
-import PageHeader from "@/components/ui/page-header";
 import { requireProfile } from "@/lib/auth";
+import { SectionHero } from "../hero";
 import { REPORT_REASONS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { BanButton, RpcButton } from "../ban-dialog";
@@ -45,7 +45,17 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
 
   return (
     <BlurFade>
-      <PageHeader title="Reports" subtitle="Newest first. Severe reasons (harassment, threats, scams, underage) are outlined in red." />
+      <SectionHero
+        icon={<Flag weight="fill" />}
+        eyebrow="Safety"
+        title="Reports"
+        subtitle="Newest first. Severe reasons (harassment, threats, scams, underage) are outlined in red. Read the evidence, then dismiss, resolve or ban."
+        chips={[
+          { label: `${status} reports`, value: rows.length, tone: status === "open" && rows.length ? "alert" : "muted" },
+          { label: "severe", value: rows.filter((r) => SEVERE.has(r.reason)).length, tone: "alert" },
+          { label: "with evidence", value: rows.filter((r) => r.evidence?.length).length, tone: "muted" },
+        ]}
+      />
       <nav aria-label="Report status" className="mb-6 flex w-full items-center overflow-x-auto rounded-full border bg-card p-1 shadow-sm md:w-fit">
         {TABS.map((t) => (
           <Link
