@@ -74,9 +74,9 @@ export function ChatShell({ me, inbox, children }: { me: Me; inbox: InboxRow[]; 
   const deleteConsult = () =>
     startDelete(async () => {
       if (!toDelete) return;
-      const { error } = await createClient().rpc("unmatch_consult", { p_match: toDelete.match_id });
-      if (error) return void toast.error("Could not delete this consult. Try again.");
-      toast.success("Consult deleted for both of you.");
+      const { error } = await createClient().rpc("hide_consult", { p_match: toDelete.match_id });
+      if (error) return void toast.error("Could not delete this chat. Try again.");
+      toast.success("Chat deleted for you. You are still matched.");
       if (activeId === toDelete.match_id) router.push("/chat");
       setToDelete(null);
       router.refresh();
@@ -208,9 +208,9 @@ export function ChatShell({ me, inbox, children }: { me: Me; inbox: InboxRow[]; 
       <section className={cn("min-h-0 min-w-0", !activeId && "hidden lg:block")}>{children}</section>
 
       <Modal open={!!toDelete} onClose={() => setToDelete(null)} labelledBy="delete-consult-title">
-        <h2 id="delete-consult-title" className="text-lead font-bold">Delete this consult?</h2>
+        <h2 id="delete-consult-title" className="text-lead font-bold">Delete this chat?</h2>
         <p className="mt-2 text-body-sm text-muted-foreground">
-          The conversation with {toDelete?.other_name} is deleted for both of you and you are unmatched. This can&apos;t be undone.
+          The messages so far are removed for you only. You stay matched with {toDelete?.other_name}, and a new message brings the chat back. To end the match, use Unmatch inside the chat.
         </p>
         <div className="mt-6 grid gap-2 sm:grid-cols-2">
           <Button variant="destructive" onClick={deleteConsult} disabled={deleting}>{deleting ? "Deleting…" : "Delete"}</Button>
