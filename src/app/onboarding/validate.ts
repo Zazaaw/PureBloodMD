@@ -5,6 +5,7 @@ export type ProfileInput = {
   display_name: string;
   gender: Gender;
   seeking: Seeking;
+  intent: "romance" | "connect";
   age: number;
   specialty: SpecialtyKey;
   specialty_title: string;
@@ -84,6 +85,7 @@ export function parseProfile(fd: FormData, supabaseUrl: string, activeCountries:
     display_name: name,
     gender,
     seeking,
+    intent: str(fd, "intent") === "connect" ? "connect" : "romance",
     age,
     specialty,
     specialty_title,

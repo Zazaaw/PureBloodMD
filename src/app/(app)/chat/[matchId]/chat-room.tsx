@@ -24,7 +24,7 @@ import type { Gender, InboxRow, Message } from "@/lib/types";
 import { prepareImage } from "@/lib/image";
 import { cn } from "@/lib/utils";
 
-type Me = { id: string; gender: Gender; isVip: boolean; vipEnabled: boolean; name: string; country: string };
+type Me = { id: string; gender: Gender; intent: "romance" | "connect"; isVip: boolean; vipEnabled: boolean; name: string; country: string };
 
 function useCountdown(endsAt: number) {
   const [now, setNow] = useState(() => Date.now());
@@ -77,9 +77,10 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
   const inAsystole = bubbles === 0;
   const flatlined = (inAsystole && countdown.expired) || flatlinedByServer;
 
-  // Bumble protocol: in a female x male match, the female doctor opens.
-  const mustWait = bubbles === 0 && me.gender === "male" && room.other_gender === "female";
-  const herMove = bubbles === 0 && me.gender === "female" && room.other_gender === "male";
+  // Bumble protocol (romance only): in a female x male match, the female doctor opens.
+  const romance = me.intent === "romance";
+  const mustWait = romance && bubbles === 0 && me.gender === "male" && room.other_gender === "female";
+  const herMove = romance && bubbles === 0 && me.gender === "female" && room.other_gender === "male";
   const used = bubbles;
   // The 10-bubble cap only exists while the VIP program is switched on.
   const capped = me.vipEnabled && !isVip;

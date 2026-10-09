@@ -7,7 +7,7 @@ import { getAppFlags } from "@/lib/flags";
 import { TERMS_VERSION } from "@/lib/legal";
 import { createClient } from "@/lib/supabase/server";
 
-export type AuthState = { error?: string; notice?: string; email?: string; country?: string; unconfirmed?: boolean };
+export type AuthState = { error?: string; notice?: string; email?: string; country?: string; intent?: "romance" | "connect"; unconfirmed?: boolean };
 
 function readCredentials(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -48,7 +48,8 @@ export async function signUp(_: AuthState, formData: FormData): Promise<AuthStat
   if ("error" in creds) return creds;
 
   const country = String(formData.get("country") ?? "");
-  const back = { email: creds.email, country };
+  const intent: "romance" | "connect" = formData.get("intent") === "connect" ? "connect" : "romance";
+  const back = { email: creds.email, country, intent };
   if (formData.get("password_confirm") !== creds.password) {
     return { ...back, error: "Passwords don't match. Check for a typo." };
   }
@@ -76,7 +77,7 @@ export async function signUp(_: AuthState, formData: FormData): Promise<AuthStat
       emailRedirectTo: `${origin}/auth/confirm?next=/onboarding`,
       captchaToken: captchaBySupabase() ? token : undefined,
       // Proof of consent, stored on the auth user.
-      data: { terms_version: TERMS_VERSION, terms_accepted_at: new Date().toISOString(), age_confirmed_21: true, country },
+      data: { terms_version: TERMS_VERSION, terms_accepted_at: new Date().toISOString(), age_confirmed_21: true, country, intent },
     },
   });
   if (error) {

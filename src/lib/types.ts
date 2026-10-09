@@ -11,6 +11,8 @@ export type Profile = {
   display_name: string;
   gender: Gender;
   seeking: Seeking;
+  /** Dating ("romance") or meeting colleagues ("connect"). */
+  intent: "romance" | "connect";
   age: number;
   specialty: SpecialtyKey;
   specialty_title: string;

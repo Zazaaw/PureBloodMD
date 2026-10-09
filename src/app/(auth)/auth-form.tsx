@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState, useCallback, useState } from "react";
 import { EnvelopeSimple } from "@phosphor-icons/react";
 import { CountrySelect } from "@/components/form/country-select";
+import { IntentPicker } from "@/components/form/intent-picker";
 import { PasswordInput } from "@/components/form/password-input";
 import { Turnstile } from "@/components/turnstile";
 import { Button } from "@/components/ui/button";
@@ -49,12 +50,20 @@ export function AuthForm({ mode, action, captcha, countries = ["ID"] }: Props) {
 
   return (
     <form action={formAction} className="space-y-4" noValidate>
+      {!isLogin ? <IntentPicker defaultValue={state.intent} /> : null}
       <div className="grid gap-2">
         <label htmlFor="email" className="text-body-sm font-medium">Email</label>
         <Input id="email" name="email" type="email" autoComplete="email" required placeholder="dr.you@hospital.id" defaultValue={state.email} />
       </div>
       <div className="grid gap-2">
-        <label htmlFor="password" className="text-body-sm font-medium">Password</label>
+        <div className="flex items-baseline justify-between gap-2">
+          <label htmlFor="password" className="text-body-sm font-medium">Password</label>
+          {isLogin ? (
+            <Link href="/forgot-password" className="text-caption font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+              Forgot password?
+            </Link>
+          ) : null}
+        </div>
         <PasswordInput
           id="password"
           name="password"

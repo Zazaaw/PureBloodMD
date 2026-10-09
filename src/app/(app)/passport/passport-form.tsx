@@ -11,6 +11,7 @@ import { DoctorCard, type CardDoctor } from "@/components/doctor-card";
 import { Modal } from "@/components/modal";
 import { Input } from "@/components/ui/input";
 import { CountrySelect } from "@/components/form/country-select";
+import { IntentPicker } from "@/components/form/intent-picker";
 import { SPECIALTIES, SPECIALTY_KEYS, specialtyLabel } from "@/lib/constants";
 import type { Profile } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -108,6 +109,7 @@ export function PassportForm({ userId, profile, countries }: { userId: string; p
                 <Input id="age" name="age" type="number" min={21} max={90} defaultValue={profile.age} />
               </Field>
             </div>
+            <IntentPicker defaultValue={profile.intent ?? "romance"} />
             <div className="grid gap-2">
               <span className="text-body-sm font-medium">Looking for</span>
               <ChoiceTabs name="seeking" options={SEEKING} defaultValue={profile.seeking} />

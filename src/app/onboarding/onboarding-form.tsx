@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { CountrySelect } from "@/components/form/country-select";
+import { IntentPicker, type Intent } from "@/components/form/intent-picker";
 import { SPECIALTIES, SPECIALTY_KEYS, specialtyLabel, type SpecialtyKey } from "@/lib/constants";
 import { createPassport } from "./actions";
 
@@ -21,7 +22,17 @@ const SEEKING = [
   { label: "Both", value: "all" },
 ] as const;
 
-export function OnboardingForm({ userId, defaultCountry, countries }: { userId: string; defaultCountry: string; countries: string[] }) {
+export function OnboardingForm({
+  userId,
+  defaultCountry,
+  countries,
+  defaultIntent,
+}: {
+  userId: string;
+  defaultCountry: string;
+  countries: string[];
+  defaultIntent: Intent;
+}) {
   const [state, action, pending] = useActionState(createPassport, {});
   const [specialty, setSpecialty] = useState<SpecialtyKey>("Cardiology");
   const [titles, setTitles] = useState<Record<string, string>>({});
@@ -45,13 +56,14 @@ export function OnboardingForm({ userId, defaultCountry, countries }: { userId: 
               <Input id="age" name="age" type="number" inputMode="numeric" min={21} max={90} required defaultValue={v.age ?? 29} />
             </Field>
           </div>
+          <IntentPicker defaultValue={v.intent === "connect" || v.intent === "romance" ? v.intent : defaultIntent} />
           <div className="grid gap-2">
             <span className="text-body-sm font-medium">I am a</span>
             <ChoiceTabs name="gender" options={GENDERS} defaultValue={v.gender ?? "female"} />
           </div>
           <div className="grid gap-2">
             <span className="text-body-sm font-medium">Looking for</span>
-            <ChoiceTabs name="seeking" options={SEEKING} defaultValue={v.seeking ?? "male"} />
+            <ChoiceTabs name="seeking" options={SEEKING} defaultValue={v.seeking ?? ((v.intent ?? defaultIntent) === "connect" ? "all" : "male")} />
           </div>
         </CardContent>
       </Card>

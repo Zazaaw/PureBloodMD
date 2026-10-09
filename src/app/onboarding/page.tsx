@@ -20,6 +20,7 @@ export default async function OnboardingPage() {
   const signupCountry = String(auth.user?.user_metadata?.country ?? "");
   const { activeCountries } = await getAppFlags();
   const defaultCountry = activeCountries.includes(signupCountry) ? signupCountry : activeCountries[0];
+  const defaultIntent = auth.user?.user_metadata?.intent === "connect" ? "connect" : "romance";
 
   return (
     <main className="mx-auto max-w-2xl px-4 pb-16 pt-6 sm:px-6">
@@ -28,7 +29,7 @@ export default async function OnboardingPage() {
           title="Build your doctor passport"
           subtitle="PureBloodMD enforces strict medical verification to preserve the sacred MD x MD covenant."
         />
-        <OnboardingForm userId={userId} defaultCountry={defaultCountry} countries={activeCountries} />
+        <OnboardingForm userId={userId} defaultCountry={defaultCountry} countries={activeCountries} defaultIntent={defaultIntent} />
       </BlurFade>
     </main>
   );
