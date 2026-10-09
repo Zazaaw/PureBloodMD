@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import { ChatCircle, Flag, HeartStraight, Repeat, SealCheck, Trash } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { DoctorPhoto } from "@/components/doctor-photo";
+import { FounderBadge } from "@/components/founder-badge";
 import { SafetyDialog } from "@/components/safety-dialog";
 import { createClient } from "@/lib/supabase/client";
 import { timeAgo } from "@/lib/time";
@@ -116,11 +117,12 @@ export function PostCard({ post, me, variant = "feed", inlineReply, replyingTo, 
       </span>
 
       <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-1.5">
-          <Link href={profileHref} className="min-w-0 truncate text-body-sm font-semibold hover:underline">
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+          <Link href={profileHref} className="text-body-sm font-semibold hover:underline">
             {name}
           </Link>
           {isVerified(post.author) ? <SealCheck weight="fill" className="size-4 shrink-0 self-center text-sky-500" aria-label="Verified" /> : null}
+          {post.author.is_founder ? <FounderBadge className="self-center" /> : null}
           <span className="hidden min-w-0 truncate text-caption text-muted-foreground sm:inline">{post.author.specialty_title}</span>
           <time dateTime={post.created_at} suppressHydrationWarning className="ml-auto shrink-0 text-caption text-muted-foreground tabular-nums">
             {timeAgo(post.created_at)}

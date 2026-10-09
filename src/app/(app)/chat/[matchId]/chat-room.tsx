@@ -11,6 +11,7 @@ import { StickerView } from "@/components/sticker";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import { OnlineDot, useIsOnline } from "@/components/presence";
 import { SafetyDialog } from "@/components/safety-dialog";
+import { FounderBadge } from "@/components/founder-badge";
 import { Modal } from "@/components/modal";
 import { StatusPill } from "@/components/status-pill";
 import { Button } from "@/components/ui/button";
@@ -301,6 +302,7 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
             {room.other_verified ? (
               <SealCheck weight="fill" className="size-4 shrink-0 text-sky-500" aria-label="Verified: ID and medical license checked" />
             ) : null}
+            {room.other_is_founder ? <FounderBadge /> : null}
           </h1>
           <p className="truncate text-caption text-muted-foreground">
             <span className={online ? "font-semibold text-emerald-500" : undefined}>{online ? "Online" : "Offline"}</span>

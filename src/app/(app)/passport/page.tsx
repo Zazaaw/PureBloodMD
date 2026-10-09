@@ -188,7 +188,7 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
         />
         <PassportShell
           initialTab={initialTab}
-          me={{ name: profile.display_name, photo: profile.photo_url, subtitle: `${profile.specialty_title} · ${profile.hospital} · ${countryName(profile.country ?? "ID")}`, verified }}
+          me={{ name: profile.display_name, photo: profile.photo_url, subtitle: `${profile.specialty_title} · ${profile.hospital} · ${countryName(profile.country ?? "ID")}`, verified, founder: Boolean(profile.is_founder) }}
           tabs={tabs}
           panels={panels}
         />

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { SealCheck } from "@phosphor-icons/react";
 import BlurFade from "@/components/effects/blur-fade";
 import { DoctorPhoto } from "@/components/doctor-photo";
+import { FounderBadge } from "@/components/founder-badge";
 import { Modal } from "@/components/modal";
 import { OnlineDot } from "@/components/presence";
 import { SwipeRow } from "@/components/swipe-row";
@@ -162,6 +163,7 @@ export function ChatShell({ me, inbox, children }: { me: Me; inbox: InboxRow[]; 
                       <span className="flex min-w-0 items-center gap-1">
                         <span className="font-semibold leading-snug">{r.other_name}</span>
                         {r.other_verified ? <SealCheck weight="fill" className="size-3.5 shrink-0 text-sky-500" aria-label="Verified" /> : null}
+                        {r.other_is_founder ? <FounderBadge /> : null}
                       </span>
                       <span className="shrink-0 text-caption text-muted-foreground tabular-nums" suppressHydrationWarning>{timeLabel(r.last_at ?? r.matched_at)}</span>
                     </span>

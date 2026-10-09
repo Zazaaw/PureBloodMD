@@ -36,6 +36,8 @@ export type Profile = {
   deactivated_at?: string | null;
   /** Set by an admin ban (also blocks sign-in). */
   banned_at?: string | null;
+  /** Founder badge (set by the database from founder_emails). */
+  is_founder?: boolean;
   ban_reason?: string | null;
   /** Up to 3 extra photos; the card shows [photo_url, ...gallery]. */
   gallery: string[];
@@ -68,6 +70,7 @@ export type InboxRow = {
   bubble_count: number;
   /** End of the consult: match + 24 h while nobody has written, else last message + 30 days. */
   expires_at: string;
+  other_is_founder?: boolean;
 };
 
 export type Message = {
@@ -121,7 +124,7 @@ export type EmrImage = { path: string; w: number; h: number };
 /** Author columns embedded in every EMR post. */
 export type EmrAuthor = Pick<
   Profile,
-  "id" | "display_name" | "photo_url" | "photo_fallback_url" | "specialty_title" | "identity_verified" | "doctor_verified"
+  "id" | "display_name" | "photo_url" | "photo_fallback_url" | "specialty_title" | "identity_verified" | "doctor_verified" | "is_founder"
 >;
 
 /** A thread (no parent), a comment (parent = thread) or a reply (parent = comment). */

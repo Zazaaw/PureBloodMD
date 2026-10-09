@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChatCircleDots, ClipboardText, Hospital, ImageSquare, MapPin, PencilSimple, SealCheck } from "@phosphor-icons/react/dist/ssr";
 import BlurFade from "@/components/effects/blur-fade";
+import { FounderBadge } from "@/components/founder-badge";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import { PostCard } from "@/components/emr/post-card";
 import { ProfileActions } from "@/components/emr/profile-actions";
@@ -24,10 +25,10 @@ export const metadata: Metadata = { title: "Doctor profile" };
 type PublicProfile = Pick<
   Profile,
   | "id" | "display_name" | "photo_url" | "photo_fallback_url" | "specialty" | "specialty_title" | "hospital" | "base_city"
-  | "country" | "age" | "bio" | "tags" | "status_text" | "identity_verified" | "doctor_verified" | "deactivated_at"
+  | "country" | "age" | "bio" | "tags" | "status_text" | "identity_verified" | "doctor_verified" | "deactivated_at" | "is_founder"
 >;
 const PROFILE_SELECT =
-  "id,display_name,photo_url,photo_fallback_url,specialty,specialty_title,hospital,base_city,country,age,bio,tags,status_text,identity_verified,doctor_verified,deactivated_at";
+  "id,display_name,photo_url,photo_fallback_url,specialty,specialty_title,hospital,base_city,country,age,bio,tags,status_text,identity_verified,doctor_verified,deactivated_at,is_founder";
 
 function Empty({ children }: { children: React.ReactNode }) {
   return (
@@ -121,6 +122,7 @@ export default async function DoctorProfilePage({
               <h2 className="flex items-center gap-1.5 text-h5 font-bold">
                 <span className="truncate">{doc.display_name}</span>
                 {verified ? <SealCheck weight="fill" className="size-5 shrink-0 text-sky-500" aria-label="Verified" /> : null}
+                {doc.is_founder ? <FounderBadge /> : null}
               </h2>
               <p className="mt-1 text-body-sm">
                 <span className="font-mono">{SPECIALTIES[doc.specialty]?.code}</span> {doc.specialty_title}

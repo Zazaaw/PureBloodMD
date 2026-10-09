@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { SealCheck } from "@phosphor-icons/react";
+import { FounderBadge } from "@/components/founder-badge";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import PillTabs from "@/components/ui/pill-tabs";
 import { PASSPORT_TABS, type PassportTab } from "./tabs";
@@ -20,7 +21,7 @@ export function PassportShell({
   /** Tabs to show (VIP is hidden while the program is switched off). */
   tabs?: readonly PassportTab[];
   initialTab: PassportTab;
-  me: { name: string; photo: string; subtitle: string; verified: boolean };
+  me: { name: string; photo: string; subtitle: string; verified: boolean; founder?: boolean };
   panels: Record<PassportTab, React.ReactNode>;
 }) {
   const [tab, setTab] = useState<PassportTab>(initialTab);
@@ -43,6 +44,7 @@ export function PassportShell({
             <p className="flex flex-wrap items-center gap-1.5 text-h5 font-semibold leading-tight">
               {me.name}
               {me.verified ? <SealCheck weight="fill" aria-label="Verified" className="size-5 text-sky-500" /> : null}
+              {me.founder ? <FounderBadge /> : null}
             </p>
             <p className="mt-0.5 text-body-sm text-muted-foreground">{me.subtitle}</p>
           </div>

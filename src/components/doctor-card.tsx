@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { CaretLeft, CaretRight, Ear, HeartStraight, Lightning, MapPin, SealCheck } from "@phosphor-icons/react";
 import { DoctorPhoto } from "@/components/doctor-photo";
+import { FounderBadge } from "@/components/founder-badge";
 import { Badge } from "@/components/ui/badge";
 import { sounds } from "@/lib/sounds";
 import type { Profile } from "@/lib/types";
@@ -14,7 +15,7 @@ export type CardDoctor = Pick<
   | "display_name" | "age" | "specialty_title" | "hospital" | "status_text" | "distance_km"
   | "photo_url" | "photo_fallback_url" | "caffeine" | "stamina" | "manner" | "bio" | "tags"
 > &
-  Partial<Pick<Profile, "gallery" | "identity_verified" | "doctor_verified" | "superliked_me">>;
+  Partial<Pick<Profile, "gallery" | "identity_verified" | "doctor_verified" | "superliked_me" | "is_founder">>;
 
 /** Swipeable photo strip (scroll-snap), with dots and tap zones on desktop. */
 function PhotoCarousel({ doc, priority }: { doc: CardDoctor; priority?: boolean }) {
@@ -188,6 +189,7 @@ export function DoctorPhotoPanel({
             ) : null}
           </span>
         </h2>
+        {doc.is_founder ? <FounderBadge variant="overlay" className="my-1" /> : null}
         <p className="font-medium text-white/90">{doc.specialty_title}</p>
         <p className="text-body-sm text-white/80">{doc.hospital}</p>
       </div>

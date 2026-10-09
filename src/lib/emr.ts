@@ -7,7 +7,7 @@ type Supabase = Awaited<ReturnType<typeof createClient>>;
 /** Columns of every EMR post, with the author embedded (profiles are readable by members). */
 export const EMR_SELECT =
   "id,author_id,parent_id,root_id,body,images,reply_count,like_count,repost_count,deleted_at,created_at," +
-  "author:profiles!author_id(id,display_name,photo_url,photo_fallback_url,specialty_title,identity_verified,doctor_verified)";
+  "author:profiles!author_id(id,display_name,photo_url,photo_fallback_url,specialty_title,identity_verified,doctor_verified,is_founder)";
 
 export const EMR_PAGE = 30;
 
