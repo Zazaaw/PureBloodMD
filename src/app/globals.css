@@ -301,6 +301,7 @@
   --text-h3: 2.618rem;       --text-h3--line-height: 1.15; --text-h3--letter-spacing: -0.02em;   /* 41.89px */
   --text-h2: 3.330rem;       --text-h2--line-height: 1.1;  --text-h2--letter-spacing: -0.02em;   /* 53.28px */
   --text-h1: 4.236rem;       --text-h1--line-height: 1.05; --text-h1--letter-spacing: -0.025em;  /* 67.78px */
+  --text-display: 5.388rem;  --text-display--line-height: 1; --text-display--letter-spacing: -0.03em; /* 86.21px, landing hero only */
 
   /* Tailwind defaults, remapped to the nearest phi step by role */
   --text-xs: 0.786rem;   --text-xs--line-height: 1.4;
@@ -323,12 +324,19 @@
 
   --animate-shock: shock 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   --animate-heartbeat: heartbeat 1.1s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  --animate-float: float 7s ease-in-out infinite;
 
   /* Defibrillator flash on a right swipe */
   @keyframes shock {
     0%   { filter: brightness(1); }
     30%  { filter: brightness(1.6) saturate(1.4); }
     100% { filter: brightness(1); }
+  }
+
+  /* Slow drift for the hero floaters. Uses transform, so it stacks with rotate-*. */
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-12px); }
   }
 
   @keyframes heartbeat {

@@ -1,10 +1,18 @@
 import Link from "next/link";
-import { ArrowRight, Heartbeat, SealCheck } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, HandsClapping, Heartbeat, HeartStraight, SealCheck } from "@phosphor-icons/react/dist/ssr";
 import BlurFade from "@/components/effects/blur-fade";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import { AsystoleCountdown } from "@/components/landing/asystole-countdown";
+import { CivilianVsColleague } from "@/components/landing/civilian-vs-colleague";
+import { ConsultPreview } from "@/components/landing/consult-preview";
 import { doctor, LANDING_DOCTORS, type LandingDoctor } from "@/components/landing/doctors";
+import { Faq } from "@/components/landing/faq";
+import { HeroFloaters } from "@/components/landing/hero-floaters";
 import { HeroPhotoStack } from "@/components/landing/hero-photo-stack";
+import { Overheard } from "@/components/landing/overheard";
+import { PackageInsert } from "@/components/landing/package-insert";
+import { Rotations } from "@/components/landing/rotations";
+import { SymptomChecker } from "@/components/landing/symptom-checker";
 import { TriageDemo } from "@/components/landing/triage-demo";
 import { Logo, LogoMark } from "@/components/logo";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -12,8 +20,10 @@ import { StatusPill } from "@/components/status-pill";
 import { Button } from "@/components/ui/button";
 import { ASYSTOLE_HOURS, CONSULT_DORMANT_DAYS, FREE_BUBBLE_CAP, SPECIALTIES, SPECIALTY_KEYS, specialtyLabel } from "@/lib/constants";
 import { getAppFlags } from "@/lib/flags";
+import { cn } from "@/lib/utils";
 
 const HERO_DOCTORS = ["Aurelia", "Keenan", "Nadya", "Raditya", "Clarissa"].map(doctor);
+const FLOATERS = ["Michelle", "Aris", "Alana"].map(doctor) as [LandingDoctor, LandingDoctor, LandingDoctor];
 const DECK_DOCTORS = ["Stella", "Brandon", "Jessica", "Dimas", "Vania"].map(doctor);
 
 function MarqueeRow({ doctors, hidden }: { doctors: LandingDoctor[]; hidden?: boolean }) {
@@ -37,12 +47,24 @@ function MarqueeRow({ doctors, hidden }: { doctors: LandingDoctor[]; hidden?: bo
   );
 }
 
+/** Section title + one supporting line, stacked (skill-ui-ux: no split headers). */
+function SectionHeading({ title, children, center }: { title: string; children?: React.ReactNode; center?: boolean }) {
+  return (
+    <BlurFade inView className={cn("mb-10", center && "mx-auto text-center")}>
+      <h2 className="text-h4 font-bold sm:text-h3">{title}</h2>
+      {children ? (
+        <p className={cn("mt-3 max-w-[52ch] text-body text-muted-foreground sm:text-lead", center && "mx-auto")}>{children}</p>
+      ) : null}
+    </BlurFade>
+  );
+}
+
 export default async function Landing() {
   const flags = await getAppFlags();
   const worldwide = flags.activeCountries.length > 1;
   const indonesiaOnly = flags.activeCountries.length === 1 && flags.activeCountries[0] === "ID";
   const nadya = doctor("Nadya");
-  const aris = doctor("Aris");
+  const kevin = doctor("Kevin");
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6">
@@ -59,21 +81,22 @@ export default async function Landing() {
       </header>
 
       {/* Hero: the headline is the visual, with real deck doctors cycling inside it. */}
-      <BlurFade duration={0.6}>
-        <section className="flex min-h-[calc(100dvh-4rem)] flex-col items-center justify-center py-12 text-center">
+      <section className="relative flex min-h-[calc(100dvh-4rem)] flex-col items-center justify-center py-12 text-center">
+        <HeroFloaters doctors={FLOATERS} />
+        <BlurFade duration={0.6} className="relative flex flex-col items-center">
           {flags.vipEnabled ? (
             <StatusPill status="neutral">Est. post-call</StatusPill>
           ) : (
             <StatusPill status="completed">{indonesiaOnly ? "Free during launch in Indonesia" : "Free during launch"}</StatusPill>
           )}
 
-          <h1 className="mt-8 flex flex-col items-center gap-y-[0.12em] text-h3 font-extrabold sm:text-h2 lg:text-h1">
-            <span className="flex flex-wrap items-center justify-center gap-x-[0.28em] gap-y-[0.12em]">
+          <h1 className="mt-8 flex flex-col items-center gap-y-[0.1em] text-h3 font-extrabold sm:text-h2 md:text-h1 lg:text-display">
+            <span className="flex flex-wrap items-center justify-center gap-x-[0.26em] gap-y-[0.1em]">
               Doctors
               <HeroPhotoStack doctors={HERO_DOCTORS} />
               <span className="text-muted-foreground">marrying</span>
             </span>
-            <span className="flex flex-wrap items-center justify-center gap-x-[0.28em]">
+            <span className="flex flex-wrap items-center justify-center gap-x-[0.26em]">
               <span
                 aria-hidden
                 className="inline-grid h-[0.9em] w-[1.2em] rotate-3 place-items-center rounded-[0.22em] bg-foreground text-background shadow-xl"
@@ -84,22 +107,22 @@ export default async function Landing() {
             </span>
           </h1>
 
-          <p className="mt-rhythm max-w-[40ch] text-lead text-muted-foreground">
+          <p className="mt-rhythm max-w-[38ch] text-lead text-muted-foreground sm:text-h5 sm:font-normal sm:leading-snug">
             Match with a fellow STR-verified specialist who understands why your pager vibrates during dinner.
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Button size="lg" asChild className="transition-transform active:scale-[0.98]">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+            <Button size="lg" asChild className="h-12 px-7 text-body transition-transform active:scale-[0.98]">
               <Link href="/signup">
                 Create your passport <ArrowRight weight="bold" />
               </Link>
             </Button>
-            <Button size="lg" variant="ghost" asChild>
+            <Button size="lg" variant="ghost" asChild className="h-12 px-6 text-body">
               <Link href="#triage">How it works</Link>
             </Button>
           </div>
-        </section>
-      </BlurFade>
+        </BlurFade>
+      </section>
 
       {/* The one marquee on the page: who is actually in the deck. */}
       <BlurFade inView>
@@ -117,37 +140,57 @@ export default async function Landing() {
         </section>
       </BlurFade>
 
-      <section id="triage" className="scroll-m-20 py-20 sm:py-28">
+      <section className="py-20 sm:py-28">
+        <SectionHeading title="First, a quick anamnesis." center>
+          Six questions. Be honest, nothing leaves your browser.
+        </SectionHeading>
+        <BlurFade inView>
+          <SymptomChecker />
+        </BlurFade>
+      </section>
+
+      <section className="border-t py-20 sm:py-28">
+        <SectionHeading title="Dating a civilian vs dating a colleague.">
+          Same five moments. Very different outcomes.
+        </SectionHeading>
+        <BlurFade inView>
+          <CivilianVsColleague />
+        </BlurFade>
+      </section>
+
+      <section id="triage" className="scroll-m-20 border-t py-20 sm:py-28">
         <BlurFade inView>
           <TriageDemo doctors={DECK_DOCTORS} />
         </BlurFade>
       </section>
 
+      <section className="border-t py-20 sm:py-28">
+        <SectionHeading title="Four rotations to forever.">No residency required. Well, technically it is.</SectionHeading>
+        <Rotations />
+      </section>
+
       {/* Bento: exactly four rules, four cells. */}
       <section id="protocol" className="scroll-m-20 border-t py-20 sm:py-28">
-        <BlurFade inView>
-          <h2 className="text-h4 font-bold">The pureblood protocol</h2>
-          <p className="mt-3 max-w-[48ch] text-body text-muted-foreground">
-            MD x MD only. Every rule is enforced by the database, not by vibes.
-          </p>
-        </BlurFade>
+        <SectionHeading title="The pureblood protocol">MD x MD only. Every rule is enforced by the database, not by vibes.</SectionHeading>
 
-        <div className="mt-10 grid gap-5 lg:grid-cols-3 lg:grid-rows-[auto_auto]">
+        <div className="grid gap-5 lg:grid-cols-3 lg:grid-rows-[auto_auto]">
           <BlurFade inView className="lg:row-span-2">
             <article className="flex h-full flex-col overflow-hidden rounded-xl border bg-card">
               <div className="relative aspect-[4/3] lg:aspect-auto lg:min-h-64 lg:flex-1">
                 <DoctorPhoto src={nadya.photo} fallback={nadya.fallback} alt={`${nadya.name}, ${nadya.title}`} fill sizes="(max-width: 1024px) 100vw, 360px" />
               </div>
               <div className="p-6">
-                <p className="max-w-[90%] rounded-2xl rounded-bl-md bg-primary px-4 py-2.5 text-body-sm text-primary-foreground">
-                  {nadya.opener}
-                </p>
-                <p className="mt-2 text-caption text-muted-foreground">
-                  {nadya.name}, <span className="font-mono">{nadya.code}</span>
-                </p>
-                <h3 className="mt-6 text-h5 font-bold">She makes the first incision.</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <p className="flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-body-sm font-semibold">
+                    <HeartStraight weight="fill" className="size-4 text-primary" /> Romance
+                  </p>
+                  <p className="flex items-center gap-2 rounded-lg border px-3 py-2 text-body-sm font-semibold">
+                    <HandsClapping weight="fill" className="size-4 text-muted-foreground" /> Connect
+                  </p>
+                </div>
+                <h3 className="mt-6 text-h5 font-bold">Love, or just referrals.</h3>
                 <p className="mt-2 text-body text-muted-foreground">
-                  In every female x male match, she texts first. He can only reply once she has.
+                  Date a doctor, or collect colleagues and referral buddies. Pick at sign-up, switch in your Passport anytime.
                 </p>
               </div>
             </article>
@@ -182,9 +225,9 @@ export default async function Landing() {
           <BlurFade inView delay={0.15}>
             <article className="flex h-full flex-col rounded-xl border bg-card p-6">
               <div className="flex items-center gap-3">
-                <DoctorPhoto src={aris.photo} fallback={aris.fallback} alt="" size={40} className="size-10 rounded-full object-cover" />
+                <DoctorPhoto src={kevin.photo} fallback={kevin.fallback} alt="" size={40} className="size-10 rounded-full object-cover" />
                 <p className="text-body-sm font-semibold">
-                  {aris.name}
+                  {kevin.name}
                   <SealCheck weight="fill" className="ml-1 inline size-4 align-[-0.15em] text-sky-500" aria-label="Verified" />
                 </p>
               </div>
@@ -197,29 +240,37 @@ export default async function Landing() {
         </div>
       </section>
 
-      <BlurFade inView>
-        <section className="border-t py-20 sm:py-28">
-          <p className="max-w-[30ch] text-h5 font-bold sm:text-h4">
-            “Because your in-laws will never complain about late-night emergency laparotomies when they are also
-            general surgeons.”
-          </p>
-          <p className="mt-4 text-body text-muted-foreground">
-            Guaranteed 100% illegible handwriting inheritance for the next generation.
-          </p>
-        </section>
-      </BlurFade>
+      <section className="border-t py-20 sm:py-28">
+        <div className="grid items-center gap-12 md:grid-cols-[1fr_minmax(0,28rem)] md:gap-16">
+          <BlurFade inView>
+            <h2 className="text-h4 font-bold sm:text-h3">Consults, with a chaperone built in.</h2>
+            <p className="mt-3 max-w-[44ch] text-body text-muted-foreground sm:text-lead">
+              She makes the first incision. Phone numbers stay masked until you both feel ready. Photos and medical stickers
+              for when words fail post-call.
+            </p>
+            <p className="mt-6 text-body-sm text-muted-foreground">
+              Something off? Report or block from the chat in two taps, with screenshots as evidence.
+            </p>
+          </BlurFade>
+          <BlurFade inView delay={0.05}>
+            <ConsultPreview her={doctor("Clarissa")} him={doctor("Raditya")} />
+          </BlurFade>
+        </div>
+      </section>
 
       <section className="border-t py-20 sm:py-28">
-        <BlurFade inView>
-          <h2 className="text-h4 font-bold">Pick your specialty chemistry</h2>
-          <p className="mt-3 max-w-[48ch] text-body text-muted-foreground">
-            Sixteen specialties, from interventional cardiology to koas. Each one comes with its own pickup line.
-          </p>
-        </BlurFade>
-        <div role="list" className="mt-10 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+        <SectionHeading title="Overheard in the doctors' lounge.">Parody quotes. Names withheld to protect the post-call.</SectionHeading>
+        <Overheard />
+      </section>
+
+      <section className="border-t py-20 sm:py-28">
+        <SectionHeading title="Pick your specialty chemistry">
+          Sixteen specialties, from interventional cardiology to koas. Each one comes with its own pickup line.
+        </SectionHeading>
+        <div role="list" className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
           {SPECIALTY_KEYS.map((k, i) => (
             <BlurFade key={k} inView delay={(i % 4) * 0.05}>
-              <div role="listitem" className="h-full rounded-xl border bg-card p-4 sm:p-5 transition-colors duration-200 hover:border-primary/40">
+              <div role="listitem" className="h-full rounded-xl border bg-card p-4 transition-colors duration-200 hover:border-primary/40 sm:p-5">
                 <p className="font-mono text-lead font-semibold">{SPECIALTIES[k].code}</p>
                 <p className="text-caption text-muted-foreground">{specialtyLabel(k)}</p>
                 <p className="mt-4 text-body-sm">{SPECIALTIES[k].joke}</p>
@@ -229,14 +280,38 @@ export default async function Landing() {
         </div>
       </section>
 
+      <section className="border-t py-20 sm:py-28">
+        <SectionHeading title="Read the leaflet before use.">Like every good prescription, it comes with fine print.</SectionHeading>
+        <BlurFade inView>
+          <PackageInsert dailySwipes={flags.dailySwipeLimit} vipEnabled={flags.vipEnabled} />
+        </BlurFade>
+      </section>
+
+      <section className="border-t py-20 sm:py-28">
+        <div className="grid gap-10 lg:grid-cols-[1fr_2fr]">
+          <BlurFade inView className="lg:sticky lg:top-24 lg:self-start">
+            <h2 className="text-h4 font-bold sm:text-h3">Frequently asked, freshly triaged.</h2>
+            <p className="mt-3 text-body text-muted-foreground">
+              Still unsure? Read the{" "}
+              <Link href="/terms" className="font-medium text-foreground underline underline-offset-4 hover:text-primary">terms</Link>{" "}
+              and{" "}
+              <Link href="/privacy" className="font-medium text-foreground underline underline-offset-4 hover:text-primary">privacy policy</Link>.
+            </p>
+          </BlurFade>
+          <BlurFade inView delay={0.05}>
+            <Faq flags={flags} />
+          </BlurFade>
+        </div>
+      </section>
+
       <BlurFade inView>
-        <section className="flex flex-col items-center border-t py-20 text-center sm:py-28">
-          <LogoMark className="size-16 animate-heartbeat" />
-          <h2 className="mt-6 text-h4 font-bold sm:text-h3">Scrub in. Your match is on call.</h2>
-          <p className="mt-3 max-w-[44ch] text-body text-muted-foreground">
+        <section className="flex flex-col items-center border-t py-24 text-center sm:py-32">
+          <LogoMark className="size-20 animate-heartbeat" />
+          <h2 className="mt-8 text-h3 font-extrabold sm:text-h2 lg:text-h1">Scrub in. Your match is on call.</h2>
+          <p className="mt-4 max-w-[44ch] text-body text-muted-foreground sm:text-lead">
             {flags.vipEnabled ? "Doctors, residents, GPs and koas welcome." : "Free during launch. Doctors, residents, GPs and koas welcome."}
           </p>
-          <Button size="lg" asChild className="mt-8 transition-transform active:scale-[0.98]">
+          <Button size="lg" asChild className="mt-10 h-12 px-7 text-body transition-transform active:scale-[0.98]">
             <Link href="/signup">
               Create your passport <ArrowRight weight="bold" />
             </Link>
