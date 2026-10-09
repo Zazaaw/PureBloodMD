@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Consult" };
 
 export default async function ChatRoomPage({ params }: { params: Promise<{ matchId: string }> }) {
   const { matchId } = await params;
-  const { supabase, profile } = await requireProfile();
+  const { supabase, profile, flags } = await requireProfile();
 
   const [{ data: inbox }, { data: messages }] = await Promise.all([
     supabase.rpc("get_inbox"),
@@ -21,7 +21,7 @@ export default async function ChatRoomPage({ params }: { params: Promise<{ match
     <ChatRoom
       key={matchId}
       room={room}
-      me={{ id: profile.id, gender: profile.gender, isVip: profile.is_vip, name: profile.display_name, country: profile.country ?? "ID" }}
+      me={{ id: profile.id, gender: profile.gender, isVip: profile.is_vip, vipEnabled: flags.vipEnabled, name: profile.display_name, country: profile.country ?? "ID" }}
       initialMessages={(messages ?? []) as Message[]}
     />
   );

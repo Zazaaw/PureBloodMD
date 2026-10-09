@@ -16,7 +16,7 @@ import { StatusPill } from "@/components/status-pill";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { VipDialog } from "@/components/vip-dialog";
-import { CONSULT_TTL_HOURS, FREE_BUBBLE_CAP, QUICK_FLIRTS } from "@/lib/constants";
+import { ASYSTOLE_HOURS, CONSULT_DORMANT_DAYS, FREE_BUBBLE_CAP, QUICK_FLIRTS } from "@/lib/constants";
 import { sounds } from "@/lib/sounds";
 import { detectPersonalInfo, parseSticker, stickerBody, willMaskNumbers } from "@/lib/stickers";
 import { createClient } from "@/lib/supabase/client";
@@ -24,7 +24,7 @@ import type { Gender, InboxRow, Message } from "@/lib/types";
 import { prepareImage } from "@/lib/image";
 import { cn } from "@/lib/utils";
 
-type Me = { id: string; gender: Gender; isVip: boolean; name: string; country: string };
+type Me = { id: string; gender: Gender; isVip: boolean; vipEnabled: boolean; name: string; country: string };
 
 function useCountdown(endsAt: number) {
   const [now, setNow] = useState(() => Date.now());
@@ -61,9 +61,6 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
   const [bubbles, setBubbles] = useState(room.bubble_count);
   const bubblesRef = useRef(room.bubble_count);
   const seen = useRef(new Set(initialMessages.map((m) => m.id)));
-  const [lastActivity, setLastActivity] = useState(
-    () => new Date(room.expires_at).getTime() - CONSULT_TTL_HOURS * 3_600_000
-  );
   const menuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -73,16 +70,20 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const online = useIsOnline(room.other_id, room.other_is_bot);
-  // Asystole: every message restarts the 24-hour clock; at zero the consult flatlines.
-  const countdown = useCountdown(lastActivity + CONSULT_TTL_HOURS * 3_600_000);
+  // Asystole: only until the first message. Nobody writes within 24 hours of the match
+  // and the consult flatlines; once anyone has written, the timer is gone (30 days of silence ends it).
+  const countdown = useCountdown(new Date(room.matched_at).getTime() + ASYSTOLE_HOURS * 3_600_000);
   const [flatlinedByServer, setFlatlinedByServer] = useState(false);
-  const flatlined = countdown.expired || flatlinedByServer;
+  const inAsystole = bubbles === 0;
+  const flatlined = (inAsystole && countdown.expired) || flatlinedByServer;
 
   // Bumble protocol: in a female x male match, the female doctor opens.
   const mustWait = bubbles === 0 && me.gender === "male" && room.other_gender === "female";
   const herMove = bubbles === 0 && me.gender === "female" && room.other_gender === "male";
   const used = bubbles;
-  const quotaGone = !isVip && used >= FREE_BUBBLE_CAP;
+  // The 10-bubble cap only exists while the VIP program is switched on.
+  const capped = me.vipEnabled && !isVip;
+  const quotaGone = capped && used >= FREE_BUBBLE_CAP;
   const locked = mustWait || quotaGone || flatlined;
 
   const firstName = useMemo(() => room.other_name.replace(/^dr\.\s*/i, "").split(/[ ,]/)[0], [room.other_name]);
@@ -93,7 +94,6 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
     setMessages((list) => [...list, msg]);
     bubblesRef.current += 1;
     setBubbles(bubblesRef.current);
-    setLastActivity(new Date(msg.created_at).getTime());
   };
 
   // Live messages for this match, plus "chat cleared" / "unmatched" from the other side.
@@ -126,7 +126,6 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
             const list = (data ?? []) as Message[];
             seen.current = new Set(list.map((m) => m.id));
             setMessages(list);
-            setLastActivity(Date.now());
           }
         }
       )
@@ -164,7 +163,6 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
     if (error) return toast.error("Could not delete the chat. Try again.");
     seen.current = new Set();
     setMessages([]);
-    setLastActivity(Date.now());
     toast.success("Chat history deleted for both of you.");
     router.refresh();
   };
@@ -236,7 +234,7 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
       if (typingTimer.current) clearTimeout(typingTimer.current);
       typingTimer.current = setTimeout(() => setTyping(false), 5000);
     }
-    if (!isVip && used + 1 >= FREE_BUBBLE_CAP) setTimeout(() => setVipOpen(true), 1200);
+    if (capped && used + 1 >= FREE_BUBBLE_CAP) setTimeout(() => setVipOpen(true), 1200);
     return true;
   };
 
@@ -347,7 +345,9 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
                 </button>
               ))}
               <p className="border-t px-3 pb-1.5 pt-2 text-caption text-muted-foreground" suppressHydrationWarning>
-                Flatlines in {countdown.label} unless someone texts
+                {inAsystole
+                  ? `Flatlines in ${countdown.label} unless someone texts`
+                  : `Auto-deletes after ${CONSULT_DORMANT_DAYS} days without a message`}
               </p>
             </div>
           ) : null}
@@ -355,29 +355,39 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
       </header>
 
       <div className="flex flex-wrap items-center justify-between gap-2 border-b bg-muted/40 px-4 py-2 text-caption">
-        <span
-          className="flex items-center gap-2 text-muted-foreground"
-          title={`A consult with no message for ${CONSULT_TTL_HOURS} hours flatlines: the chat is deleted and you can meet again in triage.`}
-        >
-          <Heartbeat className={cn("size-4 shrink-0", !flatlined && "text-primary")} />
-          <span className="hidden sm:inline">No message for 24h and this consult flatlines. Asystole in</span>
-          <span className="sm:hidden">Asystole in</span>
+        {inAsystole || flatlined ? (
           <span
-            className={cn("font-mono font-semibold tabular-nums", countdown.left < 3 * 3_600_000 ? "text-red-500" : "text-foreground")}
-            suppressHydrationWarning
+            className="flex items-center gap-2 text-muted-foreground"
+            title={`If nobody writes within ${ASYSTOLE_HOURS} hours of the match, the consult flatlines: the chat is deleted and you can meet again in triage.`}
           >
-            {flatlined ? "flatlined" : countdown.label}
+            <Heartbeat className={cn("size-4 shrink-0", !flatlined && "text-primary")} />
+            <span className="hidden sm:inline">No message yet. Asystole in</span>
+            <span className="sm:hidden">Asystole in</span>
+            <span
+              className={cn("font-mono font-semibold tabular-nums", countdown.left < 3 * 3_600_000 ? "text-red-500" : "text-foreground")}
+              suppressHydrationWarning
+            >
+              {flatlined ? "flatlined" : countdown.label}
+            </span>
           </span>
-        </span>
+        ) : (
+          <span
+            className="flex items-center gap-2 text-muted-foreground"
+            title={`The timer is gone. The consult only ends after ${CONSULT_DORMANT_DAYS} days without a message.`}
+          >
+            <Heartbeat className="size-4 shrink-0 text-emerald-500" />
+            <span><span className="font-medium text-foreground">Sinus rhythm.</span><span className="hidden sm:inline"> CPR worked, no more timer.</span></span>
+          </span>
+        )}
         <span className="flex items-center gap-2">
           <span className="font-mono tabular-nums">
-            {isVip ? `${used} bubbles` : `${Math.min(used, FREE_BUBBLE_CAP)} / ${FREE_BUBBLE_CAP} bubbles`}
+            {capped ? `${Math.min(used, FREE_BUBBLE_CAP)} / ${FREE_BUBBLE_CAP} bubbles` : `${used} ${used === 1 ? "bubble" : "bubbles"}`}
           </span>
           {isVip ? (
             <button type="button" onClick={() => setVipOpen(true)} aria-label="Manage VIP">
               <StatusPill status="pending"><Crown weight="fill" className="size-3" /> VIP</StatusPill>
             </button>
-          ) : quotaGone ? (
+          ) : !capped ? null : quotaGone ? (
             <StatusPill status="cancelled">Depleted</StatusPill>
           ) : used >= FREE_BUBBLE_CAP - 3 ? (
             <StatusPill status="pending">{FREE_BUBBLE_CAP - used} left</StatusPill>

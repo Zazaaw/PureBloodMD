@@ -61,7 +61,7 @@ export type InboxRow = {
   last_sender: string | null;
   /** Counted on the match: survives "delete chat", drives the quota and Bumble rule. */
   bubble_count: number;
-  /** Flatline time: 24 hours after the last message (or the match, if nobody wrote). */
+  /** End of the consult: match + 24 h while nobody has written, else last message + 30 days. */
   expires_at: string;
 };
 

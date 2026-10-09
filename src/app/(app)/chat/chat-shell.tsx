@@ -101,15 +101,22 @@ export function ChatShell({ meId, inbox, children }: { meId: string; inbox: Inbo
                       <span className="shrink-0 text-caption text-muted-foreground tabular-nums" suppressHydrationWarning>{timeLabel(r.last_at ?? r.matched_at)}</span>
                     </span>
                     {(() => {
-                      const hours = Math.max(0, Math.ceil((new Date(r.expires_at).getTime() - Date.now()) / 3_600_000));
-                      return (
-                        <span
-                          className={cn("block text-caption", hours <= 6 ? "text-red-500" : "text-muted-foreground")}
-                          suppressHydrationWarning
-                        >
-                          {hours <= 1 ? "Flatlines within the hour" : `Flatlines in ${hours}h`} unless someone texts
+                      const left = new Date(r.expires_at).getTime() - Date.now();
+                      if (r.bubble_count === 0) {
+                        // Asystole: nobody has written yet.
+                        const hours = Math.max(0, Math.ceil(left / 3_600_000));
+                        return (
+                          <span className={cn("block text-caption", hours <= 6 ? "text-red-500" : "text-muted-foreground")} suppressHydrationWarning>
+                            {hours <= 1 ? "Asystole: flatlines within the hour" : `Asystole: flatlines in ${hours}h`} unless someone texts
+                          </span>
+                        );
+                      }
+                      const days = Math.max(0, Math.ceil(left / 86_400_000));
+                      return days <= 3 ? (
+                        <span className="block text-caption text-amber-600 dark:text-amber-400" suppressHydrationWarning>
+                          Quiet for a while. Auto-deletes in {days} {days === 1 ? "day" : "days"} unless someone texts
                         </span>
-                      );
+                      ) : null;
                     })()}
                     <span className="block truncate text-body-sm text-muted-foreground">
                       {r.last_at

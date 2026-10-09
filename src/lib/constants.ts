@@ -114,8 +114,10 @@ export function formatMoney(amount: number, currency: "IDR" | "USD" | string) {
 }
 
 /** Consults with no message for this long are deleted automatically (pg_cron). */
-/** Asystole: a consult with no message for this long flatlines (room deleted, both can meet again). */
-export const CONSULT_TTL_HOURS = 24;
+/** Asystole: a match where nobody writes within this window flatlines (room deleted, both can meet again). */
+export const ASYSTOLE_HOURS = 24;
+/** Once anyone has written, a consult only ends after this many days without a message. */
+export const CONSULT_DORMANT_DAYS = 30;
 
 /** What VIP unlocks; shown in the VIP dialog and on Passport. */
 export const VIP_PERKS = [
