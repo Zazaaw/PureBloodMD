@@ -69,7 +69,7 @@ h-9    control height
 - The browser client may only do what RLS allows. The service_role key is used ONLY by `scripts/seed.mjs`, never imported in `src/`.
 - Next.js 16: `middleware` is now `src/proxy.ts`; `params` / `cookies()` are async. Read `node_modules/next/dist/docs/` before using an API you are unsure of.
 - Safety: chat photos live in the PRIVATE `chat-media` bucket (signed URLs); exact user coordinates are never readable by other users (only `distance_to` / `get_candidates` distances).
-- `npm run db:seed` only ADDS missing bots. Never delete bots in a live project: matches and chats cascade.
+- `npm run db:seed` only ADDS missing bots, for local/dev only. Production (purebloodmd.com) has no bots since 2026-10-09: never seed it.
 - `cacheComponents` is OFF on purpose (cookie-based Supabase auth on every app route).
 
 ## Commands
@@ -78,7 +78,7 @@ h-9    control height
 npm run dev      # dev server
 npm run build    # production build, must pass before "done"
 npm run lint
-npm run db:seed  # 420 bot doctors (needs the schema first)
+npm run db:seed  # bot doctors, dev only (needs the schema first)
 ```
 
 ## Before reporting a task complete

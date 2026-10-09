@@ -137,7 +137,7 @@ Only accounts listed in `public.admin_emails` can open it; everyone else gets a 
 | Section | What you can do |
 |---|---|
 | **Overview** | Members, active today, verified share, pending verifications, open reports, bans, matches/messages/EMR today, 14-day sign-up chart, romance vs connect |
-| **Verification** | Compare ID, selfie and license side by side; approve (blue badge + email) or send back with a note (email) |
+| **Verification** | Compare ID and license with the profile photos (no selfie with ID needed); approve (blue badge + email) or send back with a note (email) |
 | **Reports** | Reporter and reported member, reason (severe ones in red), details, screenshot evidence, the saved chat copy; mark reviewing, dismiss, resolve or ban |
 | **Users** | Search by name, email or hospital; filter verified / unverified / reported / banned / paused; open a member to see email, sign-ins, credentials, documents, reports, EMR posts and moderation history; ban, unban, grant or revoke the badge |
 | **EMR** | Newest member posts and replies with photos; remove a post |
@@ -211,7 +211,7 @@ cp .env.example .env.local
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase > API Keys > secret (seeding only) | **no** |
 | `SUPABASE_ACCESS_TOKEN` | supabase.com/dashboard/account/tokens (for `supabase:push`) | **no** |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3333` locally, your domain in production | yes |
-| `SITE_URL_PRODUCTION` | Your main domain, e.g. `https://purebloodmd.p441z.my.id`. Becomes the Supabase Site URL used in email links | no |
+| `SITE_URL_PRODUCTION` | Your main domain, e.g. `https://www.purebloodmd.com`. Becomes the Supabase Site URL used in email links | no |
 | `SITE_URL_EXTRA` | Other deployed origins allowed to receive auth redirects, comma separated (e.g. the `*.vercel.app` URL) | no |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Cloudflare > Turnstile (test keys work locally) | site key only |
 | `SMTP_HOST` `SMTP_PORT` `SMTP_USER` `SMTP_PASS` `SMTP_FROM` | Resend: `smtp.resend.com`, `465`, `resend`, API key, sender on a verified domain | **no** |
@@ -225,7 +225,8 @@ npm run supabase:push -- sql 0001
 npm run supabase:push -- sql 0002
 # ...up to 0014
 
-# Add the bot doctors: 480 in Indonesia + 1,056 across 33 more countries
+# Local/dev only: add the bot doctors (480 in Indonesia + 1,056 across 33 more countries).
+# Production was cleared of bots on 2026-10-09; do not seed it again.
 npm run db:seed
 
 # Site URL, redirect URLs, SMTP and the branded confirmation email
@@ -245,7 +246,7 @@ npm run dev     # http://localhost:3333
 | `npm run dev` | Dev server on port 3333 |
 | `npm run build` / `npm start` | Production build / server (also turns on the service worker) |
 | `npm run lint` | ESLint |
-| `npm run db:seed` | Adds missing bot doctors. It never deletes, because matches and chats cascade |
+| `npm run db:seed` | Adds missing bot doctors (dev only, never on production). It never deletes, because matches and chats cascade |
 | `npm run db:cleanup` | Removes chat photos whose messages were deleted |
 | `npm run supabase:push -- sql 00NN` | Applies a migration |
 | `npm run supabase:push -- email` | Pushes URLs, SMTP settings and the email template |
