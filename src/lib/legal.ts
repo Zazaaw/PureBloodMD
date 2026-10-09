@@ -6,9 +6,9 @@
  * NOTE: written as a solid starting point, not legal advice. Have an
  * Indonesian lawyer review it before a real public launch.
  */
-export const TERMS_VERSION = "2026-10-09.1";
+export const TERMS_VERSION = "2026-10-09.2";
 export const LEGAL_UPDATED = "8 October 2026";
-export const CONTACT_EMAIL = "safety@purebloodmd.app";
+export const CONTACT_EMAIL = "safety@purebloodmd.com";
 
 export type LegalSection = { id: string; title: string; body: (string | string[])[] };
 
@@ -17,7 +17,7 @@ export const TERMS: LegalSection[] = [
     id: "about",
     title: "1. What PureBloodMD is (and is not)",
     body: [
-      "PureBloodMD is a social and dating app with a comedic theme for doctors, medical students and other healthcare people. Many profiles you see are fictional demo doctors operated by us; real members are marked by their own photos and conversations.",
+      "PureBloodMD is a social and dating app with a comedic theme for doctors, medical students and other healthcare people. Every profile belongs to a real member. Accounts that impersonate someone, are fake or are run by bots are removed when we find or are told about them.",
       "PureBloodMD is not a medical service. Nothing on the app, including jokes, profiles or messages, is medical advice, diagnosis or treatment. Never use the app for clinical decisions or patient care.",
       "Only members with the blue verified badge have had their identity document (KTP or passport) and medical license (STR/SIP, or a student card for medical students) reviewed by our team, at the time of review. The badge is not a guarantee of a person's character, current license status, employment, criminal history or marital status, and members without it have not been checked at all. You are responsible for deciding who to trust.",
     ],
@@ -85,7 +85,7 @@ export const TERMS: LegalSection[] = [
     title: "7. Your content",
     body: [
       "You keep ownership of the photos and messages you post. You give us a limited license to store, display and process them only to run the app (for example, showing your profile and delivering your messages).",
-      "Chat photos are visible only to the two people in the conversation. If nobody writes within 24 hours of a match, the match ends automatically (we call it asystole): it is deleted for both people and you may see each other in triage again. Once anyone has written, a conversation ends only after 30 days without a message. Delete chat or Unmatch also deletes it for both people.",
+      "Chat photos are visible only to the two people in the conversation. If nobody writes within 24 hours of a match, the match ends automatically (we call it asystole): it is deleted for both people and you may see each other in triage again. Once anyone has written, a conversation ends only after 30 days without a message. Unmatch deletes it for both people. Delete chat (swipe left in the list) only hides the messages so far for you; the match stays.",
       "EMR (Electronic Medical Record) is a feed every signed-in member can read. Threads, replies and photos you post there are visible to all members except people you blocked or who blocked you. Never post patient data, medical records or anything that could identify a patient. You can delete your own posts at any time; a post that already has replies is replaced by a removal notice so the conversation under it stays readable.",
     ],
   },
@@ -148,7 +148,7 @@ export const PRIVACY: LegalSection[] = [
         "Account: email address, password (stored hashed by our auth provider), the country you chose at sign-up, and the date you accepted these Terms",
         "Profile: name, photo, age, gender, whether you are here for romance or to connect with colleagues, who you are looking for, specialty, hospital, country, bio and tags",
         "Credentials you enter (STR/NIM, alma mater, class year): stored privately and never shown to other users",
-        "Verification documents, only if you request the badge: a photo of your ID (KTP or passport), a selfie holding it, and your medical license or student card. Stored in a private bucket only our reviewers can open, and deleted after the decision. Your ID is specific personal data under UU PDP and is used only to verify you",
+        "Verification documents, only if you request the badge: a photo of your ID (KTP or passport, you may cover the NIK and address) and your medical license or student card. We never ask for a selfie holding your ID. Stored in a private bucket only our reviewers can open, and deleted after the decision. Your ID is specific personal data under UU PDP and is used only to verify you",
         "Up to 4 profile photos, your Super Likes and the people who Super Liked you",
         "Approximate location: only when you tap Radar, rounded to about 1 km. Other users never see it, only a distance",
         "EMR threads, replies, photos and likes you post",
