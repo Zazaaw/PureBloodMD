@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowDown, ClipboardText } from "@phosphor-icons/react/dist/ssr";
 import BlurFade from "@/components/effects/blur-fade";
+import { ActivityButton } from "@/components/emr/activity-button";
 import { Composer } from "@/components/emr/composer";
 import { PostCard } from "@/components/emr/post-card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ export const metadata: Metadata = { title: "EMR" };
 export default async function EmrPage({ searchParams }: { searchParams: Promise<{ before?: string }> }) {
   const { before } = await searchParams;
   const { supabase, profile } = await requireProfile();
+  const { data: unread } = await supabase.rpc("emr_unread_count");
   const me = { id: profile.id, name: profile.display_name, photo: profile.photo_url };
 
   let query = supabase
@@ -34,6 +36,7 @@ export default async function EmrPage({ searchParams }: { searchParams: Promise<
         <PageHeader
           title="EMR"
           subtitle="Electronic Medical Record, for doctors. Chart a case, a post-call thought or a cafeteria review. No patient data, ever."
+          action={<ActivityButton meId={profile.id} unread={Number(unread ?? 0)} />}
         />
 
         {before ? null : (

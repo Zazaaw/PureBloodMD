@@ -8,6 +8,7 @@ import { Cards, ChatCircleDots, ClipboardText, Crown, IdentificationCard, Moon, 
 import { DoctorPhoto } from "@/components/doctor-photo";
 import { LogoMark } from "@/components/logo";
 import { Dock, DockIcon } from "@/components/magicui/dock";
+import { useEmrUnread } from "@/components/emr/use-emr-unread";
 import { VipDialog } from "@/components/vip-dialog";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,8 @@ type Props = {
   /** VIP program switch (app_config). Off during launch: no crown, no plans dialog. */
   vipEnabled: boolean;
   consults: number;
+  meId: string;
+  emrUnread: number;
 };
 
 /** Hover label for the vertical desktop dock. */
@@ -52,7 +55,8 @@ function ActiveDot({ vertical }: { vertical: boolean }) {
  * desktop, a floating bottom dock on phones (hidden inside a chat room so the
  * composer gets the full height).
  */
-export function AppNav({ country, name, photo, isVip, vipEnabled, consults }: Props) {
+export function AppNav({ country, name, photo, isVip, vipEnabled, consults, meId, emrUnread }: Props) {
+  const emrCount = useEmrUnread(meId, emrUnread);
   const pathname = usePathname();
   const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
@@ -80,6 +84,11 @@ export function AppNav({ country, name, photo, isVip, vipEnabled, consults }: Pr
             >
               <Icon weight={active ? "fill" : "regular"} className={cn("size-[45%]", active ? "text-foreground" : "text-muted-foreground")} />
             </Link>
+            {href === "/emr" && emrCount > 0 ? (
+              <span className="pointer-events-none absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-primary px-1 text-center text-caption font-semibold leading-4 text-primary-foreground tabular-nums">
+                {emrCount > 99 ? "99+" : emrCount}
+              </span>
+            ) : null}
             {href === "/chat" && consults > 0 ? (
               <span className="pointer-events-none absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-primary px-1 text-center text-caption font-semibold leading-4 text-primary-foreground tabular-nums">
                 {consults > 99 ? "99+" : consults}
