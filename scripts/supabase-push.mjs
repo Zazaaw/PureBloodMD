@@ -89,6 +89,7 @@ async function pushEmail() {
       },
       "confirm-signup + reset-password email templates and subjects"
     );
+    await pushAppEmails(template, smtp);
   } catch (e) {
     if (!haveSmtp && /custom SMTP|free tier/i.test(e.message)) {
       console.error("Template NOT applied: Supabase free tier only allows custom templates with your own SMTP sender.");
@@ -96,6 +97,53 @@ async function pushEmail() {
       process.exit(2);
     }
     throw e;
+  }
+}
+
+// Emails the database sends itself (verification desk), through pg_net + Resend.
+async function pushAppEmails(template, smtp) {
+  const query = async (sql, what) => {
+    const res = await api("/database/query", { method: "POST", body: JSON.stringify({ query: sql }) });
+    if (!res.ok) throw new Error(`${what}: ${res.status} ${await res.text()}`);
+    console.log(`Updated: ${what}`);
+  };
+  const lit = (s) => {
+    if (s.includes("$tpl$")) throw new Error("template contains $tpl$");
+    return `$tpl$${s}$tpl$`;
+  };
+  const rows = [
+    ["verification_received", "We got your documents. Verdict within 3 days", "verification-received.html"],
+    ["verification_approved", "Congrats, you're verified on PureBloodMD", "verification-approved.html"],
+    ["verification_rejected", "Your PureBloodMD verification needs another look", "verification-rejected.html"],
+  ];
+  await query(
+    `insert into public.email_templates (key, subject, html) values ${rows
+      .map(([k, s, f]) => `(${lit(k)}, ${lit(s)}, ${lit(template(f))})`)
+      .join(", ")}
+     on conflict (key) do update set subject = excluded.subject, html = excluded.html, updated_at = now();`,
+    `${rows.length} database email templates`
+  );
+  const key = env.RESEND_API_KEY || (smtp.host === "smtp.resend.com" ? smtp.pass : "");
+  if (key) {
+    if (!/^[A-Za-z0-9_]+$/.test(key)) throw new Error("Unexpected characters in the Resend API key");
+    await query(
+      `do $$ begin
+         if exists (select 1 from vault.secrets where name = 'resend_api_key') then
+           perform vault.update_secret((select id from vault.secrets where name = 'resend_api_key'), '${key}');
+         else
+           perform vault.create_secret('${key}', 'resend_api_key');
+         end if;
+       end $$;`,
+      "Resend API key in Supabase Vault"
+    );
+  } else console.warn("No Resend key (RESEND_API_KEY or SMTP_PASS with smtp.resend.com): database emails stay off.");
+  if (smtp.from) {
+    const from = `${smtp.name} <${smtp.from}>`.replace(/'/g, "");
+    await query(
+      `insert into public.app_config (key, value) values ('email_from', to_jsonb('${from}'::text)), ('site_url', to_jsonb('${site}'::text))
+       on conflict (key) do update set value = excluded.value, updated_at = now();`,
+      `sender (${from}) and site URL for database emails`
+    );
   }
 }
 

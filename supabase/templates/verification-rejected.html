@@ -1,0 +1,81 @@
+<!--
+  PureBloodMD: "verification_rejected" email, sent from the database (public.send_template_email via pg_net + Resend).
+  Pushed into public.email_templates by `npm run supabase:push -- email`.
+  Placeholders: {{name}}, {{site}}, {{note}}. Same design system as confirm-signup.html.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="x-apple-disable-message-reformatting">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>Your verification needs another look</title>
+</head>
+<body style="margin:0;padding:0;background-color:#ffffff;-webkit-text-size-adjust:100%;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">We could not verify your documents yet. Here is what to fix.&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">
+<tr><td align="center" style="padding:32px 16px 40px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;">
+
+    <!-- Logo: image mark + live text -->
+    <tr><td style="padding:0 0 28px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+        <td valign="middle" style="padding-right:10px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+            <td width="32" height="32" align="center" valign="middle" bgcolor="#cb1a4a" style="width:32px;height:32px;border-radius:8px;background-color:#cb1a4a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;font-weight:800;color:#ffffff;"><img src="https://tkqrjeubjfqqfpkfvmcn.supabase.co/storage/v1/object/public/avatars/brand/email-mark.png" width="32" height="32" alt="P" style="display:block;border:0;border-radius:8px;color:#ffffff;font-size:14px;font-weight:800;"></td>
+          </tr></table>
+        </td>
+        <td valign="middle" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:19px;font-weight:800;letter-spacing:-0.02em;color:#0a0a0a;">PureBlood<span style="color:#cb1a4a;">MD</span></td>
+      </tr></table>
+    </td></tr>
+
+    <!-- Hero -->
+    <tr><td style="padding:0 0 32px;">
+      <!-- Dark panel + styled alt text: still looks intentional when images are blocked (e.g. Spam folder). -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+        <td align="center" valign="middle" bgcolor="#140608" style="background-color:#140608;border-radius:16px;">
+          <img src="https://tkqrjeubjfqqfpkfvmcn.supabase.co/storage/v1/object/public/avatars/brand/email-hero-verify-rejected.png" width="520" alt="DOCTOR PASSPORT &middot; Needs another look" style="display:block;width:100%;max-width:520px;height:auto;border:0;border-radius:16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;letter-spacing:0.08em;line-height:120px;text-align:center;color:#f9a8bc;">
+        </td>
+      </tr></table>
+    </td></tr>
+
+    <!-- Copy -->
+    <tr><td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+      <h1 style="margin:0 0 12px;font-size:26px;line-height:1.25;font-weight:800;letter-spacing:-0.02em;color:#0a0a0a;">Almost there, {{name}}.</h1>
+      <p style="margin:0 0 28px;font-size:16px;line-height:1.6;color:#525252;">We could not verify your documents this time. Our reviewer left this note:<br><span style="display:block;margin-top:10px;padding:12px 14px;border-left:3px solid #cb1a4a;background-color:#f5f5f5;color:#0a0a0a;">{{note}}</span></p>
+    </td></tr>
+
+    <!-- Button (bulletproof: works with images off) -->
+    <tr><td style="padding:0 0 12px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+        <td align="center" bgcolor="#cb1a4a" style="border-radius:10px;background-color:#cb1a4a;">
+          <a href="{{site}}/passport?tab=badge" style="display:block;padding:15px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;line-height:1.2;color:#ffffff;text-decoration:none;border-radius:10px;">Resubmit documents</a>
+        </td>
+      </tr></table>
+    </td></tr>
+    <tr><td align="center" style="padding:0 0 36px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;line-height:1.5;color:#737373;">PureBloodMD verification desk</td></tr>
+
+    <tr><td style="border-top:1px solid #e5e5e5;padding:24px 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55;color:#525252;">
+      <p style="margin:0 0 6px;color:#0a0a0a;font-weight:700;">Tips for a quick approval</p>
+      <p style="margin:0;">Use clear, well-lit photos where every word is readable. The name on your ID, selfie and license should match your passport.</p>
+    </td></tr>
+
+    <!-- Footer -->
+    <tr><td style="padding:36px 0 0;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+        <td style="border-top:1px solid #e5e5e5;padding:24px 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:1.6;color:#a3a3a3;">
+          <p style="margin:0 0 10px;"><span style="color:#737373;font-weight:600;">Stay safe:</span> we will never ask for your password or OTP. Never send money or share your WhatsApp with a match.</p>
+          
+          <p style="margin:0;"><a href="{{site}}/terms" style="color:#737373;text-decoration:underline;">Terms</a> &nbsp;&middot;&nbsp; <a href="{{site}}/privacy" style="color:#737373;text-decoration:underline;">Privacy</a> &nbsp;&middot;&nbsp; PureBloodMD, doctors marrying doctors.</p>
+        </td>
+      </tr></table>
+    </td></tr>
+
+  </table>
+</td></tr>
+</table>
+</body>
+</html>
