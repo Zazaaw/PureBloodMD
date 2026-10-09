@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowSquareOut, Crown, LockSimple, Prohibit, ShieldWarning, SignOut } from "@phosphor-icons/react/dist/ssr";
+import { ArrowSquareOut, Crown, LockSimple, Prohibit, ShieldCheck, ShieldWarning, SignOut } from "@phosphor-icons/react/dist/ssr";
 import BlurFade from "@/components/effects/blur-fade";
 import { BlockedList } from "@/components/blocked-list";
 import { InstallApp } from "@/components/pwa";
@@ -18,7 +18,7 @@ import { AccountCard } from "./account-card";
 import { CredentialsForm } from "./credentials-form";
 import { PassportForm } from "./passport-form";
 import { PassportShell } from "./passport-shell";
-import { PASSPORT_TABS, type PassportTab, type Tile } from "./tabs";
+import { PASSPORT_TABS, type PassportTab } from "./tabs";
 
 export const metadata: Metadata = { title: "Doctor passport" };
 
@@ -46,30 +46,12 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
       .maybeSingle<VerificationRequest>(),
   ]);
   const verified = isVerified(profile);
+  const { data: isAdmin } = await supabase.rpc("is_admin");
   const blockedRows = (blocked ?? []) as BlockedRow[];
-  const photoCount = 1 + (profile.gallery?.length ?? 0);
   const plan = subscription?.active ? PLANS.find((p) => p.id === subscription.plan) : null;
   const cancelling = Boolean(subscription?.active && subscription.cancel_at_period_end);
 
-  const status: Record<"verification" | "vip" | "photos", Tile> = {
-    verification: verified
-      ? { tab: "Badge", label: "Badge", value: "Verified", hint: "ID and license checked", tone: "done" }
-      : request?.status === "pending"
-        ? { tab: "Badge", label: "Badge", value: "In review", hint: "1 to 2 working days", tone: "warn" }
-        : { tab: "Badge", label: "Badge", value: "Not verified", hint: "Get the blue badge", tone: "todo" },
-    vip: !flags.vipEnabled
-      ? { tab: "Settings", label: "Plan", value: "Free launch", hint: `${flags.dailySwipeLimit} swipes, 1 Super Like a day`, tone: "done" }
-      : subscription?.active
-      ? { tab: "VIP", label: "Plan", value: cancelling ? "VIP, ending" : "VIP", hint: `${cancelling ? "Ends" : "Renews"} ${fmtDate(subscription.period_end)}`, tone: cancelling ? "warn" : "done" }
-      : { tab: "VIP", label: "Plan", value: "Free", hint: "10 bubbles per consult", tone: "todo" },
-    photos: {
-      tab: "Profile",
-      label: "Photos",
-      value: `${photoCount} of 4`,
-      hint: photoCount < 4 ? "More photos, more matches" : "Gallery full",
-      tone: photoCount < 4 ? "todo" : "done",
-    },
-  };
+
 
   const panels: Record<PassportTab, React.ReactNode> = {
     Profile: <PassportForm userId={userId} profile={profile} countries={flags.activeCountries} />,
@@ -181,6 +163,17 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
             </form>
           </CardContent>
         </Card>
+        {isAdmin ? (
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><ShieldCheck className="size-5" /> Verification desk</CardTitle>
+              <CardDescription>Developer only. Review ID and license submissions, approve or send back with a note.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild><Link href="/admin">Open the desk</Link></Button>
+            </CardContent>
+          </Card>
+        ) : null}
         <AccountCard userId={userId} paused={Boolean(profile.deactivated_at)} vipEnabled={flags.vipEnabled} />
       </div>
     ),
@@ -197,7 +190,6 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
           initialTab={initialTab}
           me={{ name: profile.display_name, photo: profile.photo_url, subtitle: `${profile.specialty_title} · ${profile.hospital} · ${countryName(profile.country ?? "ID")}`, verified }}
           tabs={tabs}
-          status={status}
           panels={panels}
         />
       </BlurFade>

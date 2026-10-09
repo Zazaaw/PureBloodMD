@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { CaretRight, Crown, Images, SealCheck } from "@phosphor-icons/react";
+import { SealCheck } from "@phosphor-icons/react";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import PillTabs from "@/components/ui/pill-tabs";
-import { cn } from "@/lib/utils";
-import { PASSPORT_TABS, type PassportTab, type Tile } from "./tabs";
+import { PASSPORT_TABS, type PassportTab } from "./tabs";
 
 /**
- * Passport layout: who you are + three status tiles above the fold, then one
+ * Passport layout: who you are, then one
  * tab per job. Panels stay mounted (just hidden) so unsaved edits survive a
  * tab switch; the active tab is mirrored in ?tab= for deep links.
  */
@@ -16,14 +15,12 @@ export function PassportShell({
   tabs = PASSPORT_TABS,
   initialTab,
   me,
-  status,
   panels,
 }: {
   /** Tabs to show (VIP is hidden while the program is switched off). */
   tabs?: readonly PassportTab[];
   initialTab: PassportTab;
   me: { name: string; photo: string; subtitle: string; verified: boolean };
-  status: { verification: Tile; vip: Tile; photos: Tile };
   panels: Record<PassportTab, React.ReactNode>;
 }) {
   const [tab, setTab] = useState<PassportTab>(initialTab);
@@ -36,12 +33,11 @@ export function PassportShell({
     window.history.replaceState(null, "", url);
   }
 
-  const icons: Record<string, typeof SealCheck> = { Badge: SealCheck, Plan: Crown, Photos: Images };
 
   return (
     <>
-      <section className="flex flex-col gap-5 rounded-xl border bg-card p-5 shadow-sm lg:flex-row lg:items-center">
-        <div className="flex min-w-0 items-center gap-4 lg:w-80 lg:shrink-0">
+      <section className="flex items-center gap-4 rounded-xl border bg-card p-5 shadow-sm">
+        <div className="flex min-w-0 items-center gap-4">
           <DoctorPhoto src={me.photo} alt={me.name} size={64} className="size-16 shrink-0 ring-2 ring-border" />
           <div className="min-w-0">
             <p className="flex flex-wrap items-center gap-1.5 text-h5 font-semibold leading-tight">
@@ -52,33 +48,6 @@ export function PassportShell({
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:flex-1">
-          {[status.verification, status.vip, status.photos].map((t) => {
-            const Icon = icons[t.label] ?? SealCheck;
-            return (
-              <button
-                key={t.label}
-                type="button"
-                onClick={() => go(t.tab)}
-                className="group flex min-w-0 flex-col items-start gap-1.5 rounded-lg border bg-background p-3 text-left transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
-              >
-                <span className="flex w-full items-center justify-between gap-1">
-                  <Icon
-                    weight="fill"
-                    className={cn(
-                      "size-5 shrink-0",
-                      t.tone === "done" ? "text-emerald-500" : t.tone === "warn" ? "text-amber-500" : "text-muted-foreground"
-                    )}
-                  />
-                  <CaretRight className="size-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-                </span>
-                <span className="text-overline font-semibold uppercase text-muted-foreground">{t.label}</span>
-                <span className="text-body-sm font-semibold leading-tight">{t.value}</span>
-                <span className="hidden text-caption text-muted-foreground sm:block">{t.hint}</span>
-              </button>
-            );
-          })}
-        </div>
       </section>
 
       <div className="sticky top-0 z-30 -mx-4 mt-6 bg-background/85 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6">
