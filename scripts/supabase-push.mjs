@@ -115,6 +115,7 @@ async function pushAppEmails(template, smtp) {
     ["verification_received", "We got your documents. Verdict within 3 days", "verification-received.html"],
     ["verification_approved", "Congrats, you're verified on PureBloodMD", "verification-approved.html"],
     ["verification_rejected", "Your PureBloodMD verification needs another look", "verification-rejected.html"],
+    ["account_banned", "Your PureBloodMD account has been suspended", "account-banned.html"],
   ];
   await query(
     `insert into public.email_templates (key, subject, html) values ${rows
