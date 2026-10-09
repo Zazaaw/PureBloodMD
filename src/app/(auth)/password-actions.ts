@@ -2,7 +2,6 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { captchaBySupabase, verifyCaptcha } from "@/lib/captcha";
 import { createClient } from "@/lib/supabase/server";
 
 export type ResetState = { error?: string; notice?: string; email?: string };
@@ -13,17 +12,11 @@ export async function requestPasswordReset(_: ResetState, fd: FormData): Promise
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Enter a valid email address.", email };
 
   const hdrs = await headers();
-  const token = String(fd.get("cf-turnstile-response") ?? "");
-  if (!captchaBySupabase()) {
-    const check = await verifyCaptcha(token, hdrs.get("cf-connecting-ip") ?? hdrs.get("x-forwarded-for")?.split(",")[0]);
-    if (!check.ok) return { email, error: check.reason };
-  }
 
   const origin = hdrs.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3333";
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/auth/confirm?next=/reset-password`,
-    captchaToken: captchaBySupabase() ? token : undefined,
   });
   if (error) {
     const msg = error.message.toLowerCase();

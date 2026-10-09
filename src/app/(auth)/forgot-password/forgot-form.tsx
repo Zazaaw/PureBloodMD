@@ -1,17 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useCallback, useState } from "react";
+import { useActionState } from "react";
 import { EnvelopeSimple } from "@phosphor-icons/react";
-import { Turnstile } from "@/components/turnstile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { requestPasswordReset } from "../password-actions";
 
-export function ForgotForm({ captcha }: { captcha: boolean }) {
+export function ForgotForm() {
   const [state, action, pending] = useActionState(requestPasswordReset, {});
-  const [token, setToken] = useState<string | null>(null);
-  const onToken = useCallback((t: string | null) => setToken(t), []);
 
   if (state.notice) {
     return (
@@ -33,9 +30,8 @@ export function ForgotForm({ captcha }: { captcha: boolean }) {
         <label htmlFor="email" className="text-body-sm font-medium">Email</label>
         <Input id="email" name="email" type="email" autoComplete="email" required placeholder="dr.you@hospital.id" defaultValue={state.email} />
       </div>
-      {captcha ? <Turnstile key={JSON.stringify(state)} onToken={onToken} /> : null}
       {state.error ? <p role="alert" className="text-body-sm text-red-500">Error: {state.error}</p> : null}
-      <Button type="submit" className="w-full" disabled={pending || (captcha && !token)}>
+      <Button type="submit" className="w-full" disabled={pending}>
         {pending ? "Sending…" : "Send reset link"}
       </Button>
       <p className="text-center text-body-sm text-muted-foreground">

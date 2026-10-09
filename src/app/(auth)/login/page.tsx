@@ -15,7 +15,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           That confirmation link expired or was already used. Sign in, or sign up again for a fresh link.
         </p>
       ) : null}
-      <AuthForm mode="login" action={signIn} captcha={process.env.SUPABASE_AUTH_CAPTCHA === "on"} />
+      <AuthForm mode="login" action={signIn} />
     </>
   );
 }

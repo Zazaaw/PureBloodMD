@@ -33,7 +33,7 @@ Every doctor knows the problem: your dates don't understand why your pager goes 
 
 Under the jokes it is a complete, working dating app:
 
-- Real accounts, email confirmation and CAPTCHA
+- Real accounts and email confirmation
 - Realtime chat with photos and stickers
 - Verified badges and subscriptions
 - Safety tools that protect members, and the people who run the app
@@ -163,7 +163,7 @@ VIP includes unlimited bubbles, 5 Super Likes a day and unlimited rewinds. If yo
 - **Block:** works from both Triage and chat.
 - **Account control:** deactivate (hidden from everyone, reversible) or permanently delete your account from Passport > Settings.
 - **Forgot password:** a branded reset email (same design as the confirmation email) leads to a page for choosing a new password, with a confirm field.
-- **Signup protection:** sign up requires a Cloudflare Turnstile **CAPTCHA**, accepting the **Terms & Privacy Policy**, and confirming you are **21+**. The accepted terms version is stored on the account.
+- **Signup protection:** sign up requires a confirmed email, accepting the **Terms & Privacy Policy**, and confirming you are **21+**. The accepted terms version is stored on the account.
 - **Terms:** clear rules about no financial transactions and no sharing of personal information. The terms also limit the founders' liability for transactions or information exchanged between members.
 - **Location privacy:** radar locations are rounded to about 1 km, and other members only ever see a distance.
 
@@ -181,7 +181,7 @@ VIP includes unlimited bubbles, 5 Super Likes a day and unlimited rewinds. If yo
 | Typography | Plus Jakarta Sans + JetBrains Mono on a golden-ratio scale ([spec](docs/typography.md)) |
 | Backend | Supabase: Auth, Postgres with Row Level Security, Realtime, Storage, pg_cron |
 | Email | Resend SMTP with a Gmail-safe template |
-| Security | Cloudflare Turnstile, RLS on every table, security-definer RPCs |
+| Security | Email confirmation, Supabase Auth rate limits, RLS on every table, security-definer RPCs |
 
 The game rules live **in the database**, not just the UI. These are all enforced by Postgres triggers and RPCs, so a modified client can't skip them:
 - the Bumble rule
@@ -215,7 +215,6 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3333` locally, your domain in production | yes |
 | `SITE_URL_PRODUCTION` | Your main domain, e.g. `https://www.purebloodmd.com`. Becomes the Supabase Site URL used in email links | no |
 | `SITE_URL_EXTRA` | Other deployed origins allowed to receive auth redirects, comma separated (e.g. the `*.vercel.app` URL) | no |
-| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Cloudflare > Turnstile (test keys work locally) | site key only |
 | `SMTP_HOST` `SMTP_PORT` `SMTP_USER` `SMTP_PASS` `SMTP_FROM` | Resend: `smtp.resend.com`, `465`, `resend`, API key, sender on a verified domain | **no** |
 
 > Never put the service role key, access token or SMTP password in a `NEXT_PUBLIC_` variable.
@@ -258,7 +257,7 @@ npm run dev     # http://localhost:3333
 ```
 src/
   app/
-    (auth)/            login, signup (CAPTCHA + terms consent)
+    (auth)/            login, signup (terms consent)
     onboarding/        create your Doctor Passport
     (app)/discover/    Triage: swipe deck, filters, radar, rewind
     (app)/chat/        Consults: inbox + realtime chat room
@@ -266,7 +265,7 @@ src/
     terms/ privacy/    legal pages
   components/          doctor card, dock, dialogs, pickers, skeletons
   components/ui/       p441z style kit (vendored)
-  lib/                 constants, auth, captcha, stickers, legal text
+  lib/                 constants, auth, stickers, legal text
   proxy.ts             session refresh + route protection
 supabase/
   migrations/          0001 to 0014: schema, RLS, triggers, RPCs

@@ -11,7 +11,7 @@ export default async function SignupPage() {
   return (
     <>
       <PageHeader title="Join the registry" subtitle="MD x MD only. Your passport comes next." className="[&_h3]:mt-0 [&_h3]:text-h5" />
-      <AuthForm mode="signup" action={signUp} captcha={true} countries={activeCountries} />
+      <AuthForm mode="signup" action={signUp} countries={activeCountries} />
     </>
   );
 }

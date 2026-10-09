@@ -2,7 +2,6 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { captchaBySupabase, verifyCaptcha } from "@/lib/captcha";
 import { getAppFlags } from "@/lib/flags";
 import { TERMS_VERSION } from "@/lib/legal";
 import { createClient } from "@/lib/supabase/server";
@@ -17,18 +16,13 @@ function readCredentials(formData: FormData) {
   return { email, password };
 }
 
-const captchaToken = (fd: FormData) => String(fd.get("cf-turnstile-response") ?? "");
-
 export async function signIn(state: AuthState, formData: FormData): Promise<AuthState> {
   if (formData.get("intent") === "resend") return resendConfirmation(formData);
   const creds = readCredentials(formData);
   if ("error" in creds) return creds;
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({
-    ...creds,
-    options: captchaBySupabase() ? { captchaToken: captchaToken(formData) } : undefined,
-  });
+  const { error } = await supabase.auth.signInWithPassword(creds);
   if (error) {
     return {
       email: creds.email,
@@ -36,9 +30,7 @@ export async function signIn(state: AuthState, formData: FormData): Promise<Auth
       error: error.message.toLowerCase().includes("banned")
         ? "This account is suspended. If you think this is a mistake, email safety@purebloodmd.com."
         : error.message.includes("Email not confirmed")
-        ? "Confirm your email first. Check your inbox for the link."
-        : error.message.toLowerCase().includes("captcha")
-          ? "Complete the CAPTCHA first."
+          ? "Confirm your email first. Check your inbox for the link."
           : "Wrong email or password. Even residents get this one wrong.",
     };
   }
@@ -64,11 +56,6 @@ export async function signUp(_: AuthState, formData: FormData): Promise<AuthStat
   }
 
   const hdrs = await headers();
-  const token = captchaToken(formData);
-  if (!captchaBySupabase()) {
-    const check = await verifyCaptcha(token, hdrs.get("cf-connecting-ip") ?? hdrs.get("x-forwarded-for")?.split(",")[0]);
-    if (!check.ok) return { ...back, error: check.reason };
-  }
 
   const origin = hdrs.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3333";
   const supabase = await createClient();
@@ -77,7 +64,6 @@ export async function signUp(_: AuthState, formData: FormData): Promise<AuthStat
     options: {
       // The email button appends &token_hash=...; /auth/confirm verifies it on this same site.
       emailRedirectTo: `${origin}/auth/confirm?next=/onboarding`,
-      captchaToken: captchaBySupabase() ? token : undefined,
       // Proof of consent, stored on the auth user.
       data: { terms_version: TERMS_VERSION, terms_accepted_at: new Date().toISOString(), age_confirmed_21: true, country, intent },
     },
@@ -113,7 +99,6 @@ async function resendConfirmation(formData: FormData): Promise<AuthState> {
     email,
     options: {
       emailRedirectTo: `${origin}/auth/confirm?next=/onboarding`,
-      captchaToken: captchaBySupabase() ? captchaToken(formData) : undefined,
     },
   });
   if (error) {

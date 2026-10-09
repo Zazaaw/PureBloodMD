@@ -6,7 +6,7 @@
  * NOTE: written as a solid starting point, not legal advice. Have an
  * Indonesian lawyer review it before a real public launch.
  */
-export const TERMS_VERSION = "2026-10-09.2";
+export const TERMS_VERSION = "2026-10-09.3";
 export const LEGAL_UPDATED = "8 October 2026";
 export const CONTACT_EMAIL = "safety@purebloodmd.com";
 
@@ -66,7 +66,7 @@ export const TERMS: LegalSection[] = [
         "Post hate speech or attack people for religion, ethnicity, race, gender, sexual orientation or disability",
         "Scam, spam, advertise, recruit or ask for money",
         "Post content involving minors, violence, self-harm encouragement or illegal activity",
-        "Use bots, scrapers, fake accounts, or try to bypass the CAPTCHA, message limits, blocks or security",
+        "Use bots, scrapers, fake accounts, or try to bypass message limits, blocks or security",
       ],
       "We may remove content, limit features, suspend or permanently delete accounts that break these rules, with or without notice, and may report illegal activity to the authorities.",
     ],
@@ -153,7 +153,7 @@ export const PRIVACY: LegalSection[] = [
         "Approximate location: only when you tap Radar, rounded to about 1 km. Other users never see it, only a distance",
         "EMR threads, replies, photos and likes you post",
         "Messages, photos and stickers you send, swipes, matches, blocks and reports, including any screenshots you attach to a report and a copy of the reported conversation",
-        "Technical data needed for security, such as CAPTCHA results and sign-in records",
+        "Technical data needed for security, such as sign-in records",
       ],
     ],
   },
@@ -161,14 +161,14 @@ export const PRIVACY: LegalSection[] = [
     id: "use",
     title: "2. How we use it",
     body: [
-      "To run the app (show profiles, deliver messages, compute distances), keep it safe (CAPTCHA, verification, reports, blocks, automatic hiding of phone numbers in chat, abuse prevention), manage VIP, and comply with the law. We do not sell your personal data.",
+      "To run the app (show profiles, deliver messages, compute distances), keep it safe (verification, reports, blocks, automatic hiding of phone numbers in chat, abuse prevention), manage VIP, and comply with the law. We do not sell your personal data.",
     ],
   },
   {
     id: "share",
     title: "3. Who sees it",
     body: [
-      "Other members see your public profile and your EMR posts (except people you blocked or who blocked you). Only the person you are chatting with sees your messages and chat photos. Our service providers (Supabase for hosting and database, Cloudflare for CAPTCHA) process data on our behalf. We may disclose data when required by law or to protect someone's safety.",
+      "Other members see your public profile and your EMR posts (except people you blocked or who blocked you). Only the person you are chatting with sees your messages and chat photos. Our service providers (Supabase for hosting and database, Vercel for the website, Resend for email) process data on our behalf. We may disclose data when required by law or to protect someone's safety.",
     ],
   },
   {

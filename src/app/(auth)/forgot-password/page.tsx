@@ -13,7 +13,7 @@ export default async function ForgotPasswordPage({ searchParams }: { searchParam
         subtitle={expired ? "That reset link expired or was already used. Request a fresh one." : "Happens after every night shift. We'll email you a reset link."}
         className="[&_h3]:mt-0 [&_h3]:text-h5"
       />
-      <ForgotForm captcha={true} />
+      <ForgotForm />
     </>
   );
 }

@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useCallback, useState } from "react";
+import { useActionState, useState } from "react";
 import { EnvelopeSimple } from "@phosphor-icons/react";
 import { CountrySelect } from "@/components/form/country-select";
 import { IntentPicker } from "@/components/form/intent-picker";
 import { PasswordInput } from "@/components/form/password-input";
 import { HeartbeatLoader } from "@/components/heartbeat-loader";
-import { Turnstile } from "@/components/turnstile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { AuthState } from "./actions";
@@ -15,20 +14,16 @@ import type { AuthState } from "./actions";
 type Props = {
   mode: "login" | "signup";
   action: (state: AuthState, formData: FormData) => Promise<AuthState>;
-  /** Show the CAPTCHA on this form. Sign-up always; sign-in only when Supabase enforces it. */
-  captcha: boolean;
   /** Countries open for sign-up (app_config). */
   countries?: string[];
 };
 
-export function AuthForm({ mode, action, captcha, countries = ["ID"] }: Props) {
+export function AuthForm({ mode, action, countries = ["ID"] }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
-  const [token, setToken] = useState<string | null>(null);
   const [agree, setAgree] = useState(false);
   const [adult, setAdult] = useState(false);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const onToken = useCallback((t: string | null) => setToken(t), []);
   const isLogin = mode === "login";
 
   if (state.notice) {
@@ -47,7 +42,7 @@ export function AuthForm({ mode, action, captcha, countries = ["ID"] }: Props) {
   }
 
   const mismatch = !isLogin && confirm.length > 0 && confirm !== password;
-  const blocked = (captcha && !token) || (!isLogin && (!agree || !adult || mismatch || confirm.length === 0));
+  const blocked = (!isLogin && (!agree || !adult || mismatch || confirm.length === 0));
 
   return (
     <form action={formAction} className="space-y-4" noValidate>
@@ -125,9 +120,6 @@ export function AuthForm({ mode, action, captcha, countries = ["ID"] }: Props) {
           </label>
         </div>
       ) : null}
-
-      {/* Remount on every result: Turnstile tokens are single-use. */}
-      {captcha ? <Turnstile key={JSON.stringify(state)} onToken={onToken} /> : null}
 
       {state.error ? (
         <p role="alert" className="text-body-sm text-red-500">Error: {state.error}</p>
