@@ -64,7 +64,7 @@ type Props = {
 };
 type Direction = "left" | "right" | "super";
 
-export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota, rewindQuota, swipeQuota, vipEnabled, activeCountries }: Props) {
+export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLocation, superQuota, rewindQuota, swipeQuota, vipEnabled, activeCountries }: Props) {
   const router = useRouter();
   const supabase = createClient();
 
@@ -73,7 +73,10 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
   const [country, setCountry] = useState(me.country ?? "ID");
   const [radius, setRadius] = useState(25);
   // Without a radar fix there are no distances, so start with the whole country.
-  const [nationwide, setNationwide] = useState(!hasLocation);
+  // The server prop only learns about a new radar fix after a refresh; track it locally too.
+  const [scanned, setScanned] = useState(false);
+  const hasLocation = serverHasLocation || scanned;
+  const [nationwide, setNationwide] = useState(!serverHasLocation);
   const [scanning, setScanning] = useState(false);
   const [safety, setSafety] = useState<{ mode: "report" | "block"; doc: Profile } | null>(null);
   const [quota, setQuota] = useState<Quota>(superQuota);
@@ -184,6 +187,13 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
           return;
         }
         sounds.fanfare();
+        // Fetch the deck again right away so every card carries a distance; don't wait for a
+        // full server refresh (on a slow connection the old, distance-less deck would show).
+        setLoadingDeck(true);
+        const { data, error: deckError } = await supabase.rpc("get_candidates", { p_country: country });
+        setLoadingDeck(false);
+        setScanned(true);
+        if (!deckError) setCandidates((data ?? []) as Profile[]);
         setNationwide(false);
         setIndex(0);
         reshuffleSync();
@@ -547,7 +557,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
           </aside>
 
           <section className="mx-auto w-full min-w-0 max-w-[23rem]" aria-label="Doctor deck">
-            {radarFallback && current ? (
+            {radarFallback && current && !loadingDeck ? (
               <p role="status" className="mb-3 flex items-start gap-2 rounded-lg border bg-muted/50 px-3 py-2 text-caption text-muted-foreground">
                 <Broadcast className="mt-0.5 size-4 shrink-0 text-primary" />
                 <span>
