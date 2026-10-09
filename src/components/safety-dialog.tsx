@@ -7,12 +7,11 @@ import { Textarea } from "@/components/form/field";
 import { Modal } from "@/components/modal";
 import { Button } from "@/components/ui/button";
 import { REPORT_REASONS, type ReportReason } from "@/lib/constants";
-import { prepareImage } from "@/lib/image";
+import { IMAGE_ACCEPT, MAX_PICK_BYTES, isPickableImage, prepareImage } from "@/lib/image";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 const MAX_EVIDENCE = 4;
-const EVIDENCE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 type Evidence = { path: string; preview: string; name: string };
 
 type Props = {
@@ -60,8 +59,8 @@ export function SafetyDialog({ open, onClose, target, matchId, mode, onBlocked }
     if (!data.user) return toast.error("Session expired. Sign in again.");
     setUploading(true);
     for (const file of picked) {
-      if (!EVIDENCE_TYPES.includes(file.type)) {
-        toast.error(`${file.name}: use a JPG, PNG or WebP screenshot.`);
+      if (!isPickableImage(file) || file.size > MAX_PICK_BYTES) {
+        toast.error(`${file.name}: use a photo or screenshot under 50 MB.`);
         continue;
       }
       try {
@@ -184,7 +183,7 @@ export function SafetyDialog({ open, onClose, target, matchId, mode, onBlocked }
               <span className="text-caption text-muted-foreground tabular-nums">{evidence.length} / {MAX_EVIDENCE}</span>
             </div>
             <p className="mt-0.5 text-caption text-muted-foreground">
-              Screenshots of messages, photos or profiles. Up to {MAX_EVIDENCE}, JPG, PNG or WebP.
+              Screenshots of messages, photos or profiles. Up to {MAX_EVIDENCE} photos or screenshots.
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               {evidence.map((e) => (
@@ -218,7 +217,7 @@ export function SafetyDialog({ open, onClose, target, matchId, mode, onBlocked }
               <input
                 ref={fileRef}
                 type="file"
-                accept={EVIDENCE_TYPES.join(",")}
+                accept={IMAGE_ACCEPT}
                 multiple
                 hidden
                 onChange={(e) => addEvidence(e.target.files)}

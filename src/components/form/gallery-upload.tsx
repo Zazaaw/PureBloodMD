@@ -3,11 +3,10 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { Camera, Plus, Star, X } from "@phosphor-icons/react";
+import { IMAGE_ACCEPT, MAX_PICK_BYTES, isPickableImage, prepareImage } from "@/lib/image";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
-const MAX_BYTES = 5 * 1024 * 1024;
-const TYPES = ["image/jpeg", "image/png", "image/webp"];
 const SLOTS = 4;
 
 /**
@@ -47,14 +46,21 @@ export function GalleryUpload({
     if (inputRef.current) inputRef.current.value = "";
     if (!file) return;
     setLocalError(null);
-    if (!TYPES.includes(file.type)) return setLocalError("Use a JPG, PNG or WebP photo.");
-    if (file.size > MAX_BYTES) return setLocalError("Max 5 MB per photo. This is a dating app, not a CT scan.");
+    if (!isPickableImage(file)) return setLocalError("That file is not a photo.");
+    if (file.size > MAX_PICK_BYTES) return setLocalError("Max 50 MB per photo. This is a dating app, not a CT scan.");
     const slot = Math.min(target.current, urls.length);
     setBusy(slot);
-    const ext = file.type.split("/")[1].replace("jpeg", "jpg");
-    const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+    // Shrink + re-encode in the browser: big phone photos and HEIC work, and EXIF/GPS is stripped.
+    let img: Awaited<ReturnType<typeof prepareImage>>;
+    try {
+      img = await prepareImage(file, 1600);
+    } catch {
+      setBusy(null);
+      return setLocalError("This photo could not be read. Try a screenshot or a JPG.");
+    }
+    const path = `${userId}/${crypto.randomUUID()}.${img.ext}`;
     const supabase = createClient();
-    const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { contentType: file.type });
+    const { error: upErr } = await supabase.storage.from("avatars").upload(path, img.blob, { contentType: img.type });
     setBusy(null);
     if (upErr) return setLocalError("Upload failed. Try another photo.");
     const url = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
@@ -129,7 +135,7 @@ export function GalleryUpload({
         })}
       </div>
       <p className="text-caption text-muted-foreground">A clear face photo first. Scrubs encouraged. People swipe sideways to see the rest.</p>
-      <input ref={inputRef} type="file" accept={TYPES.join(",")} className="sr-only" aria-label="Choose a photo" onChange={(e) => upload(e.target.files?.[0])} />
+      <input ref={inputRef} type="file" accept={IMAGE_ACCEPT} className="sr-only" aria-label="Choose a photo" onChange={(e) => upload(e.target.files?.[0])} />
       <input type="hidden" name="photo_url" value={urls[0] ?? ""} />
       {urls.slice(1).map((u) => (
         <input key={u} type="hidden" name="gallery" value={u} />

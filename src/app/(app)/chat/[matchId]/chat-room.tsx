@@ -21,7 +21,7 @@ import { sounds } from "@/lib/sounds";
 import { detectPersonalInfo, parseSticker, stickerBody, willMaskNumbers } from "@/lib/stickers";
 import { createClient } from "@/lib/supabase/client";
 import type { Gender, InboxRow, Message } from "@/lib/types";
-import { prepareImage } from "@/lib/image";
+import { IMAGE_ACCEPT, MAX_PICK_BYTES, isPickableImage, prepareImage } from "@/lib/image";
 import { cn } from "@/lib/utils";
 
 type Me = { id: string; gender: Gender; intent: "romance" | "connect"; isVip: boolean; vipEnabled: boolean; name: string; country: string };
@@ -39,8 +39,6 @@ function useCountdown(endsAt: number) {
   return { label: `${h}:${m}:${s}`, expired: left === 0, left };
 }
 
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 const clock = (iso: string) => new Date(iso).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 
@@ -268,8 +266,8 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
   const sendPhoto = async (file: File | undefined) => {
     if (fileRef.current) fileRef.current.value = "";
     if (!file) return;
-    if (!IMAGE_TYPES.includes(file.type)) return toast.error("Send a JPG, PNG, WebP or GIF.");
-    if (file.size > MAX_IMAGE_BYTES) return toast.error("Max 8 MB per photo. This is a chat, not a PACS server.");
+    if (!isPickableImage(file)) return toast.error("That file is not a photo.");
+    if (file.size > MAX_PICK_BYTES) return toast.error("Max 50 MB per photo. This is a chat, not a PACS server.");
     if (quotaGone) return setVipOpen(true);
     if (mustWait) return toast("Asystole mode: wait for her to initiate CPR first.");
 
@@ -522,7 +520,7 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
         <input
           ref={fileRef}
           type="file"
-          accept={IMAGE_TYPES.join(",")}
+          accept={IMAGE_ACCEPT}
           className="sr-only"
           aria-label="Choose a photo"
           onChange={(e) => sendPhoto(e.target.files?.[0])}

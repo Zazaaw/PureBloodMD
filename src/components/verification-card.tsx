@@ -6,6 +6,7 @@ import { CheckCircle, IdentificationBadge, SealCheck, ShieldCheck, UserFocus } f
 import { toast } from "sonner";
 import { StatusPill } from "@/components/status-pill";
 import { Button } from "@/components/ui/button";
+import { IMAGE_ACCEPT, MAX_PICK_BYTES, isPickableImage, prepareImage } from "@/lib/image";
 import { createClient } from "@/lib/supabase/client";
 import type { VerificationRequest } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -17,8 +18,8 @@ const DOCS = [
 ] as const;
 type DocKey = (typeof DOCS)[number]["key"];
 
-const MAX = 8 * 1024 * 1024;
-const TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+const MAX_PDF = 8 * 1024 * 1024;
+const ACCEPT = `${IMAGE_ACCEPT},application/pdf`;
 
 /**
  * The blue badge = a human checked your ID AND your medical license.
@@ -63,12 +64,25 @@ export function VerificationCard({
 
   const upload = async (key: DocKey, file: File | undefined) => {
     if (!file) return;
-    if (!TYPES.includes(file.type)) return toast.error("Use a JPG, PNG, WebP or PDF.");
-    if (file.size > MAX) return toast.error("Max 8 MB per document.");
+    const pdf = file.type === "application/pdf";
+    if (!pdf && !isPickableImage(file)) return toast.error("Use a photo or a PDF.");
+    if (pdf ? file.size > MAX_PDF : file.size > MAX_PICK_BYTES) return toast.error(pdf ? "Max 8 MB per PDF." : "Max 50 MB per photo.");
     setBusy(key);
-    const ext = file.type === "application/pdf" ? "pdf" : file.type.split("/")[1].replace("jpeg", "jpg");
+    // Photos are shrunk (still sharp enough to read, 2400 px) and stripped of location data.
+    let blob: Blob = file;
+    let type = file.type;
+    let ext = "pdf";
+    if (!pdf) {
+      try {
+        const img = await prepareImage(file, 2400);
+        ({ blob, type, ext } = img);
+      } catch {
+        setBusy(null);
+        return toast.error("This photo could not be read. Try a screenshot or a JPG.");
+      }
+    }
     const path = `${userId}/${key}-${crypto.randomUUID()}.${ext}`;
-    const { error } = await createClient().storage.from("verification-docs").upload(path, file, { contentType: file.type });
+    const { error } = await createClient().storage.from("verification-docs").upload(path, blob, { contentType: type });
     setBusy(null);
     if (error) return toast.error("Upload failed. Try again.");
     setPaths((p) => ({ ...p, [key]: path }));
@@ -136,7 +150,7 @@ export function VerificationCard({
                   inputs.current[key] = el;
                 }}
                 type="file"
-                accept={TYPES.join(",")}
+                accept={ACCEPT}
                 className="sr-only"
                 aria-label={label}
                 onChange={(e) => upload(key, e.target.files?.[0])}
