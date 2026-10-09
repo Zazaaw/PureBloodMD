@@ -126,6 +126,8 @@ PureBloodMD is in its free launch phase, controlled by switches in the `app_conf
 | `daily_swipe_limit` | `20` | Swipes per rolling 24 hours (VIP is unlimited once enabled). 1 Super Like a day |
 | `active_countries` | `["ID"]` | Indonesia only for sign-up, passports and the triage deck |
 
+Founders (`founder_emails`) always get every VIP perk with no limits on swipes, Super Likes or rewinds, whatever the switches say.
+
 ```sql
 update public.app_config set value = 'true' where key = 'vip_enabled';                  -- bring VIP back
 update public.app_config set value = '["ID","MY","SG"]' where key = 'active_countries';  -- open more countries
