@@ -682,7 +682,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
               <div className="flex flex-col items-center justify-center rounded-xl border px-4 py-16 text-center">
                 <p className="font-semibold">No doctors found</p>
                 <p className="mt-1 max-w-[36ch] text-body-sm text-muted-foreground">
-                  All doctors currently in emergency surgery. Try a wider radius, another specialty, or readmit the ones you discharged.
+                  All doctors currently in emergency surgery. We just opened, so the roster is still growing: invite your colleagues, try the whole country, or readmit the ones you discharged.
                 </p>
                 <div className="mt-4 flex flex-wrap justify-center gap-2">
                   {!nationwide ? (

@@ -128,7 +128,7 @@ export default async function Landing() {
       <BlurFade inView>
         <section aria-label="Doctors in the deck" className="border-y py-8">
           <p className="text-center text-body-sm text-muted-foreground">
-            {worldwide ? "1,500+ doctors in 34 countries" : "480+ doctors across Indonesia"} are on rounds in triage.
+            {worldwide ? "Doctors in 34 countries" : "Doctors across Indonesia"} are joining triage. Early members get first pick.
           </p>
           <div
             className="group mt-6 flex overflow-hidden gap-(--gap) [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
