@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Verification desk" };
 
 type Row = {
   id: string; status: "pending" | "approved" | "rejected"; created_at: string; reviewed_at: string | null; reviewer_note: string | null;
-  id_doc_path: string; selfie_path: string; license_path: string;
+  id_doc_path: string; selfie_path: string | null; license_path: string;
   profile_id: string; display_name: string; photo_url: string; specialty_title: string; hospital: string; email: string | null;
   str_number: string | null; alma_mater: string | null; class_year: number | null;
 };
@@ -36,7 +36,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const pendingCount = status === "pending" ? rows.length : ((pendingRows ?? []) as Row[]).length;
 
   // Private bucket: short-lived signed links, readable only because this session is an admin.
-  const paths = rows.flatMap((r) => [r.id_doc_path, r.selfie_path, r.license_path]);
+  const paths = rows.flatMap((r) => [r.id_doc_path, r.selfie_path, r.license_path]).filter((x): x is string => Boolean(x));
   const { data: signed } = paths.length
     ? await supabase.storage.from("verification-docs").createSignedUrls(paths, 600)
     : { data: [] };
@@ -48,7 +48,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           icon={<SealCheck weight="fill" />}
           eyebrow="Doctor check"
           title="Verification"
-          subtitle="Check that the ID, the selfie and the medical license belong to the same real doctor. Approving adds the blue badge and emails them."
+          subtitle="Check that the ID and the medical license belong to the same real doctor, and match their profile photos. Approving adds the blue badge and emails them."
           chips={[{ label: "waiting", value: pendingCount, tone: pendingCount ? "alert" : "ok" }, { label: `shown (${status})`, value: rows.length, tone: "muted" }]}
         />
 
@@ -100,8 +100,8 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
                         <div><dt className="text-muted-foreground">CLASS OF</dt><dd>{r.class_year ?? "Not given"}</dd></div>
                       </dl>
 
-                      <div className="grid grid-cols-3 gap-3">
-                        {([["ID card", r.id_doc_path], ["Selfie with ID", r.selfie_path], ["License", r.license_path]] as const).map(([label, path]) => {
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {([["ID card", r.id_doc_path], ["License", r.license_path], ...(r.selfie_path ? [["Selfie (old request)", r.selfie_path]] : [])] as [string, string][]).map(([label, path]) => {
                           const href = urlFor.get(path);
                           const pdf = path.toLowerCase().endsWith(".pdf");
                           return (

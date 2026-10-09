@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 
 const QUICK_NOTES = [
   "The ID photo is blurry or cut off. Please send a clear photo of the whole card.",
-  "Your face isn't clearly visible next to the ID in the selfie.",
+  "Your profile photos don't clearly show the person on the ID. Please add a clear face photo.",
   "The name on the license doesn't match your ID.",
   "We need a valid STR/SIP (or a student card for medical students).",
 ];

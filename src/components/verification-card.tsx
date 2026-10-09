@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { CheckCircle, IdentificationBadge, SealCheck, ShieldCheck, UserFocus } from "@phosphor-icons/react";
+import { CheckCircle, IdentificationBadge, SealCheck, ShieldCheck } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { StatusPill } from "@/components/status-pill";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,12 @@ import type { VerificationRequest } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const DOCS = [
-  { key: "id", label: "ID card (KTP or passport)", hint: "Photo of the front, all text readable.", icon: IdentificationBadge },
-  { key: "selfie", label: "Selfie holding your ID", hint: "Your face and the ID in one photo.", icon: UserFocus },
+  {
+    key: "id",
+    label: "ID card (KTP or passport)",
+    hint: "Name and photo must be readable. You may cover the NIK and address.",
+    icon: IdentificationBadge,
+  },
   { key: "license", label: "Medical license (STR / SIP)", hint: "Medical students: your student card.", icon: ShieldCheck },
 ] as const;
 type DocKey = (typeof DOCS)[number]["key"];
@@ -89,11 +93,10 @@ export function VerificationCard({
   };
 
   const submit = async () => {
-    if (!paths.id || !paths.selfie || !paths.license) return;
+    if (!paths.id || !paths.license) return;
     setBusy("submit");
     const { error } = await createClient().rpc("submit_verification", {
       p_id_doc: paths.id,
-      p_selfie: paths.selfie,
       p_license: paths.license,
     });
     setBusy(null);
@@ -111,7 +114,7 @@ export function VerificationCard({
     router.refresh();
   };
 
-  const ready = Boolean(paths.id && paths.selfie && paths.license);
+  const ready = Boolean(paths.id && paths.license);
 
   return (
     <div className="space-y-4">
@@ -121,7 +124,7 @@ export function VerificationCard({
         </p>
       ) : (
         <p className="text-body-sm text-muted-foreground">
-          Get the blue badge by verifying that you are a real person and a real doctor. Verified profiles get more matches.
+          Get the blue badge by showing you are a real person and a real doctor: just your ID and your medical license, no selfie needed. We compare them with your profile photos.
         </p>
       )}
       <ul className="space-y-2">
@@ -163,7 +166,7 @@ export function VerificationCard({
         {busy === "submit" ? "Sending…" : "Submit for review"}
       </Button>
       <p className="text-caption text-muted-foreground">
-        Stored privately, seen only by our review team, deleted after the decision. Never send these documents to another member.
+        Stored in a private vault that only the two PureBloodMD founders can open, never shown to other members, and deleted after the decision. Never send these documents to another member.
       </p>
     </div>
   );

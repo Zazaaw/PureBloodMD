@@ -22,7 +22,7 @@ type Detail = {
   email: string | null; email_confirmed_at: string | null; last_sign_in_at: string | null;
   signup_meta: Record<string, unknown> | null;
   credentials: { str_number: string; alma_mater: string; class_year: number } | null;
-  verifications: { id: string; status: string; created_at: string; reviewer_note: string | null; id_doc_path: string; selfie_path: string; license_path: string }[];
+  verifications: { id: string; status: string; created_at: string; reviewer_note: string | null; id_doc_path: string; selfie_path: string | null; license_path: string }[];
   reports_against: { id: string; reason: string; status: string; details: string; created_at: string; reporter: string }[];
   reports_filed: { id: string; reason: string; status: string; created_at: string; reported: string }[];
   counts: { matches: number; messages: number; swipes: number; emr_posts: number; blocked_by: number };
@@ -44,7 +44,7 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
   const p = d.profile;
   const verified = p.identity_verified && p.doctor_verified;
   const latest = d.verifications[0];
-  const docPaths = latest ? [latest.id_doc_path, latest.selfie_path, latest.license_path] : [];
+  const docPaths = latest ? [latest.id_doc_path, latest.selfie_path, latest.license_path].filter((x): x is string => Boolean(x)) : [];
   const { data: signed } = docPaths.length ? await supabase.storage.from("verification-docs").createSignedUrls(docPaths, 900) : { data: [] };
   const urlFor = new Map((signed ?? []).map((s) => [s.path, s.signedUrl ?? undefined]));
 
@@ -115,8 +115,8 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
                   Latest documents: <StatusPill status={latest.status === "approved" ? "completed" : latest.status === "rejected" ? "cancelled" : "pending"}>{latest.status}</StatusPill>{" "}
                   <span className="text-caption text-muted-foreground">{fmt(latest.created_at)}</span>
                 </p>
-                <div className="grid grid-cols-3 gap-2">
-                  {([["ID", latest.id_doc_path], ["Selfie", latest.selfie_path], ["License", latest.license_path]] as const).map(([label, path]) => (
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {([["ID", latest.id_doc_path], ["License", latest.license_path], ...(latest.selfie_path ? [["Selfie (old)", latest.selfie_path]] : [])] as [string, string][]).map(([label, path]) => (
                     <a key={label} href={urlFor.get(path)} target="_blank" rel="noreferrer" className="block">
                       <span className="block aspect-[4/3] overflow-hidden rounded-lg border bg-muted">
                         {path.endsWith(".pdf") ? (
