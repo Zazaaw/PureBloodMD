@@ -46,7 +46,6 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
       .maybeSingle<VerificationRequest>(),
   ]);
   const verified = isVerified(profile);
-  const { data: isAdmin } = await supabase.rpc("is_admin");
   const blockedRows = (blocked ?? []) as BlockedRow[];
   const plan = subscription?.active ? PLANS.find((p) => p.id === subscription.plan) : null;
   const cancelling = Boolean(subscription?.active && subscription.cancel_at_period_end);
@@ -163,7 +162,7 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
             </form>
           </CardContent>
         </Card>
-        {isAdmin ? (
+        {profile.is_founder ? (
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><ShieldCheck className="size-5" /> Admin dashboard</CardTitle>
