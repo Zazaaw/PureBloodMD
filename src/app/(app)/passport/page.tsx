@@ -166,11 +166,11 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
         {isAdmin ? (
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><ShieldCheck className="size-5" /> Verification desk</CardTitle>
-              <CardDescription>Developer only. Review ID and license submissions, approve or send back with a note.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><ShieldCheck className="size-5" /> Admin dashboard</CardTitle>
+              <CardDescription>Developer only. Members, reports, bans, doctor verification, EMR moderation and launch switches.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild><Link href="/admin">Open the desk</Link></Button>
+              <Button asChild><Link href="/admin">Open admin</Link></Button>
             </CardContent>
           </Card>
         ) : null}
