@@ -6,7 +6,7 @@ export default async function ChatLayout({ children }: { children: React.ReactNo
   const { supabase, profile } = await requireProfile();
   const { data } = await supabase.rpc("get_inbox");
   return (
-    <ChatShell meId={profile.id} inbox={(data ?? []) as InboxRow[]}>
+    <ChatShell me={{ id: profile.id, gender: profile.gender, intent: profile.intent ?? "romance" }} inbox={(data ?? []) as InboxRow[]}>
       {children}
     </ChatShell>
   );
