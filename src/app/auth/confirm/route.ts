@@ -24,5 +24,5 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${origin}${target}`);
     }
   }
-  return NextResponse.redirect(`${origin}/login?link=expired`);
+  return NextResponse.redirect(type === "recovery" ? `${origin}/forgot-password?expired=1` : `${origin}/login?link=expired`);
 }

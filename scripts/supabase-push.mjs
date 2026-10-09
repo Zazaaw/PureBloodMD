@@ -78,11 +78,16 @@ async function pushEmail() {
     );
   }
 
-  const html = readFileSync("supabase/templates/confirm-signup.html", "utf8").replace(/^<!--[\s\S]*?-->\s*/, "");
+  const template = (f) => readFileSync(`supabase/templates/${f}`, "utf8").replace(/^<!--[\s\S]*?-->\s*/, "");
   try {
     await patchAuth(
-      { mailer_subjects_confirmation: "Confirm your email to scrub in", mailer_templates_confirmation_content: html },
-      "confirm-signup email template + subject"
+      {
+        mailer_subjects_confirmation: "Confirm your email to scrub in",
+        mailer_templates_confirmation_content: template("confirm-signup.html"),
+        mailer_subjects_recovery: "Reset your PureBloodMD password",
+        mailer_templates_recovery_content: template("reset-password.html"),
+      },
+      "confirm-signup + reset-password email templates and subjects"
     );
   } catch (e) {
     if (!haveSmtp && /custom SMTP|free tier/i.test(e.message)) {
