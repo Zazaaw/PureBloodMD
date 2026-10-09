@@ -16,13 +16,13 @@ export default async function DiscoverPage() {
   ]);
   const s = (swipes as { used: number; quota: number | null; next_at: string | null }[] | null)?.[0];
   const r = (rewind as { used: number; quota: number | null }[] | null)?.[0];
-  const q = (quota as { used: number; quota: number; next_at: string | null }[] | null)?.[0];
+  const q = (quota as { used: number; quota: number | null; next_at: string | null }[] | null)?.[0];
   return (
     <DiscoverClient
       me={profile}
       initialCandidates={(data ?? []) as Profile[]}
       hasLocation={Boolean(hasLocation)}
-      superQuota={q ?? { used: 0, quota: profile.is_vip ? 5 : 1, next_at: null }}
+      superQuota={q ?? { used: 0, quota: profile.is_founder ? null : profile.is_vip ? 5 : 1, next_at: null }}
       rewindQuota={r ?? { used: 0, quota: profile.is_vip ? null : 1 }}
       swipeQuota={s ?? { used: 0, quota: profile.is_vip ? null : flags.dailySwipeLimit, next_at: null }}
       vipEnabled={flags.vipEnabled}

@@ -48,7 +48,7 @@ import type { Profile, Seeking } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { isVerified } from "@/lib/verified";
 
-type Quota = { used: number; quota: number; next_at: string | null };
+type Quota = { used: number; quota: number | null; next_at: string | null };
 type RewindQuota = { used: number; quota: number | null };
 type SwipeQuota = { used: number; quota: number | null; next_at: string | null };
 type Props = {
@@ -81,7 +81,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
   const [safety, setSafety] = useState<{ mode: "report" | "block"; doc: Profile } | null>(null);
   const [quota, setQuota] = useState<Quota>(superQuota);
   const [vipOpen, setVipOpen] = useState(false);
-  const superLeft = Math.max(0, quota.quota - quota.used);
+  const superLeft = quota.quota == null ? Infinity : Math.max(0, quota.quota - quota.used);
   const [swipes, setSwipes] = useState<SwipeQuota>(swipeQuota);
   const swipesLeft = swipes.quota == null ? Infinity : Math.max(0, swipes.quota - swipes.used);
   const rechargeAt = (iso: string | null) =>
@@ -260,7 +260,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
           setSwipes((s) => ({ ...s, used: s.quota ?? s.used }));
           toast("Shift over: you've used all your swipes for today.");
         } else if (error.message.includes("superlike_limit")) {
-          setQuota((q) => ({ ...q, used: q.quota }));
+          setQuota((q) => ({ ...q, used: q.quota ?? q.used }));
           toast("No Super Likes left today.");
           if (vipEnabled && !me.is_vip) setVipOpen(true);
         } else {
@@ -642,7 +642,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
                     <Button
                       className="size-16 rounded-full bg-amber-400 text-neutral-900 hover:bg-amber-400/90 [&_svg:not([class*='size-'])]:size-7"
                       onClick={() => swipe("super")}
-                      aria-label={`Defibrillate: Super Like (${superLeft} left today)`}
+                      aria-label={`Defibrillate: Super Like (${superLeft === Infinity ? "unlimited" : `${superLeft} left today`})`}
                       title="Defibrillate: Super Like (↑)"
                     >
                       <Lightning weight="fill" />
@@ -651,7 +651,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
                       aria-hidden
                       className="absolute -right-1 -top-1 grid size-6 place-items-center rounded-full border-2 border-card bg-foreground text-caption font-bold text-background tabular-nums"
                     >
-                      {superLeft}
+                      {superLeft === Infinity ? "∞" : superLeft}
                     </span>
                   </div>
                   <Button
@@ -707,7 +707,9 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
                 </p>
               ) : null}
               <p suppressHydrationWarning>
-                {superLeft > 0
+                {superLeft === Infinity
+                  ? "Founder: unlimited swipes, Super Likes and rewinds"
+                  : superLeft > 0
                   ? `${superLeft} of ${quota.quota} Super ${quota.quota === 1 ? "Like" : "Likes"} left today`
                   : `Super Likes recharge ${quota.next_at ? new Date(quota.next_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "tomorrow"}`}
                 {vipEnabled && !me.is_vip ? (

@@ -384,7 +384,9 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
           <span className="font-mono tabular-nums">
             {capped ? `${Math.min(used, FREE_BUBBLE_CAP)} / ${FREE_BUBBLE_CAP} bubbles` : `${used} ${used === 1 ? "bubble" : "bubbles"}`}
           </span>
-          {isVip ? (
+          {isVip && !me.vipEnabled ? (
+            <StatusPill status="pending"><Crown weight="fill" className="size-3" /> VIP</StatusPill>
+          ) : isVip ? (
             <button type="button" onClick={() => setVipOpen(true)} aria-label="Manage VIP">
               <StatusPill status="pending"><Crown weight="fill" className="size-3" /> VIP</StatusPill>
             </button>

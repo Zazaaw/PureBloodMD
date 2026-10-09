@@ -32,9 +32,10 @@ export const requireProfile = cache(async () => {
   if (profile.banned_at) redirect("/banned");
 
   // VIP comes from the subscription (period end), and only while the program is switched on.
+  // Founders always have every perk (vip_active() in the database agrees).
   const [{ data: subs }, flags] = await Promise.all([supabase.rpc("get_my_subscription"), getAppFlags()]);
   const subscription = ((subs ?? []) as Subscription[])[0] ?? null;
-  profile.is_vip = flags.vipEnabled && Boolean(subscription?.active);
+  profile.is_vip = Boolean(profile.is_founder) || (flags.vipEnabled && Boolean(subscription?.active));
 
   return { supabase, userId, profile, subscription, flags };
 });
