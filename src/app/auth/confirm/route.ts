@@ -18,7 +18,11 @@ export async function GET(request: NextRequest) {
   if (tokenHash) {
     const supabase = await createClient();
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
-    if (!error) return NextResponse.redirect(`${origin}${safeNext}?verified=1`);
+    if (!error) {
+      // Sign-up confirmations get a welcome screen first; other links go straight on.
+      const target = type === "email" || type === "signup" ? "/welcome" : safeNext;
+      return NextResponse.redirect(`${origin}${target}`);
+    }
   }
   return NextResponse.redirect(`${origin}/login?link=expired`);
 }
