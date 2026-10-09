@@ -7,13 +7,11 @@ import { toast } from "sonner";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import { Button } from "@/components/ui/button";
 import { EMR_MAX_CHARS, EMR_MAX_PHOTOS } from "@/lib/constants";
-import { prepareImage } from "@/lib/image";
+import { IMAGE_ACCEPT, MAX_PICK_BYTES, isPickableImage, prepareImage } from "@/lib/image";
 import { createClient } from "@/lib/supabase/client";
 import type { EmrImage } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 /** Database errors from enforce_emr_post, in plain words. */
 const ERRORS: Record<string, string> = {
@@ -22,6 +20,8 @@ const ERRORS: Record<string, string> = {
   cannot_reply: "This post can no longer receive replies.",
   empty_post: "Write something or add a photo first.",
   bad_image: "One of the photos could not be attached. Try again.",
+  unsupported_image: "One photo could not be read. Try a screenshot or a JPG instead.",
+  upload_failed: "A photo failed to upload. Check your connection and try again.",
 };
 
 type Pending = { file: File; preview: string };
@@ -73,13 +73,14 @@ export function Composer({
   useEffect(() => () => photosRef.current.forEach((p) => URL.revokeObjectURL(p.preview)), []);
 
   const addPhotos = (files: FileList | null) => {
-    if (fileRef.current) fileRef.current.value = "";
+    // Copy first: resetting the input empties the live FileList it handed us.
     const picked = Array.from(files ?? []);
+    if (fileRef.current) fileRef.current.value = "";
     const room = EMR_MAX_PHOTOS - photos.length;
     if (picked.length > room) toast(`Up to ${EMR_MAX_PHOTOS} photos per post.`);
     const ok = picked.slice(0, Math.max(0, room)).filter((f) => {
-      if (!IMAGE_TYPES.includes(f.type)) return toast.error("Add a JPG, PNG, WebP or GIF."), false;
-      if (f.size > MAX_IMAGE_BYTES) return toast.error("Max 8 MB per photo. This is a feed, not a PACS server."), false;
+      if (!isPickableImage(f)) return toast.error(`${f.name} is not a photo.`), false;
+      if (f.size > MAX_PICK_BYTES) return toast.error("Max 50 MB per photo. This is a feed, not a PACS server."), false;
       return true;
     });
     setPhotos((prev) => [...prev, ...ok.map((file) => ({ file, preview: URL.createObjectURL(file) }))]);
@@ -101,7 +102,7 @@ export function Composer({
         const img = await prepareImage(p.file);
         const path = `${me.id}/${crypto.randomUUID()}.${img.ext}`;
         const { error } = await supabase.storage.from("emr-media").upload(path, img.blob, { contentType: img.type });
-        if (error) throw new Error("bad_image");
+        if (error) throw new Error("upload_failed");
         images.push({ path, w: img.width, h: img.height });
       }
       const { error } = await supabase.from("emr_posts").insert({ body: body.trim(), images, parent_id: parentId ?? null });
@@ -171,7 +172,7 @@ export function Composer({
           >
             <ImageSquare className="size-5" />
           </Button>
-          <input ref={fileRef} type="file" accept={IMAGE_TYPES.join(",")} multiple className="sr-only" tabIndex={-1} onChange={(e) => addPhotos(e.target.files)} />
+          <input ref={fileRef} type="file" accept={IMAGE_ACCEPT} multiple className="sr-only" tabIndex={-1} onChange={(e) => addPhotos(e.target.files)} />
           <div className="flex items-center gap-3">
             {body.length > EMR_MAX_CHARS - 80 ? (
               <span className={cn("text-caption tabular-nums", left < 0 ? "text-destructive" : "text-muted-foreground")}>{left}</span>
