@@ -7,7 +7,6 @@ import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getUserId } from "@/lib/auth";
-import { CONTACT_EMAIL } from "@/lib/legal";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Account suspended" };
@@ -38,9 +37,6 @@ export default async function BannedPage() {
             {p.ban_reason ? (
               <p className="mt-4 rounded-lg border-l-2 border-red-500 bg-muted/50 px-4 py-3 text-left text-body-sm">{p.ban_reason}</p>
             ) : null}
-            <p className="mt-4 text-caption text-muted-foreground">
-              Think this is a mistake? Email <a href={`mailto:${CONTACT_EMAIL}`} className="font-medium text-foreground underline underline-offset-4">{CONTACT_EMAIL}</a>.
-            </p>
             <form action="/auth/signout" method="post" className="mt-6">
               <Button variant="outline" className="w-full" type="submit"><SignOut /> Sign out</Button>
             </form>
