@@ -6,9 +6,8 @@
  * NOTE: written as a solid starting point, not legal advice. Have an
  * Indonesian lawyer review it before a real public launch.
  */
-export const TERMS_VERSION = "2026-10-09.3";
+export const TERMS_VERSION = "2026-10-09.4";
 export const LEGAL_UPDATED = "8 October 2026";
-export const CONTACT_EMAIL = "safety@purebloodmd.com";
 
 export type LegalSection = { id: string; title: string; body: (string | string[])[] };
 
@@ -94,7 +93,6 @@ export const TERMS: LegalSection[] = [
     title: "8. VIP subscriptions",
     body: [
       "VIP plans renew automatically at the end of each period until you cancel. When you cancel, VIP stays active until the end of the period you already paid for and then ends. We do not give partial refunds for unused time, except where the law requires it.",
-      "In the current demo version, no real payment is taken.",
       "During the launch period PureBloodMD is free: VIP subscriptions are not offered, every member gets 20 swipes and 1 Super Like per day, and chat is unlimited. The service is available in Indonesia only for now. These limits may change, and we will tell you in the app before paid plans start.",
     ],
   },
@@ -134,7 +132,7 @@ export const TERMS: LegalSection[] = [
     body: [
       "These Terms are governed by the laws of the Republic of Indonesia. Disputes will first be resolved amicably; if that fails, they will be resolved in the courts of Jakarta.",
       "We may update these Terms. If a change is significant we will tell you in the app, and continuing to use the app means you accept the updated Terms.",
-      `Questions or safety concerns: ${CONTACT_EMAIL}.`,
+      "Safety concerns: use Report on the member's profile or chat. Our team reviews every report.",
     ],
   },
 ];
@@ -182,7 +180,7 @@ export const PRIVACY: LegalSection[] = [
     id: "rights",
     title: "5. Your rights",
     body: [
-      `Under Indonesia's Personal Data Protection Law (UU No. 27 Tahun 2022) you can ask to access, correct or delete your data, and withdraw consent. Edit most data in Passport, or email ${CONTACT_EMAIL}.`,
+      `Under Indonesia's Personal Data Protection Law (UU No. 27 Tahun 2022) you can ask to access, correct or delete your data, and withdraw consent. Edit most data in Passport, and delete your account any time in Passport > Settings.`,
     ],
   },
   {
