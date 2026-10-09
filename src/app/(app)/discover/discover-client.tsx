@@ -128,18 +128,28 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
     setIndex(0);
   };
 
-  const filtered = useMemo(
-    () =>
-      candidates.filter((d) => {
-        if (seeking !== "all" && d.gender !== seeking) return false;
-        if ((d.country ?? "ID") !== country) return false;
-        if (specialty !== "ALL" && d.specialty !== specialty) return false;
-        if (verifiedOnly && !isVerified(d)) return false;
-        if (nationwide) return true;
-        return d.distance_km != null && Number(d.distance_km) <= radius;
-      }),
-    [candidates, seeking, nationwide, specialty, country, radius, verifiedOnly]
-  );
+  // Radar: nearest first (people who Super Liked you stay on top). If nobody is inside the
+  // radius yet (most doctors are in Jabodetabek for now), fall back to the nearest across
+  // the country instead of an empty deck, and say so.
+  const { filtered, radarFallback } = useMemo(() => {
+    const base = candidates.filter((d) => {
+      if (seeking !== "all" && d.gender !== seeking) return false;
+      if ((d.country ?? "ID") !== country) return false;
+      if (specialty !== "ALL" && d.specialty !== specialty) return false;
+      if (verifiedOnly && !isVerified(d)) return false;
+      return true;
+    });
+    const near = (list: Profile[]) =>
+      [...list].sort(
+        (a, b) =>
+          Number(Boolean(b.superliked_me)) - Number(Boolean(a.superliked_me)) ||
+          (a.distance_km == null ? Infinity : Number(a.distance_km)) - (b.distance_km == null ? Infinity : Number(b.distance_km))
+      );
+    if (nationwide) return { filtered: hasLocation ? near(base) : base, radarFallback: false };
+    const inRadius = base.filter((d) => d.distance_km != null && Number(d.distance_km) <= radius);
+    if (inRadius.length || !base.length) return { filtered: near(inRadius), radarFallback: false };
+    return { filtered: near(base), radarFallback: true };
+  }, [candidates, seeking, nationwide, specialty, country, radius, verifiedOnly, hasLocation]);
 
   const current = filtered.length ? filtered[index % filtered.length] : null;
   const currentOnline = useIsOnline(current?.id ?? "", current?.is_bot ?? false) && !!current;
@@ -177,7 +187,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
         setNationwide(false);
         setIndex(0);
         reshuffleSync();
-        toast.success(`Radar calibrated. Showing doctors within ${radius} km.`);
+        toast.success("Radar calibrated. Nearest doctors first.");
         router.refresh();
       },
       (err) => {
@@ -537,6 +547,14 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
           </aside>
 
           <section className="mx-auto w-full min-w-0 max-w-[23rem]" aria-label="Doctor deck">
+            {radarFallback && current ? (
+              <p role="status" className="mb-3 flex items-start gap-2 rounded-lg border bg-muted/50 px-3 py-2 text-caption text-muted-foreground">
+                <Broadcast className="mt-0.5 size-4 shrink-0 text-primary" />
+                <span>
+                  No doctors within {radius} km of you yet. Showing the nearest across {countryName(country)}, closest first.
+                </span>
+              </p>
+            ) : null}
             {current ? (
               <article
                 key={current.id}
