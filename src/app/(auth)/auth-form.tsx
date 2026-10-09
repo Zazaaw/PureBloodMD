@@ -3,12 +3,11 @@
 import Link from "next/link";
 import { useActionState, useCallback, useState } from "react";
 import { EnvelopeSimple } from "@phosphor-icons/react";
-import { Select } from "@/components/form/field";
+import { CountrySelect } from "@/components/form/country-select";
 import { PasswordInput } from "@/components/form/password-input";
 import { Turnstile } from "@/components/turnstile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { COUNTRY_CODES, countryName } from "@/lib/constants";
 import type { AuthState } from "./actions";
 
 type Props = {
@@ -16,9 +15,11 @@ type Props = {
   action: (state: AuthState, formData: FormData) => Promise<AuthState>;
   /** Show the CAPTCHA on this form. Sign-up always; sign-in only when Supabase enforces it. */
   captcha: boolean;
+  /** Countries open for sign-up (app_config). */
+  countries?: string[];
 };
 
-export function AuthForm({ mode, action, captcha }: Props) {
+export function AuthForm({ mode, action, captcha, countries = ["ID"] }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
   const [token, setToken] = useState<string | null>(null);
   const [agree, setAgree] = useState(false);
@@ -87,12 +88,12 @@ export function AuthForm({ mode, action, captcha }: Props) {
           </div>
           <div className="grid gap-2">
             <label htmlFor="country" className="text-body-sm font-medium">Country</label>
-            <Select id="country" name="country" defaultValue={state.country ?? "ID"} autoComplete="country">
-              {COUNTRY_CODES.map((c) => (
-                <option key={c} value={c}>{countryName(c)}</option>
-              ))}
-            </Select>
-            <p className="text-caption text-muted-foreground">Where you practice. It sets your triage deck and VIP pricing, and you can change it later in Passport.</p>
+<CountrySelect id="country" countries={countries} defaultValue={state.country} />
+            <p className="text-caption text-muted-foreground">
+              {countries.length > 1
+                ? "Where you practice. It sets your triage deck, and you can change it later in Passport."
+                : "We're launching in Indonesia first. More countries once the ward fills up."}
+            </p>
           </div>
         </>
       ) : null}

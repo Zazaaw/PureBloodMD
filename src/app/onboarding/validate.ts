@@ -23,7 +23,7 @@ export type ProfileInput = {
 const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
 
 /** Shared by onboarding and the passport editor. Returns field errors, never throws. */
-export function parseProfile(fd: FormData, supabaseUrl: string) {
+export function parseProfile(fd: FormData, supabaseUrl: string, activeCountries: readonly string[] = COUNTRY_CODES) {
   const errors: Record<string, string> = {};
   const rawName = str(fd, "display_name").replace(/^dr\.?\s*/i, "");
   if (rawName.length < 2) errors.display_name = "Your name, Doctor.";
@@ -45,7 +45,7 @@ export function parseProfile(fd: FormData, supabaseUrl: string) {
   if (hospital.length < 2 || hospital.length > 120) errors.hospital = "Where do you take calls?";
 
   const country = str(fd, "country");
-  if (!(COUNTRY_CODES as readonly string[]).includes(country)) errors.country = "Choose a country.";
+  if (!activeCountries.includes(country)) errors.country = activeCountries.length === 1 ? "PureBloodMD is open in Indonesia only for now." : "Choose a country.";
 
   // Specialists are "Dr.", GPs are "dr." (Indonesian convention), students have no title yet.
   const name =

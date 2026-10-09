@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getUserId } from "@/lib/auth";
 import { getSupabaseEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
+import { getAppFlags } from "@/lib/flags";
 import { parseProfile } from "./validate";
 
 export type OnboardingState = { errors?: Record<string, string>; error?: string; values?: Record<string, string> };
@@ -13,7 +14,7 @@ export async function createPassport(_: OnboardingState, fd: FormData): Promise<
   if (!userId) redirect("/login");
   const env = getSupabaseEnv()!;
 
-  const { data, errors } = parseProfile(fd, env.url);
+  const { data, errors } = parseProfile(fd, env.url, (await getAppFlags()).activeCountries);
   const str = String(fd.get("str_number") ?? "").trim().toUpperCase();
   const alma = String(fd.get("alma_mater") ?? "").trim();
   const classYear = Number(fd.get("class_year"));

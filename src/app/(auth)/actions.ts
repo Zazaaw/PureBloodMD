@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { captchaBySupabase, verifyCaptcha } from "@/lib/captcha";
-import { COUNTRY_CODES } from "@/lib/constants";
+import { getAppFlags } from "@/lib/flags";
 import { TERMS_VERSION } from "@/lib/legal";
 import { createClient } from "@/lib/supabase/server";
 
@@ -52,7 +52,8 @@ export async function signUp(_: AuthState, formData: FormData): Promise<AuthStat
   if (formData.get("password_confirm") !== creds.password) {
     return { ...back, error: "Passwords don't match. Check for a typo." };
   }
-  if (!(COUNTRY_CODES as readonly string[]).includes(country)) return { ...back, error: "Choose your country." };
+  const { activeCountries } = await getAppFlags();
+  if (!activeCountries.includes(country)) return { ...back, error: "PureBloodMD is open in Indonesia only for now." };
 
   // Consent is checked on the server too: a disabled checkbox is not a contract.
   if (formData.get("agree_terms") !== "on" || formData.get("confirm_age") !== "on") {

@@ -7,7 +7,8 @@ import { GalleryUpload } from "@/components/form/gallery-upload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { COUNTRY_CODES, SPECIALTIES, SPECIALTY_KEYS, countryName, specialtyLabel, type SpecialtyKey } from "@/lib/constants";
+import { CountrySelect } from "@/components/form/country-select";
+import { SPECIALTIES, SPECIALTY_KEYS, specialtyLabel, type SpecialtyKey } from "@/lib/constants";
 import { createPassport } from "./actions";
 
 const GENDERS = [
@@ -20,7 +21,7 @@ const SEEKING = [
   { label: "Both", value: "all" },
 ] as const;
 
-export function OnboardingForm({ userId, defaultCountry }: { userId: string; defaultCountry: string }) {
+export function OnboardingForm({ userId, defaultCountry, countries }: { userId: string; defaultCountry: string; countries: string[] }) {
   const [state, action, pending] = useActionState(createPassport, {});
   const [specialty, setSpecialty] = useState<SpecialtyKey>("Cardiology");
   const [titles, setTitles] = useState<Record<string, string>>({});
@@ -85,12 +86,8 @@ export function OnboardingForm({ userId, defaultCountry }: { userId: string; def
           <Field id="hospital" label="Hospital, clinic or faculty" error={e.hospital}>
             <Input id="hospital" name="hospital" required placeholder="RSUP Harapan Kita" defaultValue={v.hospital} />
           </Field>
-          <Field id="country" label="Country" hint="Distance comes from the radar in Triage, not from your city." error={e.country}>
-            <Select id="country" name="country" defaultValue={v.country ?? defaultCountry}>
-              {COUNTRY_CODES.map((c) => (
-                <option key={c} value={c}>{countryName(c)}</option>
-              ))}
-            </Select>
+          <Field id="country" label="Country" hint={countries.length > 1 ? "Distance comes from the radar in Triage, not from your city." : "Indonesia only during launch. Distance comes from the radar in Triage."} error={e.country}>
+            <CountrySelect id="country" countries={countries} defaultValue={v.country ?? defaultCountry} />
           </Field>
           <Field id="str_number" label="STR number (NIM for students)" hint="Not actually checked. We trust your handwriting." error={e.str_number}>
             <Input id="str_number" name="str_number" required placeholder="KKI-STR-2026-998811" className="font-mono uppercase" defaultValue={v.str_number} />

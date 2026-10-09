@@ -3,13 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { requireProfile } from "@/lib/auth";
 import { getSupabaseEnv } from "@/lib/env";
+import { getAppFlags } from "@/lib/flags";
 import { parseProfile } from "../../onboarding/validate";
 
 export type PassportState = { errors?: Record<string, string>; error?: string; saved?: boolean };
 
 export async function updatePassport(_: PassportState, fd: FormData): Promise<PassportState> {
   const { supabase, profile, userId } = await requireProfile();
-  const { data, errors } = parseProfile(fd, getSupabaseEnv()!.url);
+  const { data, errors } = parseProfile(fd, getSupabaseEnv()!.url, (await getAppFlags()).activeCountries);
   if (Object.keys(errors).length) return { errors };
   const kept = new Set([profile.photo_url, ...(profile.gallery ?? [])]);
   if (![data.photo_url, ...data.gallery].every((u) => kept.has(u) || u.includes(`/avatars/${userId}/`))) {

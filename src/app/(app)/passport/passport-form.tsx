@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { DoctorCard, type CardDoctor } from "@/components/doctor-card";
 import { Modal } from "@/components/modal";
 import { Input } from "@/components/ui/input";
-import { COUNTRY_CODES, SPECIALTIES, SPECIALTY_KEYS, countryName, specialtyLabel } from "@/lib/constants";
+import { CountrySelect } from "@/components/form/country-select";
+import { SPECIALTIES, SPECIALTY_KEYS, specialtyLabel } from "@/lib/constants";
 import type { Profile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { updatePassport } from "./actions";
@@ -55,7 +56,7 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
   );
 }
 
-export function PassportForm({ userId, profile }: { userId: string; profile: Profile }) {
+export function PassportForm({ userId, profile, countries }: { userId: string; profile: Profile; countries: string[] }) {
   const [state, action, pending] = useActionState(updatePassport, {});
   const e = state.errors ?? {};
   const [preview, setPreview] = useState<CardDoctor>(profile);
@@ -127,9 +128,7 @@ export function PassportForm({ userId, profile }: { userId: string; profile: Pro
                 <Input id="hospital" name="hospital" defaultValue={profile.hospital} />
               </Field>
               <Field id="country" label="Country" error={e.country}>
-                <Select id="country" name="country" defaultValue={profile.country ?? "ID"}>
-                  {COUNTRY_CODES.map((c) => <option key={c} value={c}>{countryName(c)}</option>)}
-                </Select>
+                <CountrySelect id="country" countries={countries} defaultValue={profile.country} />
               </Field>
             </div>
           </Section>

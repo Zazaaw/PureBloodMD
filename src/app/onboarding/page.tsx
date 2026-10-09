@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import BlurFade from "@/components/effects/blur-fade";
 import PageHeader from "@/components/ui/page-header";
 import { getUserId } from "@/lib/auth";
-import { COUNTRY_CODES } from "@/lib/constants";
+import { getAppFlags } from "@/lib/flags";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingForm } from "./onboarding-form";
 
@@ -18,7 +18,8 @@ export default async function OnboardingPage() {
   // Country picked at sign-up (stored on the auth user) pre-fills the passport.
   const { data: auth } = await supabase.auth.getUser();
   const signupCountry = String(auth.user?.user_metadata?.country ?? "");
-  const defaultCountry = (COUNTRY_CODES as readonly string[]).includes(signupCountry) ? signupCountry : "ID";
+  const { activeCountries } = await getAppFlags();
+  const defaultCountry = activeCountries.includes(signupCountry) ? signupCountry : activeCountries[0];
 
   return (
     <main className="mx-auto max-w-2xl px-4 pb-16 pt-6 sm:px-6">
@@ -27,7 +28,7 @@ export default async function OnboardingPage() {
           title="Build your doctor passport"
           subtitle="PureBloodMD enforces strict medical verification to preserve the sacred MD x MD covenant."
         />
-        <OnboardingForm userId={userId} defaultCountry={defaultCountry} />
+        <OnboardingForm userId={userId} defaultCountry={defaultCountry} countries={activeCountries} />
       </BlurFade>
     </main>
   );
