@@ -55,7 +55,7 @@ export function VerificationCard({
       <div className="space-y-2">
         <StatusPill status="pending">In review</StatusPill>
         <p className="text-body-sm text-muted-foreground">
-          We are checking your documents, usually within 1 to 2 working days. Your documents are private and deleted after review.
+          A real human is checking your documents, which takes up to 3 days. We emailed you, and we will email again with the result. Your documents are private and deleted after review.
         </p>
       </div>
     );
