@@ -29,6 +29,7 @@ export const requireProfile = cache(async () => {
     .maybeSingle<Profile>();
 
   if (!profile) redirect("/onboarding");
+  if (profile.banned_at) redirect("/banned");
 
   // VIP comes from the subscription (period end), and only while the program is switched on.
   const [{ data: subs }, flags] = await Promise.all([supabase.rpc("get_my_subscription"), getAppFlags()]);

@@ -34,6 +34,9 @@ export type Profile = {
   is_vip: boolean;
   /** Set while the member has paused their account (hidden from triage and consults). */
   deactivated_at?: string | null;
+  /** Set by an admin ban (also blocks sign-in). */
+  banned_at?: string | null;
+  ban_reason?: string | null;
   /** Up to 3 extra photos; the card shows [photo_url, ...gallery]. */
   gallery: string[];
   /** Badge only when BOTH are true (ID + medical license reviewed). */
