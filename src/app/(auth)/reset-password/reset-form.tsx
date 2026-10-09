@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { PasswordInput } from "@/components/form/password-input";
+import { HeartbeatLoader } from "@/components/heartbeat-loader";
 import { Button } from "@/components/ui/button";
 import { setNewPassword } from "../password-actions";
 
@@ -13,6 +14,7 @@ export function ResetForm() {
 
   return (
     <form action={action} className="space-y-4" noValidate>
+      {pending ? <HeartbeatLoader label="Re-issuing your key…" /> : null}
       <div className="grid gap-2">
         <label htmlFor="password" className="text-body-sm font-medium">New password</label>
         <PasswordInput id="password" name="password" autoComplete="new-password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />

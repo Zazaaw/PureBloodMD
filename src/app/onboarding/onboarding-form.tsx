@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { CountrySelect } from "@/components/form/country-select";
+import { HeartbeatLoader } from "@/components/heartbeat-loader";
 import { IntentPicker, type Intent } from "@/components/form/intent-picker";
 import { SPECIALTIES, SPECIALTY_KEYS, specialtyLabel, type SpecialtyKey } from "@/lib/constants";
 import { createPassport } from "./actions";
@@ -42,6 +43,7 @@ export function OnboardingForm({
 
   return (
     <form action={action} className="space-y-6">
+      {pending ? <HeartbeatLoader label="Stamping your passport…" /> : null}
       <Card>
         <CardHeader>
           <CardTitle>Who you are</CardTitle>

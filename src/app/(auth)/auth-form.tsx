@@ -6,6 +6,7 @@ import { EnvelopeSimple } from "@phosphor-icons/react";
 import { CountrySelect } from "@/components/form/country-select";
 import { IntentPicker } from "@/components/form/intent-picker";
 import { PasswordInput } from "@/components/form/password-input";
+import { HeartbeatLoader } from "@/components/heartbeat-loader";
 import { Turnstile } from "@/components/turnstile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +51,7 @@ export function AuthForm({ mode, action, captcha, countries = ["ID"] }: Props) {
 
   return (
     <form action={formAction} className="space-y-4" noValidate>
+      {pending ? <HeartbeatLoader label={isLogin ? "Scrubbing in…" : "Printing your passport…"} /> : null}
       {!isLogin ? <IntentPicker defaultValue={state.intent} /> : null}
       <div className="grid gap-2">
         <label htmlFor="email" className="text-body-sm font-medium">Email</label>
