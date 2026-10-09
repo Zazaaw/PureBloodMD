@@ -2,16 +2,20 @@
 
 import Link from "next/link";
 import { useRouter, useSelectedLayoutSegment } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { SealCheck } from "@phosphor-icons/react";
 import BlurFade from "@/components/effects/blur-fade";
 import { DoctorPhoto } from "@/components/doctor-photo";
+import { Modal } from "@/components/modal";
 import { OnlineDot } from "@/components/presence";
+import { SwipeRow } from "@/components/swipe-row";
+import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/ui/page-header";
 import { createClient } from "@/lib/supabase/client";
 import { previewText } from "@/lib/stickers";
 import type { InboxRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 function timeLabel(iso: string | null) {
   if (!iso) return "Now";
@@ -63,6 +67,19 @@ export function ChatShell({ me, inbox, children }: { me: Me; inbox: InboxRow[]; 
       supabase.removeChannel(channel);
     };
   }, [router]);
+
+  const [toDelete, setToDelete] = useState<InboxRow | null>(null);
+  const [deleting, startDelete] = useTransition();
+  const deleteConsult = () =>
+    startDelete(async () => {
+      if (!toDelete) return;
+      const { error } = await createClient().rpc("unmatch_consult", { p_match: toDelete.match_id });
+      if (error) return void toast.error("Could not delete this consult. Try again.");
+      toast.success("Consult deleted for both of you.");
+      if (activeId === toDelete.match_id) router.push("/chat");
+      setToDelete(null);
+      router.refresh();
+    });
 
   // Bumble layout: matches nobody has written to yet sit in the circles row;
   // a conversation only joins the list below once the first message is sent.
@@ -127,11 +144,12 @@ export function ChatShell({ me, inbox, children }: { me: Me; inbox: InboxRow[]; 
           {chats.map((r, i) => (
             <li key={r.match_id}>
               <BlurFade inView delay={Math.min(i, 8) * 0.04}>
+                <SwipeRow label={r.other_name} onDelete={() => setToDelete(r)}>
                 <Link
                   href={`/chat/${r.match_id}`}
                   aria-current={activeId === r.match_id ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors duration-200 hover:bg-accent",
+                    "flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors duration-200 hover:bg-accent lg:pr-11",
                     activeId === r.match_id && "bg-secondary"
                   )}
                 >
@@ -165,6 +183,7 @@ export function ChatShell({ me, inbox, children }: { me: Me; inbox: InboxRow[]; 
                     </span>
                   </span>
                 </Link>
+                </SwipeRow>
               </BlurFade>
             </li>
           ))}
@@ -185,6 +204,17 @@ export function ChatShell({ me, inbox, children }: { me: Me; inbox: InboxRow[]; 
       </aside>
 
       <section className={cn("min-h-0 min-w-0", !activeId && "hidden lg:block")}>{children}</section>
+
+      <Modal open={!!toDelete} onClose={() => setToDelete(null)} labelledBy="delete-consult-title">
+        <h2 id="delete-consult-title" className="text-lead font-bold">Delete this consult?</h2>
+        <p className="mt-2 text-body-sm text-muted-foreground">
+          The conversation with {toDelete?.other_name} is deleted for both of you and you are unmatched. This can&apos;t be undone.
+        </p>
+        <div className="mt-6 grid gap-2 sm:grid-cols-2">
+          <Button variant="destructive" onClick={deleteConsult} disabled={deleting}>{deleting ? "Deleting…" : "Delete"}</Button>
+          <Button variant="ghost" onClick={() => setToDelete(null)}>Cancel</Button>
+        </div>
+      </Modal>
     </main>
   );
 }
