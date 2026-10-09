@@ -55,7 +55,7 @@ export default async function DoctorProfilePage({
 
   const [{ data: doc }, { data: blocked }] = await Promise.all([
     supabase.from("profiles").select(PROFILE_SELECT).eq("id", id).maybeSingle<PublicProfile>(),
-    isMe ? Promise.resolve({ data: false }) : supabase.rpc("is_blocked_pair", { a: meProfile.id, b: id }),
+    isMe ? Promise.resolve({ data: false }) : supabase.rpc("is_blocked_with", { p_other: id }),
   ]);
   // Blocked either way, or paused: the profile simply does not exist for you.
   if (!doc || blocked || (doc.deactivated_at && !isMe)) notFound();
@@ -119,8 +119,8 @@ export default async function DoctorProfilePage({
         <section className="rounded-xl border bg-card p-6 shadow-sm">
           <div className="flex items-start gap-5">
             <div className="min-w-0 flex-1">
-              <h2 className="flex items-center gap-1.5 text-h5 font-bold">
-                <span className="truncate">{doc.display_name}</span>
+              <h2 className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-h5 font-bold leading-tight">
+                <span className="break-words">{doc.display_name}</span>
                 {verified ? <SealCheck weight="fill" className="size-5 shrink-0 text-sky-500" aria-label="Verified" /> : null}
                 {doc.is_founder ? <FounderBadge /> : null}
               </h2>
@@ -128,7 +128,7 @@ export default async function DoctorProfilePage({
                 <span className="font-mono">{SPECIALTIES[doc.specialty]?.code}</span> {doc.specialty_title}
               </p>
               <ul className="mt-3 space-y-1 text-body-sm text-muted-foreground">
-                <li className="flex items-center gap-2"><Hospital className="size-4 shrink-0" /> <span className="truncate">{doc.hospital}</span></li>
+                <li className="flex items-start gap-2"><Hospital className="mt-0.5 size-4 shrink-0" /> <span className="break-words">{doc.hospital}</span></li>
                 <li className="flex items-center gap-2"><MapPin className="size-4 shrink-0" /> {place}</li>
               </ul>
             </div>
