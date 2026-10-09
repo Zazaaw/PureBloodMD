@@ -127,3 +127,7 @@ export const VIP_PERKS = [
   "100% anti-non-doctor shield (zero MBAs or tech bros)",
   "Future offspring medical board predictor tool",
 ];
+
+/** EMR (Electronic Medical Record): mirrors the checks in 0011_emr.sql. */
+export const EMR_MAX_CHARS = 500;
+export const EMR_MAX_PHOTOS = 4;

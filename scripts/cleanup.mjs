@@ -1,4 +1,5 @@
-// Removes chat photos whose messages were deleted (unmatch, delete chat, 30-day expiry).
+// Removes chat photos whose messages were deleted (unmatch, delete chat, 30-day expiry)
+// and EMR photos of deleted posts (queued as "emr-media/<path>").
 // Storage files can only be deleted through the Storage API, so the database queues
 // their paths in `media_trash` and this script empties it. Usage: npm run db:cleanup
 // In production, run it on a schedule (e.g. a daily cron job).
@@ -32,17 +33,25 @@ for (;;) {
   }
   const paths = (await res.json()).map((r) => r.path);
   if (!paths.length) break;
-  const del = await fetch(`${url}/storage/v1/object/chat-media`, {
-    method: "DELETE",
-    headers,
-    body: JSON.stringify({ prefixes: paths }),
-  });
-  if (!del.ok) {
-    console.error("Storage delete failed:", del.status, await del.text());
-    process.exit(1);
+  const EMR = "emr-media/";
+  const byBucket = {
+    "chat-media": paths.filter((p) => !p.startsWith(EMR)),
+    "emr-media": paths.filter((p) => p.startsWith(EMR)).map((p) => p.slice(EMR.length)),
+  };
+  for (const [bucket, prefixes] of Object.entries(byBucket)) {
+    if (!prefixes.length) continue;
+    const del = await fetch(`${url}/storage/v1/object/${bucket}`, {
+      method: "DELETE",
+      headers,
+      body: JSON.stringify({ prefixes }),
+    });
+    if (!del.ok) {
+      console.error(`Storage delete failed (${bucket}):`, del.status, await del.text());
+      process.exit(1);
+    }
   }
   const inList = `(${paths.map((p) => `"${p}"`).join(",")})`;
   await fetch(`${url}/rest/v1/media_trash?path=in.${encodeURIComponent(inList)}`, { method: "DELETE", headers });
   total += paths.length;
 }
-console.log(`Chat photos removed from storage: ${total}`);
+console.log(`Chat and EMR photos removed from storage: ${total}`);

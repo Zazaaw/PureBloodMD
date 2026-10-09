@@ -86,6 +86,7 @@ export const TERMS: LegalSection[] = [
     body: [
       "You keep ownership of the photos and messages you post. You give us a limited license to store, display and process them only to run the app (for example, showing your profile and delivering your messages).",
       "Chat photos are visible only to the two people in the conversation. If nobody writes within 24 hours of a match, the match ends automatically (we call it asystole): it is deleted for both people and you may see each other in triage again. Once anyone has written, a conversation ends only after 30 days without a message. Delete chat or Unmatch also deletes it for both people.",
+      "EMR (Electronic Medical Record) is a feed every signed-in member can read. Threads, replies and photos you post there are visible to all members except people you blocked or who blocked you. Never post patient data, medical records or anything that could identify a patient. You can delete your own posts at any time; a post that already has replies is replaced by a removal notice so the conversation under it stays readable.",
     ],
   },
   {
@@ -150,6 +151,7 @@ export const PRIVACY: LegalSection[] = [
         "Verification documents, only if you request the badge: a photo of your ID (KTP or passport), a selfie holding it, and your medical license or student card. Stored in a private bucket only our reviewers can open, and deleted after the decision. Your ID is specific personal data under UU PDP and is used only to verify you",
         "Up to 4 profile photos, your Super Likes and the people who Super Liked you",
         "Approximate location: only when you tap Radar, rounded to about 1 km. Other users never see it, only a distance",
+        "EMR threads, replies, photos and likes you post",
         "Messages, photos and stickers you send, swipes, matches, blocks and reports, including any screenshots you attach to a report and a copy of the reported conversation",
         "Technical data needed for security, such as CAPTCHA results and sign-in records",
       ],
@@ -166,14 +168,14 @@ export const PRIVACY: LegalSection[] = [
     id: "share",
     title: "3. Who sees it",
     body: [
-      "Other members see your public profile. Only the person you are chatting with sees your messages and chat photos. Our service providers (Supabase for hosting and database, Cloudflare for CAPTCHA) process data on our behalf. We may disclose data when required by law or to protect someone's safety.",
+      "Other members see your public profile and your EMR posts (except people you blocked or who blocked you). Only the person you are chatting with sees your messages and chat photos. Our service providers (Supabase for hosting and database, Cloudflare for CAPTCHA) process data on our behalf. We may disclose data when required by law or to protect someone's safety.",
     ],
   },
   {
     id: "keep",
     title: "4. How long we keep it",
     body: [
-      "Matches where nobody writes within 24 hours are deleted, conversations are deleted after 30 days without a message, or immediately when you use Delete chat or Unmatch. Reports, their screenshots and the conversation copy are kept as long as needed to investigate and keep the community safe. When you delete your account (Passport > Settings), your profile, photos, matches and messages are deleted right away.",
+      "Matches where nobody writes within 24 hours are deleted, conversations are deleted after 30 days without a message, or immediately when you use Delete chat or Unmatch. Reports, their screenshots and the conversation copy are kept as long as needed to investigate and keep the community safe. EMR posts stay until you delete them. When you delete your account (Passport > Settings), your profile, photos, matches, messages and EMR posts are deleted right away.",
     ],
   },
   {

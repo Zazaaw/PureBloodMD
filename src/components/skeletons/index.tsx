@@ -95,3 +95,41 @@ export function ThreadRowSkeleton() {
     </div>
   );
 }
+
+/** EMR PostCard: avatar, name + time row, two body lines, action row. */
+export function PostSkeleton({ indent }: { indent?: boolean }) {
+  return (
+    <div className={cn("flex gap-3 px-5 py-4", indent && "pl-[4.25rem]")}>
+      <Skeleton className="size-10 shrink-0 rounded-full" />
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="flex justify-between gap-2">
+          <Skeleton className="h-4 w-36" />
+          <Skeleton className="h-3 w-8" />
+        </div>
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+        <div className="flex gap-3 pt-2">
+          <Skeleton className="size-5 rounded-full" />
+          <Skeleton className="size-5 rounded-full" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** EMR Composer card: avatar, name, one text line, photo button + Post. */
+export function ComposerSkeleton() {
+  return (
+    <div className="flex gap-3 rounded-xl border bg-card p-5 shadow-sm">
+      <Skeleton className="size-10 shrink-0 rounded-full" />
+      <div className="min-w-0 flex-1 space-y-2">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-5 w-48" />
+        <div className="flex justify-between pt-2">
+          <Skeleton className="size-9" />
+          <Skeleton className="h-8 w-16 rounded-full" />
+        </div>
+      </div>
+    </div>
+  );
+}

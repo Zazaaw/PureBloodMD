@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { getSupabaseEnv } from "@/lib/env";
 
-const PROTECTED = ["/discover", "/chat", "/passport", "/onboarding"];
+const PROTECTED = ["/discover", "/emr", "/doctor", "/chat", "/passport", "/onboarding"];
 const AUTH_PAGES = ["/login", "/signup"];
 
 /**

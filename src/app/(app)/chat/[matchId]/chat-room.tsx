@@ -299,7 +299,7 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
         </span>
         <div className="min-w-0">
           <h1 className="flex items-center gap-1.5 truncate font-bold">
-            {room.other_name}
+            <Link href={`/doctor/${room.other_id}`} className="truncate hover:underline">{room.other_name}</Link>
             {room.other_verified ? (
               <SealCheck weight="fill" className="size-4 shrink-0 text-sky-500" aria-label="Verified: ID and medical license checked" />
             ) : null}

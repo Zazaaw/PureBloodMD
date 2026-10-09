@@ -112,3 +112,31 @@ export type VerificationRequest = {
   created_at: string;
   reviewed_at: string | null;
 };
+
+export type EmrImage = { path: string; w: number; h: number };
+
+/** Author columns embedded in every EMR post. */
+export type EmrAuthor = Pick<
+  Profile,
+  "id" | "display_name" | "photo_url" | "photo_fallback_url" | "specialty_title" | "identity_verified" | "doctor_verified"
+>;
+
+/** A thread (no parent), a comment (parent = thread) or a reply (parent = comment). */
+export type EmrPost = {
+  id: string;
+  author_id: string;
+  parent_id: string | null;
+  root_id: string | null;
+  body: string;
+  images: EmrImage[];
+  reply_count: number;
+  like_count: number;
+  /** Set when the author deleted a post that already had replies. */
+  deleted_at: string | null;
+  created_at: string;
+  author: EmrAuthor;
+  /** Filled in by hydratePosts. */
+  liked: boolean;
+  /** Signed URLs, same order as images. */
+  urls: string[];
+};

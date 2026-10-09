@@ -82,4 +82,8 @@ if (existsSync(worldFile)) {
     console.log(`International doctors added: ${worldAdded} / ${world.length}`);
   }
 }
+// Demo EMR threads (no-op once the feed has posts; needs migration 0011).
+const emr = await fetch(`${url}/rest/v1/rpc/seed_emr_bot_posts`, { method: "POST", headers, body: "{}" });
+if (emr.ok) console.log(`EMR demo threads added: ${await emr.text()}`);
+
 console.log(`Done. ${existing.size + missing.length + worldAdded} doctors are on call.`);

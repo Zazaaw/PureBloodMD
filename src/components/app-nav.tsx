@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTheme } from "next-themes";
-import { Cards, ChatCircleDots, Crown, IdentificationCard, Moon, Sun } from "@phosphor-icons/react";
+import { Cards, ChatCircleDots, ClipboardText, Crown, IdentificationCard, Moon, Sun } from "@phosphor-icons/react";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import { LogoMark } from "@/components/logo";
 import { Dock, DockIcon } from "@/components/magicui/dock";
@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { href: "/discover", label: "Triage", icon: Cards },
+  { href: "/emr", label: "EMR", icon: ClipboardText },
   { href: "/chat", label: "Consults", icon: ChatCircleDots },
   { href: "/passport", label: "Passport", icon: IdentificationCard },
 ] as const;
