@@ -3,6 +3,7 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getSupabaseEnv } from "@/lib/env";
+import { getAppFlags } from "@/lib/flags";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile, Subscription } from "@/lib/types";
 
@@ -29,10 +30,10 @@ export const requireProfile = cache(async () => {
 
   if (!profile) redirect("/onboarding");
 
-  // VIP comes from the subscription (period end), not a stored flag.
-  const { data: subs } = await supabase.rpc("get_my_subscription");
+  // VIP comes from the subscription (period end), and only while the program is switched on.
+  const [{ data: subs }, flags] = await Promise.all([supabase.rpc("get_my_subscription"), getAppFlags()]);
   const subscription = ((subs ?? []) as Subscription[])[0] ?? null;
-  profile.is_vip = Boolean(subscription?.active);
+  profile.is_vip = flags.vipEnabled && Boolean(subscription?.active);
 
-  return { supabase, userId, profile, subscription };
+  return { supabase, userId, profile, subscription, flags };
 });
