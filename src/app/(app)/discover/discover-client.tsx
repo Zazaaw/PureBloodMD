@@ -32,7 +32,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import PageHeader from "@/components/ui/page-header";
 import PillTabs from "@/components/ui/pill-tabs";
 import {
-  COUNTRY_CODES,
   GENDER_TABS,
   RADIUS_MAX,
   RADIUS_MIN,
@@ -52,10 +51,21 @@ import { isVerified } from "@/lib/verified";
 
 type Quota = { used: number; quota: number; next_at: string | null };
 type RewindQuota = { used: number; quota: number | null };
-type Props = { me: Profile; initialCandidates: Profile[]; hasLocation: boolean; superQuota: Quota; rewindQuota: RewindQuota };
+type SwipeQuota = { used: number; quota: number | null; next_at: string | null };
+type Props = {
+  me: Profile;
+  initialCandidates: Profile[];
+  hasLocation: boolean;
+  superQuota: Quota;
+  rewindQuota: RewindQuota;
+  swipeQuota: SwipeQuota;
+  /** Launch switches from app_config. */
+  vipEnabled: boolean;
+  activeCountries: string[];
+};
 type Direction = "left" | "right" | "super";
 
-export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota, rewindQuota }: Props) {
+export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota, rewindQuota, swipeQuota, vipEnabled, activeCountries }: Props) {
   const router = useRouter();
   const supabase = createClient();
 
@@ -70,6 +80,10 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
   const [quota, setQuota] = useState<Quota>(superQuota);
   const [vipOpen, setVipOpen] = useState(false);
   const superLeft = Math.max(0, quota.quota - quota.used);
+  const [swipes, setSwipes] = useState<SwipeQuota>(swipeQuota);
+  const swipesLeft = swipes.quota == null ? Infinity : Math.max(0, swipes.quota - swipes.used);
+  const rechargeAt = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "tomorrow";
   const [specialty, setSpecialty] = useState<string>("ALL");
   const [traits, setTraits] = useState<Set<string>>(new Set(["Caffeine Tolerant"]));
   const [syncPct, setSyncPct] = useState(94);
@@ -84,6 +98,8 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
   const [drag, setDrag] = useState<{ x: number; y: number } | null>(null);
   const dragStart = useRef<{ x: number; y: number } | null>(null);
   const dragged = useRef(false);
+  // A drag commits to one axis: sideways (pass / like) or upward (Super Like). Downward does nothing.
+  const dragAxis = useRef<"x" | "up" | null>(null);
 
   const [index, setIndex] = useState(0);
   const [leaving, setLeaving] = useState<Direction | null>(null);
@@ -190,9 +206,20 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
     async (dir: Direction) => {
       if (!current || leaving) return;
       const doc = current;
+      if (swipesLeft === 0) {
+        toast(`Shift over: all ${swipes.quota} swipes used for today. Back on rounds at ${rechargeAt(swipes.next_at)}.`);
+        setDrag(null);
+        return;
+      }
       if (dir === "super" && superLeft === 0) {
-        toast(me.is_vip ? "All 5 Super Likes used today. They recharge 24 hours after each one." : "Your free Super Like is used for today. VIP gets 5 a day.");
-        if (!me.is_vip) setVipOpen(true);
+        toast(
+          me.is_vip
+            ? "All 5 Super Likes used today. They recharge 24 hours after each one."
+            : vipEnabled
+              ? "Your free Super Like is used for today. VIP gets 5 a day."
+              : `Your Super Like for today is used. It recharges at ${rechargeAt(quota.next_at)}.`
+        );
+        if (vipEnabled && !me.is_vip) setVipOpen(true);
         setDrag(null);
         return;
       }
@@ -211,15 +238,19 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
       const { data, error } = await supabase.rpc("swipe_profile", { p_target: doc.id, p_direction: dir });
       if (error) {
         setCandidates((list) => (list.some((d) => d.id === doc.id) ? list : [doc, ...list]));
-        if (error.message.includes("superlike_limit")) {
+        if (error.message.includes("swipe_limit")) {
+          setSwipes((s) => ({ ...s, used: s.quota ?? s.used }));
+          toast("Shift over: you've used all your swipes for today.");
+        } else if (error.message.includes("superlike_limit")) {
           setQuota((q) => ({ ...q, used: q.quota }));
           toast("No Super Likes left today.");
-          if (!me.is_vip) setVipOpen(true);
+          if (vipEnabled && !me.is_vip) setVipOpen(true);
         } else {
           toast.error("Defibrillator misfired. That doctor is back in the deck.");
         }
         return;
       }
+      setSwipes((s) => ({ ...s, used: s.used + 1, next_at: s.next_at ?? new Date(Date.now() + 86_400_000).toISOString() }));
       if (dir === "super") setQuota((q) => ({ ...q, used: q.used + 1, next_at: q.next_at ?? new Date(Date.now() + 86_400_000).toISOString() }));
       const result = data as { matched: boolean; match_id?: string };
       setLastSwiped({ doc, dir, matched: Boolean(result.matched) });
@@ -233,7 +264,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
         toast(`Prescribed. Waiting for ${doc.display_name.split(",")[0]}'s rhythm to sync.`);
       }
     },
-    [current, leaving, supabase, router, superLeft, me.is_vip]
+    [current, leaving, supabase, router, superLeft, me.is_vip, swipesLeft, swipes, quota.next_at, vipEnabled]
   );
 
   useEffect(() => {
@@ -263,16 +294,16 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
     if (lastSwiped.dir === "super") return toast("Super Likes can't be rewound. 200 joules is 200 joules.");
     if (lastSwiped.matched) return toast(`You already matched with ${name}. That's a consult now, not a mistake.`);
     if (rewindLeft === 0) {
-      toast("Your free rewind is used for today. VIP rewinds without limit.");
-      setVipOpen(true);
+      toast(vipEnabled ? "Your free rewind is used for today. VIP rewinds without limit." : "Your rewind for today is used. It recharges in 24 hours.");
+      if (vipEnabled) setVipOpen(true);
       return;
     }
     const { error } = await supabase.rpc("rewind_last_swipe");
     if (error) {
       if (error.message.includes("rewind_limit")) {
         setRewinds((r) => ({ ...r, used: r.quota ?? r.used }));
-        toast("Your free rewind is used for today. VIP rewinds without limit.");
-        setVipOpen(true);
+        toast(vipEnabled ? "Your free rewind is used for today. VIP rewinds without limit." : "Your rewind for today is used. It recharges in 24 hours.");
+        if (vipEnabled) setVipOpen(true);
       } else toast.error("Could not rewind that one. The chart is already signed.");
       return;
     }
@@ -292,16 +323,22 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
     if (leaving || e.button !== 0 || (e.target as HTMLElement).closest("[data-no-drag]")) return;
     dragStart.current = { x: e.clientX, y: e.clientY };
     dragged.current = false;
+    dragAxis.current = null;
   };
   const onPointerMove = (e: React.PointerEvent) => {
     if (!dragStart.current) return;
     const x = e.clientX - dragStart.current.x;
     const y = e.clientY - dragStart.current.y;
     if (!dragged.current && Math.hypot(x, y) > 8) {
+      dragAxis.current = Math.abs(x) >= Math.abs(y) ? "x" : y < 0 ? "up" : null;
+      if (!dragAxis.current) {
+        dragStart.current = null; // downward: not a swipe
+        return;
+      }
       dragged.current = true;
       e.currentTarget.setPointerCapture(e.pointerId);
     }
-    if (dragged.current) setDrag({ x, y });
+    if (dragged.current) setDrag(dragAxis.current === "x" ? { x, y: 0 } : { x: 0, y: Math.min(0, y) });
   };
   const onPointerUp = () => {
     if (!dragStart.current) return;
@@ -357,14 +394,22 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
           </div>
 
           <div className="grid gap-3 border-t pt-5">
-            <label className="grid gap-2">
-              <span className="text-body-sm font-medium">Country</span>
-              <Select value={country} onChange={(e) => changeCountry(e.target.value)} disabled={loadingDeck}>
-                {COUNTRY_CODES.map((c) => (
-                  <option key={c} value={c}>{countryName(c)}</option>
-                ))}
-              </Select>
-            </label>
+            {activeCountries.length > 1 ? (
+              <label className="grid gap-2">
+                <span className="text-body-sm font-medium">Country</span>
+                <Select value={country} onChange={(e) => changeCountry(e.target.value)} disabled={loadingDeck}>
+                  {activeCountries.map((c) => (
+                    <option key={c} value={c}>{countryName(c)}</option>
+                  ))}
+                </Select>
+              </label>
+            ) : (
+              <div className="grid gap-1">
+                <span className="text-body-sm font-medium">Country</span>
+                <p className="text-body-sm">{countryName(activeCountries[0] ?? "ID")}</p>
+                <p className="text-caption text-muted-foreground">Launching in Indonesia first. More countries once the ward fills up.</p>
+              </div>
+            )}
             <label className="grid gap-2">
               <span className="flex justify-between text-body-sm font-medium">
                 Radar radius
@@ -636,11 +681,18 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
             )}
 
             <div className="mt-3 space-y-1 text-center text-caption text-muted-foreground tabular-nums">
+              {swipes.quota != null ? (
+                <p className={cn(swipesLeft === 0 && "font-medium text-red-500")} suppressHydrationWarning>
+                  {swipesLeft > 0
+                    ? `${swipesLeft} of ${swipes.quota} swipes left today`
+                    : `Shift over. Swipes recharge at ${rechargeAt(swipes.next_at)}`}
+                </p>
+              ) : null}
               <p suppressHydrationWarning>
                 {superLeft > 0
                   ? `${superLeft} of ${quota.quota} Super ${quota.quota === 1 ? "Like" : "Likes"} left today`
                   : `Super Likes recharge ${quota.next_at ? new Date(quota.next_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "tomorrow"}`}
-                {!me.is_vip ? (
+                {vipEnabled && !me.is_vip ? (
                   <>
                     {", "}
                     <button type="button" className="font-medium text-foreground underline underline-offset-4" onClick={() => setVipOpen(true)}>
@@ -764,7 +816,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation, superQuota,
           </>
         ) : null}
       </Modal>
-      <VipDialog open={vipOpen} country={me.country ?? "ID"} onClose={() => setVipOpen(false)} onChange={() => router.refresh()} />
+      {vipEnabled ? <VipDialog open={vipOpen} country={me.country ?? "ID"} onClose={() => setVipOpen(false)} onChange={() => router.refresh()} /> : null}
 
       {safety ? (
         <SafetyDialog
