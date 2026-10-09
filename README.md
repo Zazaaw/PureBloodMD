@@ -90,7 +90,7 @@ The comedy is part of the product. Every specialty has its own one-liners, bot d
 - **Personal info guard:**
   - phone numbers and chat-app links are masked with `****` automatically
   - a warning appears before you send anything that looks like an NIK, a bank account or an OTP
-- **Unmatch** and **delete chat** for both sides.
+- **Unmatch** and **delete chat** for both sides. On phones, swipe a conversation left to delete it.
 - **Asystole:** if nobody writes within 24 hours of a match, it flatlines. The room is deleted, and the two doctors can meet again in triage for a second chance. A live countdown shows how long is left, and it disappears after the first message.
 - **Dormant consults:** once people have talked, a consult only ends after 30 days without a message.
 - **Online dot** through Realtime Presence.
@@ -108,6 +108,14 @@ The comedy is part of the product. Every specialty has its own one-liners, bot d
 
 ### ✅ Verified badge
 The blue badge means a human reviewed **both** the doctor's ID (KTP or passport) and their medical license (STR/SIP, or a student card for medical students). Documents go to a private bucket that members can never read.
+
+- **Verification desk (`/admin`):** a developer-only dashboard. Admins are listed in `public.admin_emails`. It shows each request with the member's credentials and the three documents through short-lived signed links. **Approve** adds the badge; **Needs another look** sends the member a note.
+- **Emails from the database:** pg_net calls Resend directly, so the web app needs no extra secrets. Members get three emails:
+  - "being evaluated, verdict within 3 days" when they submit
+  - "Congrats, you're verified" when approved
+  - the reviewer's note when rejected
+
+  Templates live in `supabase/templates/verification-*.html`; the Resend key is stored in Supabase Vault by `npm run supabase:push -- email`.
 
 ### 🚀 Launch mode (current)
 PureBloodMD is in its free launch phase, controlled by switches in the `app_config` table, with no redeploy needed:
@@ -198,10 +206,10 @@ cp .env.example .env.local
 
 ### 4. Database
 ```bash
-# Apply migrations in order (0001 ... 0009) through the Supabase Management API
+# Apply migrations in order (0001 ... 0010) through the Supabase Management API
 npm run supabase:push -- sql 0001
 npm run supabase:push -- sql 0002
-# ...up to 0009
+# ...up to 0010
 
 # Add the bot doctors: 480 in Indonesia + 1,056 across 33 more countries
 npm run db:seed
@@ -244,7 +252,7 @@ src/
   lib/                 constants, auth, captcha, stickers, legal text
   proxy.ts             session refresh + route protection
 supabase/
-  migrations/          0001 to 0009: schema, RLS, triggers, RPCs
+  migrations/          0001 to 0010: schema, RLS, triggers, RPCs
   templates/           confirmation email
   seed-doctors*.json   bot roster
 scripts/               seed, cleanup, supabase push
