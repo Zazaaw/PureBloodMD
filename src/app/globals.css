@@ -440,4 +440,10 @@
 /* Room for the floating bottom dock on phones (pair with lg:pb-*). */
 @utility pb-dock { padding-bottom: calc(env(safe-area-inset-bottom) + 6.5rem); }
 
+/* Phones: no double-tap zoom, and 16px form fields so iOS never zooms in on focus. */
+html { touch-action: manipulation; }
+@media (max-width: 767px) {
+  input, select, textarea { font-size: 16px !important; }
+}
+
 /* Dibuat oleh Faiz Hazim Hawari · skill-typography */

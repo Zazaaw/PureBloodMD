@@ -9,6 +9,13 @@ import { Button } from "@/components/ui/button";
  * unhashed chunks that a cache-first worker would keep stale.
  */
 export function PwaRegister() {
+  // iOS Safari ignores user-scalable=no in a browser tab; block its pinch gesture directly.
+  useEffect(() => {
+    const stop = (e: Event) => e.preventDefault();
+    document.addEventListener("gesturestart", stop, { passive: false });
+    return () => document.removeEventListener("gesturestart", stop);
+  }, []);
+
   useEffect(() => {
     if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) return;
     navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" }).catch(() => {});

@@ -21,6 +21,11 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   // Edge to edge when installed; the app shell pads for the notch (pt-safe / pb-safe).
   viewportFit: "cover",
+  // App-like: no pinch or double-tap zoom (inputs are 16px on phones, so iOS never auto-zooms on focus).
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
