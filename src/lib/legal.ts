@@ -6,7 +6,7 @@
  * NOTE: written as a solid starting point, not legal advice. Have an
  * Indonesian lawyer review it before a real public launch.
  */
-export const TERMS_VERSION = "2026-10-08.3";
+export const TERMS_VERSION = "2026-10-09.1";
 export const LEGAL_UPDATED = "8 October 2026";
 export const CONTACT_EMAIL = "safety@purebloodmd.app";
 
@@ -85,7 +85,7 @@ export const TERMS: LegalSection[] = [
     title: "7. Your content",
     body: [
       "You keep ownership of the photos and messages you post. You give us a limited license to store, display and process them only to run the app (for example, showing your profile and delivering your messages).",
-      "Chat photos are visible only to the two people in the conversation. A conversation with no messages for 24 hours ends automatically (we call it asystole): the chat is deleted for both people and you may see each other in triage again. Delete chat or Unmatch also deletes it for both people.",
+      "Chat photos are visible only to the two people in the conversation. If nobody writes within 24 hours of a match, the match ends automatically (we call it asystole): it is deleted for both people and you may see each other in triage again. Once anyone has written, a conversation ends only after 30 days without a message. Delete chat or Unmatch also deletes it for both people.",
     ],
   },
   {
@@ -94,6 +94,7 @@ export const TERMS: LegalSection[] = [
     body: [
       "VIP plans renew automatically at the end of each period until you cancel. When you cancel, VIP stays active until the end of the period you already paid for and then ends. We do not give partial refunds for unused time, except where the law requires it.",
       "In the current demo version, no real payment is taken.",
+      "During the launch period PureBloodMD is free: VIP subscriptions are not offered, every member gets 20 swipes and 1 Super Like per day, and chat is unlimited. The service is available in Indonesia only for now. These limits may change, and we will tell you in the app before paid plans start.",
     ],
   },
   {
@@ -172,7 +173,7 @@ export const PRIVACY: LegalSection[] = [
     id: "keep",
     title: "4. How long we keep it",
     body: [
-      "Conversations are deleted after 24 hours without a message, or immediately when you use Delete chat or Unmatch. Reports, their screenshots and the conversation copy are kept as long as needed to investigate and keep the community safe. When you delete your account (Passport > Settings), your profile, photos, matches and messages are deleted right away.",
+      "Matches where nobody writes within 24 hours are deleted, conversations are deleted after 30 days without a message, or immediately when you use Delete chat or Unmatch. Reports, their screenshots and the conversation copy are kept as long as needed to investigate and keep the community safe. When you delete your account (Passport > Settings), your profile, photos, matches and messages are deleted right away.",
     ],
   },
   {

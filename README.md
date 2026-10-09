@@ -80,12 +80,13 @@ The comedy is part of the product. Every specialty has its own one-liners, bot d
 ### 💬 Consults (chat)
 - Realtime messages, **photos** (private bucket, signed URLs), an **emoji picker** and **medical stickers**.
 - **Bumble rule:** in a female x male match, she makes the first incision. This is enforced in the database.
-- **10 free bubbles** per consult, then the VIP paywall.
+- **Unlimited chat** during launch. With VIP switched on: 10 free bubbles per consult, then the VIP paywall.
 - **Personal info guard:**
   - phone numbers and chat-app links are masked with `****` automatically
   - a warning appears before you send anything that looks like an NIK, a bank account or an OTP
 - **Unmatch** and **delete chat** for both sides.
-- **Asystole:** a consult with no message for 24 hours flatlines. The room is deleted, and the two doctors can meet again in triage for a second chance. A live countdown in the chat shows how long is left.
+- **Asystole:** if nobody writes within 24 hours of a match, it flatlines. The room is deleted, and the two doctors can meet again in triage for a second chance. A live countdown shows how long is left, and it disappears after the first message.
+- **Dormant consults:** once people have talked, a consult only ends after 30 days without a message.
 - **Online dot** through Realtime Presence.
 
 ### 🪪 Doctor Passport (profile)
@@ -102,7 +103,21 @@ The comedy is part of the product. Every specialty has its own one-liners, bot d
 ### ✅ Verified badge
 The blue badge means a human reviewed **both** the doctor's ID (KTP or passport) and their medical license (STR/SIP, or a student card for medical students). Documents go to a private bucket that members can never read.
 
-### 👑 VIP (demo)
+### 🚀 Launch mode (current)
+PureBloodMD is in its free launch phase, controlled by switches in the `app_config` table, with no redeploy needed:
+
+| Switch | Now | Effect |
+|---|---|---|
+| `vip_enabled` | `false` | No VIP plans or paywall, and chat is unlimited. All VIP code and subscription data stay in place |
+| `daily_swipe_limit` | `20` | Swipes per rolling 24 hours (VIP is unlimited once enabled). 1 Super Like a day |
+| `active_countries` | `["ID"]` | Indonesia only for sign-up, passports and the triage deck |
+
+```sql
+update public.app_config set value = 'true' where key = 'vip_enabled';                  -- bring VIP back
+update public.app_config set value = '["ID","MY","SG"]' where key = 'active_countries';  -- open more countries
+```
+
+### 👑 VIP (switched off during launch)
 | Plan | Indonesia | Other countries |
 |---|---|---|
 | Monthly | Rp 50.000 | US$ 20 |
@@ -176,10 +191,10 @@ cp .env.example .env.local
 
 ### 4. Database
 ```bash
-# Apply migrations in order (0001 ... 0007) through the Supabase Management API
+# Apply migrations in order (0001 ... 0008) through the Supabase Management API
 npm run supabase:push -- sql 0001
 npm run supabase:push -- sql 0002
-# ...up to 0007
+# ...up to 0008
 
 # Add the bot doctors: 480 in Indonesia + 1,056 across 33 more countries
 npm run db:seed
@@ -222,7 +237,7 @@ src/
   lib/                 constants, auth, captcha, stickers, legal text
   proxy.ts             session refresh + route protection
 supabase/
-  migrations/          0001 to 0007: schema, RLS, triggers, RPCs
+  migrations/          0001 to 0008: schema, RLS, triggers, RPCs
   templates/           confirmation email
   seed-doctors*.json   bot roster
 scripts/               seed, cleanup, supabase push
