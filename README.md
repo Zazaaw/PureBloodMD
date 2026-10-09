@@ -59,6 +59,11 @@ The comedy is part of the product. Every specialty has its own one-liners, bot d
 
 ## Features
 
+### 💘 Romance or 🤝 Connect
+- The first question at sign-up: is this account for **romance** or to **connect** with colleagues? It can be changed later in Passport.
+- Members only meet members with the same intent. The bot doctors serve both.
+- In connect mode, the bots talk shop instead of flirting, and anyone can send the first message.
+
 ### 🩺 Triage (swipe)
 - **Drag to swipe** with prescription stamps:
   - right: **PRESCRIBED** (like)
@@ -66,7 +71,7 @@ The comedy is part of the product. Every specialty has its own one-liners, bot d
   - up: **DEFIBRILLATED ⚡** (Super Like)
 - **Super Like:** one per profile. Free members get 1 a day, VIP gets 5. The other doctor sees a **"Superliked you"** ribbon, and those doctors appear first in their deck.
 - **Rewind:** undo your last pass or like. Free members get 1 a day, VIP is unlimited. Super Likes and matches can't be rewound.
-- **Compact cards:** the photo and actions always fit on one screen. Tap ⓘ (or press ↓) for the **full chart**: vitals, bio, tags, and a heartbeat you can auscultate.
+- **Cards:** the photo and actions sit on top. Scroll down the card for the full chart: vitals, bio, tags, and a heartbeat you can auscultate.
 - **Photos:** up to 4 per doctor. Tap the left or right side of the photo to browse, Stories style.
 - **Filters:**
   - looking for
@@ -75,9 +80,10 @@ The comedy is part of the product. Every specialty has its own one-liners, bot d
   - **radar** radius 5 to 100 km
   - specialty
   - must-have MD traits
-- **Keyboard:** `←` pass, `↑` Super Like, `→` like, `↓` full chart.
+- **Keyboard:** `←` pass, `↑` Super Like, `→` like. Drags lock to left, right or up.
 
 ### 💬 Consults (chat)
+- **Bumble-style inbox:** after sign-up it is empty. New matches appear as circles at the top, showing the hours left and whose move it is. Once the first message is sent, the match moves into the conversation list below.
 - Realtime messages, **photos** (private bucket, signed URLs), an **emoji picker** and **medical stickers**.
 - **Bumble rule:** in a female x male match, she makes the first incision. This is enforced in the database.
 - **Unlimited chat** during launch. With VIP switched on: 10 free bubbles per consult, then the VIP paywall.
@@ -132,6 +138,7 @@ VIP includes unlimited bubbles, 5 Super Likes a day and unlimited rewinds. If yo
   - A copy of the conversation is saved with the report, so the evidence survives the chat ending.
 - **Block:** works from both Triage and chat.
 - **Account control:** deactivate (hidden from everyone, reversible) or permanently delete your account from Passport > Settings.
+- **Forgot password:** a branded reset email (same design as the confirmation email) leads to a page for choosing a new password, with a confirm field.
 - **Signup protection:** sign up requires a Cloudflare Turnstile **CAPTCHA**, accepting the **Terms & Privacy Policy**, and confirming you are **21+**. The accepted terms version is stored on the account.
 - **Terms:** clear rules about no financial transactions and no sharing of personal information. The terms also limit the founders' liability for transactions or information exchanged between members.
 - **Location privacy:** radar locations are rounded to about 1 km, and other members only ever see a distance.
@@ -191,10 +198,10 @@ cp .env.example .env.local
 
 ### 4. Database
 ```bash
-# Apply migrations in order (0001 ... 0008) through the Supabase Management API
+# Apply migrations in order (0001 ... 0009) through the Supabase Management API
 npm run supabase:push -- sql 0001
 npm run supabase:push -- sql 0002
-# ...up to 0008
+# ...up to 0009
 
 # Add the bot doctors: 480 in Indonesia + 1,056 across 33 more countries
 npm run db:seed
@@ -237,7 +244,7 @@ src/
   lib/                 constants, auth, captcha, stickers, legal text
   proxy.ts             session refresh + route protection
 supabase/
-  migrations/          0001 to 0008: schema, RLS, triggers, RPCs
+  migrations/          0001 to 0009: schema, RLS, triggers, RPCs
   templates/           confirmation email
   seed-doctors*.json   bot roster
 scripts/               seed, cleanup, supabase push

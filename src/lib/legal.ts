@@ -145,7 +145,7 @@ export const PRIVACY: LegalSection[] = [
     body: [
       [
         "Account: email address, password (stored hashed by our auth provider), the country you chose at sign-up, and the date you accepted these Terms",
-        "Profile: name, photo, age, gender, who you are looking for, specialty, hospital, country, bio and tags",
+        "Profile: name, photo, age, gender, whether you are here for romance or to connect with colleagues, who you are looking for, specialty, hospital, country, bio and tags",
         "Credentials you enter (STR/NIM, alma mater, class year): stored privately and never shown to other users",
         "Verification documents, only if you request the badge: a photo of your ID (KTP or passport), a selfie holding it, and your medical license or student card. Stored in a private bucket only our reviewers can open, and deleted after the decision. Your ID is specific personal data under UU PDP and is used only to verify you",
         "Up to 4 profile photos, your Super Likes and the people who Super Liked you",
