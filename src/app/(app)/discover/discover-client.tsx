@@ -154,6 +154,9 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
     return { filtered: near(base), radarFallback: true };
   }, [candidates, seeking, nationwide, specialty, country, radius, verifiedOnly, hasLocation]);
 
+  // Empty deck: count who the "Looking for" filter is hiding, so the empty state can say why.
+  const hiddenByGender = seeking === "all" ? 0 : candidates.filter((d) => d.gender !== seeking && (d.country ?? "ID") === country).length;
+
   const current = filtered.length ? filtered[index % filtered.length] : null;
   const currentOnline = useIsOnline(current?.id ?? "", current?.is_bot ?? false) && !!current;
 
@@ -682,9 +685,14 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
               <div className="flex flex-col items-center justify-center rounded-xl border px-4 py-16 text-center">
                 <p className="font-semibold">No doctors found</p>
                 <p className="mt-1 max-w-[36ch] text-body-sm text-muted-foreground">
-                  All doctors currently in emergency surgery. We just opened, so the roster is still growing: invite your colleagues, try the whole country, or readmit the ones you discharged.
+                  {hiddenByGender
+                    ? `You're looking for ${seeking === "female" ? "female" : "male"} doctors only. ${hiddenByGender} ${hiddenByGender === 1 ? "doctor is" : "doctors are"} hidden by that filter.`
+                    : "All doctors currently in emergency surgery. We just opened, so the roster is still growing: invite your colleagues, try the whole country, or readmit the ones you discharged."}
                 </p>
                 <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  {hiddenByGender ? (
+                    <Button variant="outline" onClick={() => changeSeeking("Both")}>Show both</Button>
+                  ) : null}
                   {!nationwide ? (
                     <Button variant="outline" onClick={() => { setNationwide(true); setIndex(0); }}>Show whole country</Button>
                   ) : null}
