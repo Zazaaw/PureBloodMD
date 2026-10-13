@@ -10,17 +10,12 @@ import { Input } from "@/components/ui/input";
 import { CountrySelect } from "@/components/form/country-select";
 import { HeartbeatLoader } from "@/components/heartbeat-loader";
 import { IntentPicker, type Intent } from "@/components/form/intent-picker";
-import { SPECIALTIES, SPECIALTY_KEYS, specialtyLabel, type SpecialtyKey } from "@/lib/constants";
+import { SPECIALTIES, SPECIALTY_KEYS, fitSeeking, seekingOptionsFor, specialtyLabel, type SpecialtyKey } from "@/lib/constants";
 import { createPassport } from "./actions";
 
 const GENDERS = [
   { label: "Female MD", value: "female" },
   { label: "Male MD", value: "male" },
-] as const;
-const SEEKING = [
-  { label: "Female MD", value: "female" },
-  { label: "Male MD", value: "male" },
-  { label: "Both", value: "all" },
 ] as const;
 
 export function OnboardingForm({
@@ -40,6 +35,8 @@ export function OnboardingForm({
   const e = state.errors ?? {};
   // React resets uncontrolled fields after an action; echo back what was typed.
   const v = state.values ?? {};
+  const [intent, setIntent] = useState<Intent>(v.intent === "connect" || v.intent === "romance" ? v.intent : defaultIntent);
+  const [gender, setGender] = useState<string>(v.gender ?? "female");
 
   return (
     <form action={action} className="space-y-6">
@@ -58,14 +55,20 @@ export function OnboardingForm({
               <Input id="age" name="age" type="number" inputMode="numeric" min={21} max={90} required defaultValue={v.age ?? 29} />
             </Field>
           </div>
-          <IntentPicker defaultValue={v.intent === "connect" || v.intent === "romance" ? v.intent : defaultIntent} />
+          <IntentPicker defaultValue={intent} onChange={setIntent} />
           <div className="grid gap-2">
             <span className="text-body-sm font-medium">I am a</span>
-            <ChoiceTabs name="gender" options={GENDERS} defaultValue={v.gender ?? "female"} />
+            <ChoiceTabs name="gender" options={GENDERS} defaultValue={gender} onChange={setGender} />
           </div>
           <div className="grid gap-2">
             <span className="text-body-sm font-medium">Looking for</span>
-            <ChoiceTabs name="seeking" options={SEEKING} defaultValue={v.seeking ?? ((v.intent ?? defaultIntent) === "connect" ? "all" : "male")} />
+            {/* Remount when intent or gender changes so the default follows them. */}
+            <ChoiceTabs
+              key={`${intent}-${gender}`}
+              name="seeking"
+              options={seekingOptionsFor(intent)}
+              defaultValue={fitSeeking(v.seeking ?? (intent === "connect" ? "all" : gender === "male" ? "female" : "male"), intent, gender)}
+            />
           </div>
         </CardContent>
       </Card>

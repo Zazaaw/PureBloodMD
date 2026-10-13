@@ -12,7 +12,7 @@ const OPTIONS = [
 ] as const;
 
 /** "What are you here for?": a two-card radio that posts as `intent`. */
-export function IntentPicker({ defaultValue = "romance", compact = false }: { defaultValue?: Intent; compact?: boolean }) {
+export function IntentPicker({ defaultValue = "romance", compact = false, onChange }: { defaultValue?: Intent; compact?: boolean; onChange?: (v: Intent) => void }) {
   const [value, setValue] = useState<Intent>(defaultValue);
   return (
     <fieldset className="grid gap-2">
@@ -28,7 +28,7 @@ export function IntentPicker({ defaultValue = "romance", compact = false }: { de
                 on && "border-primary/50 bg-primary/5"
               )}
             >
-              <input type="radio" name="intent" value={v} checked={on} onChange={() => setValue(v)} className="sr-only" />
+              <input type="radio" name="intent" value={v} checked={on} onChange={() => { setValue(v); onChange?.(v); }} className="sr-only" />
               <span className="flex items-center gap-2 font-semibold">
                 <Icon weight={on ? "fill" : "regular"} className={cn("size-5 shrink-0", on ? "text-primary" : "text-muted-foreground")} />
                 {title}

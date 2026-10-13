@@ -33,6 +33,8 @@ export function parseProfile(fd: FormData, supabaseUrl: string, activeCountries:
   if (!["female", "male"].includes(gender)) errors.gender = "Pick one.";
   const seeking = str(fd, "seeking") as Seeking;
   if (!["female", "male", "all"].includes(seeking)) errors.seeking = "Pick one.";
+  const intent = str(fd, "intent") === "connect" ? "connect" : "romance";
+  if (intent === "romance" && seeking === "all") errors.seeking = "Romance is one or the other. Pick Female MD or Male MD.";
 
   const age = Number(str(fd, "age"));
   if (!Number.isInteger(age) || age < 21 || age > 90) errors.age = "Age between 21 and 90.";
@@ -85,7 +87,7 @@ export function parseProfile(fd: FormData, supabaseUrl: string, activeCountries:
     display_name: name,
     gender,
     seeking,
-    intent: str(fd, "intent") === "connect" ? "connect" : "romance",
+    intent,
     age,
     specialty,
     specialty_title,

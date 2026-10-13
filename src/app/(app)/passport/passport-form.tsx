@@ -11,17 +11,12 @@ import { DoctorCard, type CardDoctor } from "@/components/doctor-card";
 import { Modal } from "@/components/modal";
 import { Input } from "@/components/ui/input";
 import { CountrySelect } from "@/components/form/country-select";
-import { IntentPicker } from "@/components/form/intent-picker";
-import { SPECIALTIES, SPECIALTY_KEYS, specialtyLabel } from "@/lib/constants";
+import { IntentPicker, type Intent } from "@/components/form/intent-picker";
+import { SPECIALTIES, SPECIALTY_KEYS, fitSeeking, seekingOptionsFor, specialtyLabel } from "@/lib/constants";
 import type { Profile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { updatePassport } from "./actions";
 
-const SEEKING = [
-  { label: "Female MD", value: "female" },
-  { label: "Male MD", value: "male" },
-  { label: "Both", value: "all" },
-] as const;
 
 /** Turns the current form values into what other doctors will see. */
 function previewFrom(form: HTMLFormElement, base: CardDoctor): CardDoctor {
@@ -63,6 +58,7 @@ export function PassportForm({ userId, profile, countries }: { userId: string; p
   const [preview, setPreview] = useState<CardDoctor>(profile);
   const [dirty, setDirty] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [intent, setIntent] = useState<Intent>(profile.intent ?? "romance");
 
   useEffect(() => {
     if (state.saved) {
@@ -109,10 +105,10 @@ export function PassportForm({ userId, profile, countries }: { userId: string; p
                 <Input id="age" name="age" type="number" min={21} max={90} defaultValue={profile.age} />
               </Field>
             </div>
-            <IntentPicker defaultValue={profile.intent ?? "romance"} />
+            <IntentPicker defaultValue={intent} onChange={setIntent} />
             <div className="grid gap-2">
               <span className="text-body-sm font-medium">Looking for</span>
-              <ChoiceTabs name="seeking" options={SEEKING} defaultValue={profile.seeking} />
+              <ChoiceTabs key={intent} name="seeking" options={seekingOptionsFor(intent)} defaultValue={fitSeeking(profile.seeking, intent, profile.gender)} />
             </div>
           </Section>
 

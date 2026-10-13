@@ -93,6 +93,14 @@ export const GENDER_TABS = ["Female MD", "Male MD", "Both"] as const;
 export const tabToSeeking = (t: string) => (t === "Female MD" ? "female" : t === "Male MD" ? "male" : "all");
 export const seekingToTab = (s: string) => (s === "female" ? "Female MD" : s === "male" ? "Male MD" : "Both");
 
+/** Romance looks for one gender; only Connect may pick Both. Mirrors the trigger in 0020. */
+export const genderTabsFor = (intent: string | null | undefined) => (intent === "connect" ? GENDER_TABS : GENDER_TABS.slice(0, 2));
+export const seekingOptionsFor = (intent: string | null | undefined) =>
+  genderTabsFor(intent).map((label) => ({ label, value: tabToSeeking(label) }));
+/** Romance can't keep "Both": fall back to the other gender. */
+export const fitSeeking = (seeking: string, intent: string | null | undefined, gender: string) =>
+  intent !== "connect" && seeking === "all" ? (gender === "male" ? "female" : "male") : seeking;
+
 /** VIP plans. Indonesia pays in rupiah, every other country in USD. Mirrors public.plan_price(). */
 export const PLANS = [
   { id: "monthly", label: "Monthly", months: 1, idr: 50_000, usd: 20 },
