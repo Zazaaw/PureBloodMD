@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
@@ -8,7 +7,6 @@ import {
   Broadcast,
   Flag,
   ArrowUUpLeft,
-  HeartStraight,
   Prohibit,
   Lightning,
   Pill,
@@ -19,19 +17,18 @@ import {
 import { toast } from "sonner";
 import BlurFade from "@/components/effects/blur-fade";
 import { DoctorDetails, DoctorPhotoPanel } from "@/components/doctor-card";
-import { DoctorPhoto } from "@/components/doctor-photo";
-import { OnlineDot, useIsOnline } from "@/components/presence";
+import { useIsOnline } from "@/components/presence";
 import { Select } from "@/components/form/field";
 import { Modal } from "@/components/modal";
 import { SafetyDialog } from "@/components/safety-dialog";
 import { VipDialog } from "@/components/vip-dialog";
-import { StatusPill } from "@/components/status-pill";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import PageHeader from "@/components/ui/page-header";
 import PillTabs from "@/components/ui/pill-tabs";
 import {
-  GENDER_TABS,
+  fitSeeking,
+  genderTabsFor,
   RADIUS_MAX,
   RADIUS_MIN,
   SPECIALTIES,
@@ -69,7 +66,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
   const supabase = createClient();
 
   const [candidates, setCandidates] = useState(initialCandidates);
-  const [seeking, setSeeking] = useState<Seeking>(me.seeking);
+  const [seeking, setSeeking] = useState<Seeking>(fitSeeking(me.seeking, me.intent, me.gender) as Seeking);
   const [country, setCountry] = useState(me.country ?? "ID");
   const [radius, setRadius] = useState(25);
   // Without a radar fix there are no distances, so start with the whole country.
@@ -105,7 +102,6 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
   const [index, setIndex] = useState(0);
   const [leaving, setLeaving] = useState<Direction | null>(null);
   const [radarOpen, setRadarOpen] = useState(false);
-  const [match, setMatch] = useState<{ doc: Profile; matchId: string } | null>(null);
   const [resetting, startReset] = useTransition();
 
   // A fresh server list (after router.refresh) replaces the local one.
@@ -276,22 +272,23 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
       const result = data as { matched: boolean; match_id?: string };
       setLastSwiped({ doc, dir, matched: Boolean(result.matched) });
       if (result.matched && result.match_id) {
+        // Straight into the (still empty) consult; the room itself celebrates the match.
         sounds.fanfare();
-        setMatch({ doc, matchId: result.match_id });
-        router.refresh();
+        toast.success(me.intent === "connect" ? `Connected with ${doc.display_name.split(",")[0]}!` : `It's a match with ${doc.display_name.split(",")[0]}!`);
+        router.push(`/chat/${result.match_id}`);
       } else if (dir === "super") {
         toast.success(`200 joules delivered. ${doc.display_name.split(",")[0]} will see “Superliked you” on your card.`);
       } else if (dir === "right") {
         toast(`Prescribed. Waiting for ${doc.display_name.split(",")[0]}'s rhythm to sync.`);
       }
     },
-    [current, leaving, supabase, router, superLeft, me.is_vip, swipesLeft, swipes, quota.next_at, vipEnabled]
+    [current, leaving, supabase, router, superLeft, me.is_vip, me.intent, swipesLeft, swipes, quota.next_at, vipEnabled]
   );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
-      if (["INPUT", "SELECT", "TEXTAREA"].includes(target.tagName) || match || radarOpen) return;
+      if (["INPUT", "SELECT", "TEXTAREA"].includes(target.tagName) || radarOpen) return;
       if (e.key === "ArrowLeft") swipe("left");
       if (e.key === "ArrowRight") swipe("right");
       if (e.key === "ArrowUp") {
@@ -301,7 +298,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [swipe, match, radarOpen]);
+  }, [swipe, radarOpen]);
 
   /** Undo the last pass or like (not Super Likes, not matches). Free: 1 a day, VIP: unlimited. */
   const rewind = async () => {
@@ -393,7 +390,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
         <CardContent className="space-y-5 p-5">
           <div className="grid gap-2">
             <span className="text-body-sm font-medium">Looking for</span>
-            <PillTabs tabs={GENDER_TABS} value={seekingToTab(seeking)} onChange={changeSeeking} className="md:w-full [&>button]:flex-1 [&>button]:px-3" />
+            <PillTabs tabs={genderTabsFor(me.intent)} value={seekingToTab(seeking)} onChange={changeSeeking} className="md:w-full [&>button]:flex-1 [&>button]:px-3" />
             <button
               type="button"
               role="switch"
@@ -691,7 +688,13 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
                 </p>
                 <div className="mt-4 flex flex-wrap justify-center gap-2">
                   {hiddenByGender ? (
-                    <Button variant="outline" onClick={() => changeSeeking("Both")}>Show both</Button>
+                    me.intent === "connect" ? (
+                      <Button variant="outline" onClick={() => changeSeeking("Both")}>Show both</Button>
+                    ) : (
+                      <Button variant="outline" onClick={() => changeSeeking(seeking === "female" ? "Male MD" : "Female MD")}>
+                        Show {seeking === "female" ? "male" : "female"} doctors
+                      </Button>
+                    )
                   ) : null}
                   {!nationwide ? (
                     <Button variant="outline" onClick={() => { setNationwide(true); setIndex(0); }}>Show whole country</Button>
@@ -766,45 +769,6 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
         </div>
       </Modal>
 
-      <Modal open={!!match} onClose={() => setMatch(null)} labelledBy="match-title" className="text-center">
-        {match ? (
-          <>
-            {me.intent === "connect" ? (
-              <>
-                <StatusPill status="upcoming" className="mx-auto">Colleague connected</StatusPill>
-                <h2 id="match-title" className="mt-4 text-h5 font-extrabold">New colleague on your ward!</h2>
-                <p className="mt-2 text-body-sm text-muted-foreground">
-                  You both swiped right. Say hi, talk shop, swap referral tips. Write within 24 hours or the connection flatlines.
-                </p>
-              </>
-            ) : (
-              <>
-                <StatusPill status="cancelled" className="mx-auto">Code pink: resuscitation match</StatusPill>
-                <h2 id="match-title" className="mt-4 text-h5 font-extrabold">It&apos;s a clinical match!</h2>
-                <p className="mt-2 text-body-sm text-muted-foreground">
-                  Your vital signs synchronized. Both STR licenses have been cross-verified for pureblood offspring potential.
-                </p>
-              </>
-            )}
-            <div className="my-6 flex items-center justify-center">
-              <DoctorPhoto src={me.photo_url} alt="You" size={80} className="ring-4 ring-card" />
-              <span className="z-10 -mx-3 grid size-10 place-items-center rounded-full bg-primary text-primary-foreground">
-                <HeartStraight weight="fill" className="size-5" />
-              </span>
-              <span className="relative">
-                <DoctorPhoto src={match.doc.photo_url} fallback={match.doc.photo_fallback_url} alt={match.doc.display_name} size={80} className="ring-4 ring-card" />
-                <OnlineDot id={match.doc.id} isBot={match.doc.is_bot} className="bottom-1 right-1 size-4 ring-card" />
-              </span>
-            </div>
-            <div className="grid gap-2">
-              <Button asChild>
-                <Link href={`/chat/${match.matchId}`}>{me.intent === "connect" ? "Say hi now" : "Initiate resuscitation (chat now)"}</Link>
-              </Button>
-              <Button variant="ghost" onClick={() => setMatch(null)}>Keep screening doctors</Button>
-            </div>
-          </>
-        ) : null}
-      </Modal>
       {vipEnabled ? <VipDialog open={vipOpen} country={me.country ?? "ID"} onClose={() => setVipOpen(false)} onChange={() => router.refresh()} /> : null}
 
       {safety ? (
