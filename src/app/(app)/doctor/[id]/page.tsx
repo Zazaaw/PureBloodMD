@@ -7,6 +7,7 @@ import BlurFade from "@/components/effects/blur-fade";
 import { FounderBadge } from "@/components/founder-badge";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import { PostCard } from "@/components/emr/post-card";
+import { PhotoStoryButton, type StoryPerson } from "@/components/photo-story";
 import { ProfileActions } from "@/components/emr/profile-actions";
 import { PROFILE_TABS, type ProfileTab } from "@/components/emr/profile-tab-list";
 import { ProfileTabs } from "@/components/emr/profile-tabs";
@@ -25,10 +26,10 @@ export const metadata: Metadata = { title: "Doctor profile" };
 type PublicProfile = Pick<
   Profile,
   | "id" | "display_name" | "photo_url" | "photo_fallback_url" | "specialty" | "specialty_title" | "hospital" | "base_city"
-  | "country" | "age" | "bio" | "tags" | "status_text" | "identity_verified" | "doctor_verified" | "deactivated_at" | "is_founder"
+  | "country" | "age" | "bio" | "tags" | "status_text" | "identity_verified" | "doctor_verified" | "deactivated_at" | "is_founder" | "gallery"
 >;
 const PROFILE_SELECT =
-  "id,display_name,photo_url,photo_fallback_url,specialty,specialty_title,hospital,base_city,country,age,bio,tags,status_text,identity_verified,doctor_verified,deactivated_at,is_founder";
+  "id,display_name,photo_url,photo_fallback_url,specialty,specialty_title,hospital,base_city,country,age,bio,tags,status_text,identity_verified,doctor_verified,deactivated_at,is_founder,gallery";
 
 function Empty({ children }: { children: React.ReactNode }) {
   return (
@@ -110,6 +111,17 @@ export default async function DoctorProfilePage({
 
   const verified = isVerified(doc);
   const place = [doc.base_city, countryName(doc.country ?? "ID")].filter(Boolean).join(", ");
+  const story: StoryPerson = {
+    id: doc.id,
+    name: doc.display_name,
+    subtitle: `${doc.specialty_title} · ${doc.hospital}`,
+    photo: doc.photo_url,
+    fallback: doc.photo_fallback_url,
+    gallery: doc.gallery,
+    verified,
+    founder: Boolean(doc.is_founder),
+  };
+  const photos = [doc.photo_url, ...(doc.gallery ?? [])].filter(Boolean);
 
   return (
     <main className="pb-dock mx-auto max-w-2xl px-4 py-6 sm:px-6 lg:pb-10">
@@ -132,8 +144,20 @@ export default async function DoctorProfilePage({
                 <li className="flex items-center gap-2"><MapPin className="size-4 shrink-0" /> {place}</li>
               </ul>
             </div>
-            <DoctorPhoto src={doc.photo_url} fallback={doc.photo_fallback_url} alt={doc.display_name} size={88} className="size-20 shrink-0 sm:size-22" priority />
+            <PhotoStoryButton person={story} className="shrink-0">
+              <DoctorPhoto src={doc.photo_url} fallback={doc.photo_fallback_url} alt={doc.display_name} size={88} className="size-20 sm:size-22" priority />
+            </PhotoStoryButton>
           </div>
+
+          {photos.length > 1 ? (
+            <div className="mt-5 grid grid-cols-4 gap-2" aria-label="Photos">
+              {photos.map((src, i) => (
+                <PhotoStoryButton key={src + i} person={story} startAt={i} label={`View photo ${i + 1} of ${photos.length}`} className="relative block aspect-[3/4] overflow-hidden rounded-lg">
+                  <DoctorPhoto src={src} fallback={i === 0 ? doc.photo_fallback_url : null} alt="" fill sizes="25vw" />
+                </PhotoStoryButton>
+              ))}
+            </div>
+          ) : null}
 
           {doc.status_text ? <p className="mt-5 text-body-sm italic text-muted-foreground">&ldquo;{doc.status_text}&rdquo;</p> : null}
           {doc.bio ? <p className="mt-3 whitespace-pre-wrap break-words text-body">{doc.bio}</p> : null}
