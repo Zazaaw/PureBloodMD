@@ -71,6 +71,10 @@ export type InboxRow = {
   /** End of the consult: match + 24 h while nobody has written, else last message + 30 days. */
   expires_at: string;
   other_is_founder?: boolean;
+  /** Extra photos for the match circle's photo story. */
+  other_gallery?: string[] | null;
+  /** I deleted this chat for me (hide_consult) and nobody wrote since: circle only, no list row. */
+  chat_hidden?: boolean;
 };
 
 export type Message = {

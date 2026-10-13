@@ -9,6 +9,7 @@ import { DoctorPhoto } from "@/components/doctor-photo";
 import { FounderBadge } from "@/components/founder-badge";
 import { Modal } from "@/components/modal";
 import { OnlineDot } from "@/components/presence";
+import { PhotoStory, useStorySeen, type StoryPerson } from "@/components/photo-story";
 import { SwipeRow } from "@/components/swipe-row";
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/ui/page-header";
@@ -82,10 +83,27 @@ export function ChatShell({ me, inbox, children }: { me: Me; inbox: InboxRow[]; 
       router.refresh();
     });
 
-  // Bumble layout: matches nobody has written to yet sit in the circles row;
-  // a conversation only joins the list below once the first message is sent.
+  // Every match sits in the circles row (new ones first) and opens their photo story;
+  // a conversation also joins the list below once the first message is sent.
   const fresh = inbox.filter((r) => r.bubble_count === 0);
-  const chats = inbox.filter((r) => r.bubble_count > 0);
+  const circles = [...fresh, ...inbox.filter((r) => r.bubble_count > 0)];
+  const chats = inbox.filter((r) => r.bubble_count > 0 && !r.chat_hidden);
+  const { isSeen, markSeen } = useStorySeen();
+  const [story, setStory] = useState<InboxRow | null>(null);
+  const person = (r: InboxRow): StoryPerson => ({
+    id: r.other_id,
+    name: r.other_name,
+    subtitle: `${r.other_specialty_title} · ${r.other_hospital}`,
+    photo: r.other_photo,
+    fallback: r.other_photo_fallback,
+    gallery: r.other_gallery,
+    verified: r.other_verified,
+    founder: r.other_is_founder,
+  });
+  const closeStory = () => {
+    if (story) markSeen(person(story));
+    setStory(null);
+  };
 
   return (
     <main className="mx-auto grid max-w-6xl grid-cols-1 lg:h-app lg:grid-cols-[22rem_minmax(0,1fr)]">
@@ -102,38 +120,45 @@ export function ChatShell({ me, inbox, children }: { me: Me; inbox: InboxRow[]; 
           />
         </BlurFade>
 
-        {fresh.length ? (
-          <section aria-label="New matches" className="mb-5">
-            <p className="mb-2 text-overline font-semibold uppercase text-muted-foreground">New matches · write within 24h</p>
+        {circles.length ? (
+          <section aria-label="Matches" className="mb-5">
+            <p className="mb-2 text-overline font-semibold uppercase text-muted-foreground">
+              Matches{fresh.length ? ` · ${fresh.length} new, write within 24h` : ""}
+            </p>
             <ul className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {fresh.map((r) => {
+              {circles.map((r) => {
+                const isNew = r.bubble_count === 0;
                 const hours = Math.max(0, Math.ceil((new Date(r.expires_at).getTime() - now) / 3_600_000));
-                const move = opener(me, r);
-                const mine = move !== "Her move";
+                const move = isNew ? opener(me, r) : null;
+                const unseen = !isSeen(person(r));
                 return (
                   <li key={r.match_id} className="shrink-0">
-                    <Link
-                      href={`/chat/${r.match_id}`}
-                      aria-current={activeId === r.match_id ? "page" : undefined}
-                      aria-label={`${r.other_name}. ${move}. Flatlines in ${hours} hours.`}
+                    <button
+                      type="button"
+                      onClick={() => setStory(r)}
+                      aria-label={`${r.other_name}: view photos.${move ? ` ${move}. Flatlines in ${hours} hours.` : ""}`}
                       className="flex w-[4.5rem] flex-col items-center gap-1 text-center"
                     >
-                      <span className={cn("relative rounded-full p-0.5", mine ? "bg-linear-to-tr from-primary to-amber-400" : "bg-border")}>
+                      <span className={cn("relative rounded-full p-0.5", unseen ? "bg-linear-to-tr from-primary to-amber-400" : "bg-border")}>
                         <DoctorPhoto src={r.other_photo} fallback={r.other_photo_fallback} alt="" size={60} className="ring-2 ring-background" />
                         <OnlineDot id={r.other_id} isBot={r.other_is_bot} className="bottom-0.5 right-0.5 size-3.5" />
-                        <span
-                          className={cn(
-                            "absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full border-2 border-background px-1.5 font-mono text-overline font-bold leading-4 tabular-nums",
-                            hours <= 6 ? "bg-red-500 text-white" : "bg-foreground text-background"
-                          )}
-                          suppressHydrationWarning
-                        >
-                          {hours}h
-                        </span>
+                        {isNew ? (
+                          <span
+                            className={cn(
+                              "absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full border-2 border-background px-1.5 font-mono text-overline font-bold leading-4 tabular-nums",
+                              hours <= 6 ? "bg-red-500 text-white" : "bg-foreground text-background"
+                            )}
+                            suppressHydrationWarning
+                          >
+                            {hours}h
+                          </span>
+                        ) : null}
                       </span>
                       <span className="mt-1 text-caption font-medium leading-tight">{r.other_name.replace(/^dr\.?\s*/i, "").split(/[ ,]/)[0]}</span>
-                      <span className={cn("text-caption leading-tight", mine ? "text-primary" : "text-muted-foreground")}>{move}</span>
-                    </Link>
+                      {move ? (
+                        <span className={cn("text-caption leading-tight", move !== "Her move" ? "text-primary" : "text-muted-foreground")}>{move}</span>
+                      ) : null}
+                    </button>
                   </li>
                 );
               })}
@@ -192,13 +217,13 @@ export function ChatShell({ me, inbox, children }: { me: Me; inbox: InboxRow[]; 
         </ul>
         {chats.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="font-semibold">{fresh.length ? "No conversations yet" : "No consults yet"}</p>
+            <p className="font-semibold">{circles.length ? "No conversations yet" : "No consults yet"}</p>
             <p className="mt-1 max-w-[30ch] text-body-sm text-muted-foreground">
-              {fresh.length
-                ? "Tap a circle above to make the first incision. The chat moves down here once it starts."
+              {circles.length
+                ? "Tap a circle above to see their photos and open the chat. It moves down here once it starts."
                 : "Match with someone in triage. They show up here as a circle first."}
             </p>
-            {fresh.length ? null : (
+            {circles.length ? null : (
               <Link href="/discover" className="mt-4 text-body-sm font-medium underline underline-offset-4">Go to triage</Link>
             )}
           </div>
@@ -206,6 +231,25 @@ export function ChatShell({ me, inbox, children }: { me: Me; inbox: InboxRow[]; 
       </aside>
 
       <section className={cn("min-h-0 min-w-0", !activeId && "hidden lg:block")}>{children}</section>
+
+      {story ? (
+        <PhotoStory
+          person={person(story)}
+          open
+          autoAdvance
+          onClose={closeStory}
+          actions={
+            <>
+              <Button asChild className="flex-1" onClick={closeStory}>
+                <Link href={`/chat/${story.match_id}`}>{story.bubble_count === 0 ? "Open chat" : "Back to chat"}</Link>
+              </Button>
+              <Button asChild variant="outline" className="flex-1 border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white" onClick={closeStory}>
+                <Link href={`/doctor/${story.other_id}`}>View profile</Link>
+              </Button>
+            </>
+          }
+        />
+      ) : null}
 
       <Modal open={!!toDelete} onClose={() => setToDelete(null)} labelledBy="delete-consult-title">
         <h2 id="delete-consult-title" className="text-lead font-bold">Delete this chat?</h2>

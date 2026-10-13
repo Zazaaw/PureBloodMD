@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ChatCircleSlash, Crown, DotsThreeVertical, Flag, HeartBreak, ImageSquare, LockSimple, PaperPlaneRight, Prohibit, SealCheck, ShieldWarning, Smiley, Heartbeat } from "@phosphor-icons/react";
+import { ArrowLeft, ChatCircleSlash, Crown, DotsThreeVertical, Flag, HeartBreak, ImageSquare, LockSimple, PaperPlaneRight, Prohibit, SealCheck, ShieldWarning, Smiley, Heartbeat, HeartStraight } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { ChatImage } from "@/components/chat-image";
 import { EmojiStickerPicker } from "@/components/emoji-sticker-picker";
 import { StickerView } from "@/components/sticker";
 import { DoctorPhoto } from "@/components/doctor-photo";
+import { PhotoStoryButton, type StoryPerson } from "@/components/photo-story";
 import { OnlineDot, useIsOnline } from "@/components/presence";
 import { SafetyDialog } from "@/components/safety-dialog";
 import { FounderBadge } from "@/components/founder-badge";
@@ -25,7 +26,7 @@ import type { Gender, InboxRow, Message } from "@/lib/types";
 import { IMAGE_ACCEPT, MAX_PICK_BYTES, isPickableImage, prepareImage } from "@/lib/image";
 import { cn } from "@/lib/utils";
 
-type Me = { id: string; gender: Gender; intent: "romance" | "connect"; isVip: boolean; vipEnabled: boolean; name: string; country: string };
+type Me = { id: string; gender: Gender; intent: "romance" | "connect"; isVip: boolean; vipEnabled: boolean; name: string; country: string; photo: string };
 
 function useCountdown(endsAt: number) {
   const [now, setNow] = useState(() => Date.now());
@@ -87,6 +88,16 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
   const locked = mustWait || quotaGone || flatlined;
 
   const firstName = useMemo(() => room.other_name.replace(/^dr\.\s*/i, "").split(/[ ,]/)[0], [room.other_name]);
+  const other: StoryPerson = {
+    id: room.other_id,
+    name: room.other_name,
+    subtitle: `${room.other_specialty_title} · ${room.other_hospital}`,
+    photo: room.other_photo,
+    fallback: room.other_photo_fallback,
+    gallery: room.other_gallery,
+    verified: room.other_verified,
+    founder: room.other_is_founder,
+  };
 
   const addMessage = (msg: Message) => {
     if (seen.current.has(msg.id)) return;
@@ -293,7 +304,9 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
           <Link href="/chat" aria-label="Back to consults"><ArrowLeft /></Link>
         </Button>
         <span className="relative shrink-0">
-          <DoctorPhoto src={room.other_photo} fallback={room.other_photo_fallback} alt={room.other_name} size={44} />
+          <PhotoStoryButton person={other} className="block">
+            <DoctorPhoto src={room.other_photo} fallback={room.other_photo_fallback} alt={room.other_name} size={44} />
+          </PhotoStoryButton>
           <OnlineDot id={room.other_id} isBot={room.other_is_bot} />
         </span>
         <div className="min-w-0">
@@ -417,7 +430,17 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
         ) : null}
         {messages.length === 0 && bubbles === 0 ? (
           <div className="mx-auto max-w-sm rounded-xl border p-5 text-center">
-            <p className="font-semibold">New resuscitation match with {firstName}</p>
+            <div className="mb-4 flex items-center justify-center">
+              <DoctorPhoto src={me.photo} alt="You" size={72} className="ring-4 ring-background" />
+              <span className="z-10 -mx-3 grid size-9 place-items-center rounded-full bg-primary text-primary-foreground">
+                <HeartStraight weight="fill" className="size-4" />
+              </span>
+              <PhotoStoryButton person={other} className="block">
+                <DoctorPhoto src={room.other_photo} fallback={room.other_photo_fallback} alt={room.other_name} size={72} className="ring-4 ring-background" />
+              </PhotoStoryButton>
+            </div>
+            <p className="font-semibold">{me.intent === "connect" ? `New colleague: ${firstName}` : `It's a match with ${firstName}!`}</p>
+            <p className="text-caption text-muted-foreground">Tap their photo to see all of them.</p>
             <p className="mt-1 text-body-sm text-muted-foreground">
               {mustWait
                 ? `Asystole mode. ${firstName} has to initiate CPR (send the first text) before you can respond.`

@@ -21,7 +21,7 @@ export default async function ChatRoomPage({ params }: { params: Promise<{ match
     <ChatRoom
       key={matchId}
       room={room}
-      me={{ id: profile.id, gender: profile.gender, intent: profile.intent ?? "romance", isVip: profile.is_vip, vipEnabled: flags.vipEnabled, name: profile.display_name, country: profile.country ?? "ID" }}
+      me={{ id: profile.id, gender: profile.gender, intent: profile.intent ?? "romance", isVip: profile.is_vip, vipEnabled: flags.vipEnabled, name: profile.display_name, country: profile.country ?? "ID", photo: profile.photo_url }}
       initialMessages={(messages ?? []) as Message[]}
     />
   );
