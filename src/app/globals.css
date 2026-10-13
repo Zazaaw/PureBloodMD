@@ -469,3 +469,6 @@ html { touch-action: manipulation; }
 }
 
 /* Dibuat oleh Faiz Hazim Hawari · skill-typography */
+
+/* Photo story progress bar (src/components/photo-story.tsx). */
+@keyframes story-fill { from { width: 0; } to { width: 100%; } }
