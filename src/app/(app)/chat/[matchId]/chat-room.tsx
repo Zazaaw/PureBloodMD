@@ -11,6 +11,7 @@ import { StickerView } from "@/components/sticker";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import { PhotoStoryButton, type StoryPerson } from "@/components/photo-story";
 import { OnlineDot, useIsOnline } from "@/components/presence";
+import { CONSULT_READ_EVENT } from "@/components/use-chat-unread";
 import { SafetyDialog } from "@/components/safety-dialog";
 import { FounderBadge } from "@/components/founder-badge";
 import { Modal } from "@/components/modal";
@@ -104,6 +105,21 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
     setBubbles(bubblesRef.current);
   };
 
+  // Opening the room (or coming back to the tab) marks it read; the dock badge re-counts.
+  const markRead = useRef<() => void>(() => {});
+  useEffect(() => {
+    const mark = () => {
+      if (document.visibilityState !== "visible") return;
+      supabase.rpc("mark_consult_read", { p_match: room.match_id }).then(({ error }) => {
+        if (!error) window.dispatchEvent(new Event(CONSULT_READ_EVENT));
+      });
+    };
+    markRead.current = mark;
+    mark();
+    document.addEventListener("visibilitychange", mark);
+    return () => document.removeEventListener("visibilitychange", mark);
+  }, [supabase, room.match_id]);
+
   // Live messages for this match, plus "chat cleared" / "unmatched" from the other side.
   useEffect(() => {
     const channel = supabase
@@ -117,6 +133,7 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
           if (msg.sender_id !== me.id) {
             setTyping(false);
             sounds.message();
+            markRead.current(); // read while you're looking at it
           }
         }
       )

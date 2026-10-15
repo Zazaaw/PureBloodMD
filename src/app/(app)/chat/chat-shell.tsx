@@ -207,7 +207,11 @@ export function ChatShell({ me, inbox, children }: { me: Me; inbox: InboxRow[]; 
                             ? "Chat deleted"
                             : "New resuscitation match!"}
                       </span>
-                      {r.last_at && yourMove(r, meId) ? (
+                      {(r.unread ?? 0) > 0 && activeId !== r.match_id ? (
+                        <span className="grid min-w-5 shrink-0 place-items-center rounded-full bg-primary px-1.5 text-caption font-semibold leading-5 text-primary-foreground tabular-nums" aria-label={`${r.unread} unread`}>
+                          {r.unread! > 99 ? "99+" : r.unread}
+                        </span>
+                      ) : r.last_at && yourMove(r, meId) ? (
                         <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-caption font-semibold text-primary">Your move</span>
                       ) : null}
                     </span>
