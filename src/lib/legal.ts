@@ -6,8 +6,12 @@
  * NOTE: written as a solid starting point, not legal advice. Have an
  * Indonesian lawyer review it before a real public launch.
  */
-export const TERMS_VERSION = "2026-10-15.4";
-export const LEGAL_UPDATED = "8 October 2026";
+export const TERMS_VERSION = "2026-10-15.5";
+export const LEGAL_UPDATED = "15 October 2026";
+
+/** Our only contact channel for now: DMs on the official Instagram. Linked automatically in legal text. */
+export const CONTACT_INSTAGRAM = "@purebloodmd";
+export const CONTACT_INSTAGRAM_URL = "https://www.instagram.com/purebloodmd/";
 
 export type LegalSection = { id: string; title: string; body: (string | string[])[] };
 
@@ -123,7 +127,7 @@ export const TERMS: LegalSection[] = [
     id: "ending",
     title: "12. Ending your account",
     body: [
-      "You can deactivate your account in Passport > Settings at any time: you are hidden from triage and consults until you reactivate. Self-service account deletion is paused during early access; you can still ask us to delete your data (see the Privacy Policy). We may suspend or end your account if you break these Terms or if needed to protect users or comply with the law.",
+      "You can deactivate your account in Passport > Settings at any time: you are hidden from triage and consults until you reactivate. Self-service account deletion is paused during early access; you can still ask us to delete your data by sending a DM to our official Instagram @purebloodmd. We may suspend or end your account if you break these Terms or if needed to protect users or comply with the law.",
     ],
   },
   {
@@ -132,7 +136,7 @@ export const TERMS: LegalSection[] = [
     body: [
       "These Terms are governed by the laws of the Republic of Indonesia. Disputes will first be resolved amicably; if that fails, they will be resolved in the courts of Jakarta.",
       "We may update these Terms. If a change is significant we will tell you in the app, and continuing to use the app means you accept the updated Terms.",
-      "Safety concerns: use Report on the member's profile or chat. Our team reviews every report.",
+      "Safety concerns: use Report on the member's profile or chat. Our team reviews every report. Anything else: DM our official Instagram @purebloodmd.",
     ],
   },
 ];
@@ -180,7 +184,7 @@ export const PRIVACY: LegalSection[] = [
     id: "rights",
     title: "5. Your rights",
     body: [
-      `Under Indonesia's Personal Data Protection Law (UU No. 27 Tahun 2022) you can ask to access, correct or delete your data, and withdraw consent. Edit most data in Passport, and deactivate your account any time in Passport > Settings to hide it from everyone.`,
+      `Under Indonesia's Personal Data Protection Law (UU No. 27 Tahun 2022) you can ask to access, correct or delete your data, and withdraw consent. Edit most data in Passport, and deactivate your account any time in Passport > Settings to hide it from everyone. To get a copy of your data or have it deleted, DM our official Instagram @purebloodmd with the email of your account.`,
     ],
   },
   {

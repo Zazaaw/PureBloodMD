@@ -1,9 +1,25 @@
 import Link from "next/link";
+import { CONTACT_INSTAGRAM, CONTACT_INSTAGRAM_URL } from "@/lib/legal";
 import BlurFade from "@/components/effects/blur-fade";
 import { Logo } from "@/components/logo";
 import PageHeader from "@/components/ui/page-header";
 import type { LegalSection } from "@/lib/legal";
 import { LEGAL_UPDATED } from "@/lib/legal";
+
+/** Turns our Instagram handle in legal text into a link. */
+function withInstagram(text: string) {
+  const parts = text.split(CONTACT_INSTAGRAM);
+  return parts.flatMap((part, i) =>
+    i === 0
+      ? [part]
+      : [
+          <a key={i} href={CONTACT_INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="font-medium text-foreground underline underline-offset-4">
+            {CONTACT_INSTAGRAM}
+          </a>,
+          part,
+        ]
+  );
+}
 
 /** Shared layout for Terms and Privacy: header, contents list, readable 65ch body. */
 export function LegalPage({ title, subtitle, sections }: { title: string; subtitle: string; sections: LegalSection[] }) {
@@ -38,7 +54,7 @@ export function LegalPage({ title, subtitle, sections }: { title: string; subtit
                           {b.map((li) => <li key={li}>{li}</li>)}
                         </ul>
                       ) : (
-                        <p key={i}>{b}</p>
+                        <p key={i}>{withInstagram(b)}</p>
                       )
                     )}
                   </div>
