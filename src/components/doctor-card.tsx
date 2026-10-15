@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CaretLeft, CaretRight, Ear, HeartStraight, Lightning, MapPin, SealCheck } from "@phosphor-icons/react";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import { FounderBadge } from "@/components/founder-badge";
+import { PhotoStoryButton, type StoryPerson } from "@/components/photo-story";
 import { Badge } from "@/components/ui/badge";
 import { sounds } from "@/lib/sounds";
 import type { Profile } from "@/lib/types";
@@ -83,9 +84,30 @@ function PhotoCarousel({ doc, priority }: { doc: CardDoctor; priority?: boolean 
 }
 
 /** Photos switched by tapping the left/right third (Stories style), so horizontal drags stay free for swiping. */
+const TAP_HINT_KEY = "pbmd-tap-photos-hint";
+
 function TapPhotos({ doc, priority }: { doc: CardDoctor; priority?: boolean }) {
   const photos = [doc.photo_url, ...(doc.gallery ?? [])].filter(Boolean);
   const [index, setIndex] = useState(0);
+  // First-time hint: people expect to swipe photos, but swiping here means Like/Pass.
+  const [hint, setHint] = useState(false);
+  useEffect(() => {
+    let seen = true;
+    try {
+      seen = localStorage.getItem(TAP_HINT_KEY) === "1";
+    } catch {}
+    const t = setTimeout(() => setHint(!seen), 0);
+    return () => clearTimeout(t);
+  }, []);
+  const go = (i: number) => {
+    setIndex(Math.max(0, Math.min(photos.length - 1, i)));
+    if (hint) {
+      setHint(false);
+      try {
+        localStorage.setItem(TAP_HINT_KEY, "1");
+      } catch {}
+    }
+  };
   return (
     <>
       {photos.map((src, i) => (
@@ -113,15 +135,20 @@ function TapPhotos({ doc, priority }: { doc: CardDoctor; priority?: boolean }) {
           <button
             type="button"
             aria-label="Previous photo"
-            onClick={() => setIndex((i) => Math.max(0, i - 1))}
+            onClick={() => go(index - 1)}
             className="absolute inset-y-0 left-0 z-[5] w-1/3 cursor-w-resize"
           />
           <button
             type="button"
             aria-label="Next photo"
-            onClick={() => setIndex((i) => Math.min(photos.length - 1, i + 1))}
+            onClick={() => go(index + 1)}
             className="absolute inset-y-0 right-0 z-[5] w-1/3 cursor-e-resize"
           />
+          {hint ? (
+            <span className="pointer-events-none absolute right-3 top-1/2 z-10 -translate-y-1/2 animate-pulse rounded-full bg-black/60 px-3 py-1.5 text-caption font-semibold text-white backdrop-blur">
+              Tap here for more photos
+            </span>
+          ) : null}
         </>
       ) : null}
     </>
@@ -201,6 +228,30 @@ export function DoctorPhotoPanel({
 /** Auscultate button, vitals, bio and tags: everything below the photo. */
 export function DoctorDetails({ doc }: { doc: CardDoctor }) {
   const [listening, setListening] = useState(false);
+  // Bumble style: the other photos sit between the details, so scrolling down shows them
+  // all (swiping sideways on the card is Like/Pass). Tap one for full screen.
+  const extra = (doc.gallery ?? []).filter(Boolean);
+  const story: StoryPerson = {
+    id: doc.display_name,
+    name: doc.display_name,
+    subtitle: `${doc.specialty_title} · ${doc.hospital}`,
+    photo: doc.photo_url,
+    fallback: doc.photo_fallback_url,
+    gallery: extra,
+    verified: isVerified(doc),
+    founder: Boolean(doc.is_founder),
+  };
+  const photo = (i: number) =>
+    extra[i] ? (
+      <PhotoStoryButton
+        person={story}
+        startAt={i + 1}
+        label={`View photo ${i + 2} of ${extra.length + 1} full screen`}
+        className="relative block aspect-[4/5] w-full overflow-hidden rounded-lg"
+      >
+        <DoctorPhoto src={extra[i]} alt={`${doc.display_name}, photo ${i + 2}`} fill sizes="(max-width: 768px) 100vw, 480px" />
+      </PhotoStoryButton>
+    ) : null;
   const auscultate = () => {
     sounds.heartbeat();
     setListening(true);
@@ -236,12 +287,16 @@ export function DoctorDetails({ doc }: { doc: CardDoctor }) {
         ))}
       </dl>
 
+      {photo(0)}
+
       {doc.bio ? (
         <figure className="rounded-lg border-l-2 border-primary bg-muted/50 px-4 py-3">
           <figcaption className="text-overline font-semibold uppercase text-primary">℞ Official clinical prescription</figcaption>
           <blockquote className="mt-1 text-body-sm">“{doc.bio}”</blockquote>
         </figure>
       ) : null}
+
+      {photo(1)}
 
       {doc.tags.length ? (
         <div className="flex flex-wrap gap-2">
@@ -250,6 +305,8 @@ export function DoctorDetails({ doc }: { doc: CardDoctor }) {
           ))}
         </div>
       ) : null}
+
+      {extra.slice(2).map((_, j) => <div key={j}>{photo(j + 2)}</div>)}
     </div>
   );
 }
