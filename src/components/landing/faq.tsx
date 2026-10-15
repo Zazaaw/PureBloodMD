@@ -14,8 +14,8 @@ export function Faq({ flags }: { flags: AppFlags }) {
     { q: "Who can join?", a: "Doctors, specialists, residents, GPs and medical students (koas). You must be 21 or older." },
     { q: "Can non-doctors join?", a: "No. Not even if you have watched every season of Grey's Anatomy. Twice. With notes." },
     {
-      q: "Why does she have to text first?",
-      a: "In a female x male match, she makes the first incision. The database enforces it, so no amount of charm skips the line. Nobody writes within 24 hours? The match flatlines.",
+      q: "Who texts first?",
+      a: "Whoever is braver. Anyone can make the first incision, and the inbox shows \"Your move\" when it's your turn to reply. Nobody writes within 24 hours? The match flatlines.",
     },
     {
       q: "I'm not looking for romance. Can I still join?",

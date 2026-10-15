@@ -5,7 +5,7 @@ import BlurFade from "@/components/effects/blur-fade";
 const ROTATIONS: { icon: Icon; name: string; body: string }[] = [
   { icon: IdentificationBadge, name: "Scrub in", body: "Make your Doctor Passport: photos, specialty, hospital. Your STR stays private, always." },
   { icon: Cards, name: "Triage", body: "Swipe through doctors near you. Prescribe, discharge, or defibrillate the one who made your heart skip." },
-  { icon: ChatsCircle, name: "Consult", body: "Match, then talk. She writes first. Flirting in SOAP format is encouraged, not required." },
+  { icon: ChatsCircle, name: "Consult", body: "Match, then talk. Anyone can write first. Flirting in SOAP format is encouraged, not required." },
   { icon: Confetti, name: "Discharge home together", body: "Our work is done here. Both mothers take it from this point." },
 ];
 

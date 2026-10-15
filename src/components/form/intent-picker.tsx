@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 export type Intent = "romance" | "connect";
 
 const OPTIONS = [
-  { value: "romance", icon: HeartStraight, title: "Romance", body: "Find your MD x MD match. Flirting encouraged, she writes first." },
+  { value: "romance", icon: HeartStraight, title: "Romance", body: "Find your MD x MD match. Flirting encouraged, anyone writes first." },
   { value: "connect", icon: HandsClapping, title: "Connect", body: "Meet colleagues and future referral buddies. Strictly professional." },
 ] as const;
 

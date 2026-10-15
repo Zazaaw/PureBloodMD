@@ -19,7 +19,7 @@ function Floater({ className, delay, children }: { className: string; delay: str
 
 /**
  * A consult happening in the empty hero margins on wide screens: the match,
- * her opening line (she writes first), him typing, a reply. Purely decorative:
+ * her opening line, him typing, a reply. Purely decorative:
  * hidden below xl, aria-hidden, no pointer events. The float animation collapses under
  * reduced motion (globals.css).
  */

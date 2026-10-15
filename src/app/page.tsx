@@ -246,7 +246,7 @@ export default async function Landing() {
           <BlurFade inView>
             <h2 className="text-h4 font-bold sm:text-h3">Consults, with a chaperone built in.</h2>
             <p className="mt-3 max-w-[44ch] text-body text-muted-foreground sm:text-lead">
-              She makes the first incision. Phone numbers stay masked until you both feel ready. Photos and medical stickers
+              Anyone can make the first incision. Phone numbers stay masked until you both feel ready. Photos and medical stickers
               for when words fail post-call.
             </p>
             <p className="mt-6 text-body-sm text-muted-foreground">

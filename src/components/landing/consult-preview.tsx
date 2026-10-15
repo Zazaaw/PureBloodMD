@@ -15,13 +15,13 @@ const TYPING_MS = 1100;
 const GAP_MS = 500;
 
 /**
- * A scripted consult that plays once when scrolled into view: she opens
- * (Bumble rule), they flirt, and a phone number gets masked like the real
+ * A scripted consult that plays once when scrolled into view: she opens,
+ * they flirt, and a phone number gets masked like the real
  * chat does. Under reduced motion the whole thread shows at once.
  */
 export function ConsultPreview({ her, him }: { her: LandingDoctor; him: LandingDoctor }) {
   const lines: Line[] = [
-    { kind: "note", text: `${her.name.split(" ").slice(0, 2).join(" ")} makes the first incision.` },
+    { kind: "note", text: `${her.name.split(" ").slice(0, 2).join(" ")} makes the first incision. Anyone can.` },
     { kind: "msg", from: "her", text: her.opener },
     { kind: "msg", from: "him", text: "Post-call and barely alive, but alive enough for coffee. Senopati, Saturday?" },
     { kind: "msg", from: "her", text: <>Deal. Text me: <span className="font-mono">0812 **** ****</span></> },
