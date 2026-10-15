@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Modal } from "@/components/modal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CONTACT_INSTAGRAM, CONTACT_INSTAGRAM_URL } from "@/lib/legal";
 import { createClient } from "@/lib/supabase/client";
 
 /**
@@ -51,6 +52,11 @@ export function AccountCard({ paused, vipEnabled }: { paused: boolean; vipEnable
             {paused ? "Reactivate account" : "Deactivate"}
           </Button>
         </div>
+        <p className="mt-3 text-caption text-muted-foreground">
+          Want a copy of your data, or want it deleted? DM our official Instagram{" "}
+          <a href={CONTACT_INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="font-medium text-foreground underline underline-offset-4">{CONTACT_INSTAGRAM}</a>{" "}
+          with your account email.
+        </p>
       </CardContent>
 
       <Modal open={open} onClose={() => setOpen(false)} labelledBy="pause-title">

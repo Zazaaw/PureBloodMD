@@ -20,6 +20,7 @@ import { StatusPill } from "@/components/status-pill";
 import { Button } from "@/components/ui/button";
 import { ASYSTOLE_HOURS, CONSULT_DORMANT_DAYS, FREE_BUBBLE_CAP, SPECIALTIES, SPECIALTY_KEYS, specialtyLabel } from "@/lib/constants";
 import { getAppFlags } from "@/lib/flags";
+import { CONTACT_INSTAGRAM, CONTACT_INSTAGRAM_URL } from "@/lib/legal";
 import { cn } from "@/lib/utils";
 
 const HERO_DOCTORS = ["Aurelia", "Keenan", "Nadya", "Raditya", "Clarissa"].map(doctor);
@@ -321,9 +322,10 @@ export default async function Landing() {
 
       <footer className="flex flex-col gap-2 border-t py-8 text-caption text-muted-foreground sm:flex-row sm:justify-between">
         <span>PureBloodMD. A parody, not medical advice.</span>
-        <span className="flex gap-4">
+        <span className="flex flex-wrap gap-x-4 gap-y-1">
           <Link href="/terms" className="-my-2 py-2 hover:text-foreground">Terms</Link>
           <Link href="/privacy" className="-my-2 py-2 hover:text-foreground">Privacy</Link>
+          <a href={CONTACT_INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="-my-2 py-2 hover:text-foreground">Instagram {CONTACT_INSTAGRAM}</a>
           <span>Blue badge = ID and license checked.</span>
         </span>
       </footer>
