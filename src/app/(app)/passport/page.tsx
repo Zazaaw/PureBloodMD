@@ -173,7 +173,7 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
             </CardContent>
           </Card>
         ) : null}
-        <AccountCard userId={userId} paused={Boolean(profile.deactivated_at)} vipEnabled={flags.vipEnabled} />
+        <AccountCard paused={Boolean(profile.deactivated_at)} vipEnabled={flags.vipEnabled} />
       </div>
     ),
   };
