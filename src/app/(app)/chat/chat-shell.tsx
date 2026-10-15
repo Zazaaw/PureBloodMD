@@ -33,11 +33,8 @@ function timeLabel(iso: string | null) {
 /** Inbox column + active room. On phones only one of the two is visible. */
 type Me = { id: string; gender: "female" | "male"; intent: "romance" | "connect" };
 
-/** Who opens a match: in romance female x male, she does (Bumble); otherwise anyone. */
-function opener(me: Me, r: InboxRow) {
-  if (me.intent !== "romance" || me.gender === r.other_gender) return "Anyone's move";
-  return me.gender === "female" ? "Your move" : "Her move";
-}
+/** Anyone can write first, so it's "your move" on a fresh match, or when they wrote last. */
+const yourMove = (r: InboxRow, meId: string) => r.bubble_count === 0 || (r.last_sender != null && r.last_sender !== meId);
 
 export function ChatShell({ me, inbox, children }: { me: Me; inbox: InboxRow[]; children: React.ReactNode }) {
   const meId = me.id;
@@ -130,7 +127,7 @@ export function ChatShell({ me, inbox, children }: { me: Me; inbox: InboxRow[]; 
               {circles.map((r) => {
                 const isNew = r.bubble_count === 0;
                 const hours = Math.max(0, Math.ceil((new Date(r.expires_at).getTime() - now) / 3_600_000));
-                const move = isNew ? opener(me, r) : null;
+                const move = isNew ? "Your move" : null;
                 const unseen = !isSeen(person(r));
                 return (
                   <li key={r.match_id} className="shrink-0">
@@ -157,7 +154,7 @@ export function ChatShell({ me, inbox, children }: { me: Me; inbox: InboxRow[]; 
                       </span>
                       <span className="mt-1 text-caption font-medium leading-tight">{stripTitle(r.other_name).split(/[ ,]/)[0]}</span>
                       {move ? (
-                        <span className={cn("text-caption leading-tight", move !== "Her move" ? "text-primary" : "text-muted-foreground")}>{move}</span>
+                        <span className="text-caption leading-tight text-primary">{move}</span>
                       ) : null}
                     </button>
                   </li>
@@ -202,12 +199,17 @@ export function ChatShell({ me, inbox, children }: { me: Me; inbox: InboxRow[]; 
                         </span>
                       ) : null;
                     })()}
-                    <span className="block truncate text-body-sm text-muted-foreground">
-                      {r.last_at
-                        ? `${r.last_sender === meId ? "You: " : ""}${r.last_is_image ? `Photo${r.last_body ? `: ${r.last_body}` : ""}` : previewText(r.last_body)}`
-                        : r.bubble_count > 0
-                          ? "Chat deleted"
-                          : "New resuscitation match!"}
+                    <span className="flex items-center gap-2">
+                      <span className={cn("min-w-0 flex-1 truncate text-body-sm", r.last_at && yourMove(r, meId) ? "font-medium text-foreground" : "text-muted-foreground")}>
+                        {r.last_at
+                          ? `${r.last_sender === meId ? "You: " : ""}${r.last_is_image ? `Photo${r.last_body ? `: ${r.last_body}` : ""}` : previewText(r.last_body)}`
+                          : r.bubble_count > 0
+                            ? "Chat deleted"
+                            : "New resuscitation match!"}
+                      </span>
+                      {r.last_at && yourMove(r, meId) ? (
+                        <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-caption font-semibold text-primary">Your move</span>
+                      ) : null}
                     </span>
                   </span>
                 </Link>

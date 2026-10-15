@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ChatCircleSlash, Crown, DotsThreeVertical, Flag, HeartBreak, ImageSquare, LockSimple, PaperPlaneRight, Prohibit, SealCheck, ShieldWarning, Smiley, Heartbeat, HeartStraight } from "@phosphor-icons/react";
+import { ArrowLeft, ChatCircleSlash, Crown, DotsThreeVertical, Flag, HeartBreak, ImageSquare, PaperPlaneRight, Prohibit, SealCheck, ShieldWarning, Smiley, Heartbeat, HeartStraight } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { ChatImage } from "@/components/chat-image";
 import { EmojiStickerPicker } from "@/components/emoji-sticker-picker";
@@ -77,15 +77,12 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
   const inAsystole = bubbles === 0;
   const flatlined = (inAsystole && countdown.expired) || flatlinedByServer;
 
-  // Bumble protocol (romance only): in a female x male match, the female doctor opens.
-  const romance = me.intent === "romance";
-  const mustWait = romance && bubbles === 0 && me.gender === "male" && room.other_gender === "female";
-  const herMove = romance && bubbles === 0 && me.gender === "female" && room.other_gender === "male";
+  // Anyone can write first (0024).
   const used = bubbles;
   // The 10-bubble cap only exists while the VIP program is switched on.
   const capped = me.vipEnabled && !isVip;
   const quotaGone = capped && used >= FREE_BUBBLE_CAP;
-  const locked = mustWait || quotaGone || flatlined;
+  const locked = quotaGone || flatlined;
 
   const firstName = useMemo(() => stripTitle(room.other_name).split(/[ ,]/)[0], [room.other_name]);
   const other: StoryPerson = {
@@ -204,11 +201,6 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
       setVipOpen(true);
       return false;
     }
-    if (mustWait) {
-      toast("Asystole mode: wait for her to initiate CPR first.");
-      return false;
-    }
-
     setSending(true);
     const { data, error } = await supabase
       .from("messages")
@@ -228,7 +220,6 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
       if (error.message.includes("quota_exhausted")) setVipOpen(true);
       else if (error.message.includes("consult_expired")) setFlatlinedByServer(true);
       else if (error.message.includes("account_paused")) toast.error("One of you has paused their account. Messages are on hold.");
-      else if (error.message.includes("bumble_wait")) toast("The female doctor makes the first incision. Hang tight.");
       else if (error.message.includes("blocked") || error.code === "23503") toast.error("This consult is closed.");
       else toast.error("Message failed to send. Try again.");
       return false;
@@ -281,7 +272,6 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
     if (!isPickableImage(file)) return toast.error("That file is not a photo.");
     if (file.size > MAX_PICK_BYTES) return toast.error("Max 50 MB per photo. This is a chat, not a PACS server.");
     if (quotaGone) return setVipOpen(true);
-    if (mustWait) return toast("Asystole mode: wait for her to initiate CPR first.");
 
     setSending(true);
     try {
@@ -442,11 +432,9 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
             <p className="font-semibold">{me.intent === "connect" ? `New colleague: ${firstName}` : `It's a match with ${firstName}!`}</p>
             <p className="text-caption text-muted-foreground">Tap their photo to see all of them.</p>
             <p className="mt-1 text-body-sm text-muted-foreground">
-              {mustWait
-                ? `Asystole mode. ${firstName} has to initiate CPR (send the first text) before you can respond.`
-                : herMove
-                  ? "Your move, Doctor. You make the first incision."
-                  : "No protocol restrictions here. Say something clinically flirty."}
+              {me.intent === "connect"
+                ? `Your move, Doctor. Say hi to ${firstName} before the 24 hours run out.`
+                : `Your move, Doctor. Make the first incision before ${firstName} does.`}
             </p>
           </div>
         ) : null}
@@ -521,11 +509,6 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
           </span>
           <Button size="sm" variant="outline" onClick={() => { router.push("/chat"); router.refresh(); }}>Back to consults</Button>
         </div>
-      ) : mustWait ? (
-        <p className="flex items-center gap-2 border-t bg-muted/40 px-4 py-3 text-body-sm">
-          <LockSimple className="size-4 shrink-0" />
-          <span><strong>Waiting for CPR:</strong> {firstName} makes the first incision. If nobody writes within 24 hours, the consult flatlines.</span>
-        </p>
       ) : null}
 
       {willMaskNumbers(text) ? (
@@ -588,7 +571,7 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
           disabled={locked}
           autoComplete="off"
           placeholder={
-            quotaGone ? "Quota locked. Upgrade to VIP to keep chatting." : mustWait ? "Waiting for the first incision…" : "Write a clinical diagnosis or flirty consult…"
+            quotaGone ? "Quota locked. Upgrade to VIP to keep chatting." : "Write a clinical diagnosis or flirty consult…"
           }
         />
         <Button type="submit" disabled={locked || sending || !text.trim()} aria-label="Send" className="shrink-0">
