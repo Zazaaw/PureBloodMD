@@ -6,7 +6,7 @@
  * NOTE: written as a solid starting point, not legal advice. Have an
  * Indonesian lawyer review it before a real public launch.
  */
-export const TERMS_VERSION = "2026-10-15.3";
+export const TERMS_VERSION = "2026-10-15.4";
 export const LEGAL_UPDATED = "8 October 2026";
 
 export type LegalSection = { id: string; title: string; body: (string | string[])[] };
@@ -123,7 +123,7 @@ export const TERMS: LegalSection[] = [
     id: "ending",
     title: "12. Ending your account",
     body: [
-      "You can deactivate your account in Passport > Settings at any time: you are hidden from triage and consults until you reactivate. You can also delete your account there, which permanently deletes your profile, photos, matches and messages. We may suspend or end your account if you break these Terms or if needed to protect users or comply with the law.",
+      "You can deactivate your account in Passport > Settings at any time: you are hidden from triage and consults until you reactivate. Self-service account deletion is paused during early access; you can still ask us to delete your data (see the Privacy Policy). We may suspend or end your account if you break these Terms or if needed to protect users or comply with the law.",
     ],
   },
   {
@@ -180,7 +180,7 @@ export const PRIVACY: LegalSection[] = [
     id: "rights",
     title: "5. Your rights",
     body: [
-      `Under Indonesia's Personal Data Protection Law (UU No. 27 Tahun 2022) you can ask to access, correct or delete your data, and withdraw consent. Edit most data in Passport, and delete your account any time in Passport > Settings.`,
+      `Under Indonesia's Personal Data Protection Law (UU No. 27 Tahun 2022) you can ask to access, correct or delete your data, and withdraw consent. Edit most data in Passport, and deactivate your account any time in Passport > Settings to hide it from everyone.`,
     ],
   },
   {

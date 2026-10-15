@@ -161,7 +161,7 @@ VIP includes unlimited bubbles and unlimited rewinds. If you cancel, VIP stays a
   - Attach up to 4 screenshots as evidence. They go to a private bucket that only reviewers can open, with location data stripped.
   - A copy of the conversation is saved with the report, so the evidence survives the chat ending.
 - **Block:** works from both Triage and chat.
-- **Account control:** deactivate (hidden from everyone, reversible) or permanently delete your account from Passport > Settings.
+- **Account control:** deactivate (hidden from everyone, reversible) from Passport > Settings. Self-service deletion is switched off during early access; `delete_my_account()` still exists in the database.
 - **Forgot password:** a branded reset email (same design as the confirmation email) leads to a page for choosing a new password, with a confirm field.
 - **Signup protection:** sign up requires a confirmed email, accepting the **Terms & Privacy Policy**, and confirming you are **21+**. The accepted terms version is stored on the account.
 - **Terms:** clear rules about no financial transactions and no sharing of personal information. The terms also limit the founders' liability for transactions or information exchanged between members.
