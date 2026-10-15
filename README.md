@@ -123,7 +123,7 @@ PureBloodMD is in its free launch phase, controlled by switches in the `app_conf
 | Switch | Now | Effect |
 |---|---|---|
 | `vip_enabled` | `false` | No VIP plans or paywall, and chat is unlimited. All VIP code and subscription data stay in place |
-| `daily_swipe_limit` | `20` | Swipes per rolling 24 hours (VIP is unlimited once enabled). 1 Super Like a day |
+| `daily_swipe_limit` | `20` | Swipes per rolling 24 hours (VIP is unlimited once enabled). 5 Super Likes a day, button only |
 | `active_countries` | `["ID"]` | Indonesia only for sign-up, passports and the triage deck |
 
 Founders (`founder_emails`) always get every VIP perk with no limits on swipes, Super Likes or rewinds, whatever the switches say.
@@ -154,7 +154,7 @@ Only accounts listed in `public.admin_emails` can open it; everyone else gets a 
 | 3 months | Rp 130.000 | US$ 50 |
 | Annual | Rp 550.000 | US$ 230 |
 
-VIP includes unlimited bubbles, 5 Super Likes a day and unlimited rewinds. If you cancel, VIP stays active until the end of the period you paid for.
+VIP includes unlimited bubbles and unlimited rewinds. If you cancel, VIP stays active until the end of the period you paid for.
 
 ### 🛡️ Safety
 - **Report:** sexual harassment, unsolicited explicit photos, verbal abuse, threats, hate speech, fake profiles, scams, underage users, self-harm concerns, and other.

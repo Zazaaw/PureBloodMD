@@ -25,7 +25,7 @@ export default async function WelcomePage() {
 
   const steps = [
     { icon: IdentificationCard, title: "Build your passport", body: "Photos, specialty, hospital. Two minutes, scrubs encouraged." },
-    { icon: Cards, title: "Start triage", body: `${flags.dailySwipeLimit} swipes and 1 Super Like a day while we launch.` },
+    { icon: Cards, title: "Start triage", body: `${flags.dailySwipeLimit} swipes and 5 Super Likes a day while we launch.` },
     { icon: ChatCircleDots, title: "Consult", body: "Write within 24 hours of a match, or it flatlines." },
   ];
 

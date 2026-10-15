@@ -217,7 +217,7 @@ export default async function Landing() {
               <p className="mt-auto pt-6 text-body-sm text-primary-foreground/80">
                 {flags.vipEnabled
                   ? "Then the prescription quota is depleted. VIP starts at Rp 50.000 a month."
-                  : "Plus 1 Super Like a day and unlimited chat. No subscription, no paywall."}
+                  : "Plus 5 Super Likes a day and unlimited chat. No subscription, no paywall."}
               </p>
             </article>
           </BlurFade>

@@ -92,7 +92,7 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
             <CardDescription>
               {subscription?.active && plan
                 ? `${plan.label} plan, ${formatMoney(Number(subscription.amount), subscription.currency)}. ${cancelling ? "Cancelled, VIP ends" : "Renews"} ${fmtDate(subscription.period_end)}.`
-                : "Free plan: 10 bubbles per consult, 1 Super Like a day."}
+                : "Free plan: 10 bubbles per consult, 5 Super Likes a day."}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -109,7 +109,7 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
-              {[...VIP_PERKS, "5 Super Likes a day instead of 1"].map((p) => (
+              {VIP_PERKS.map((p) => (
                 <li key={p} className="flex items-center gap-2.5 text-body-sm">
                   <Crown weight="fill" className="size-4 shrink-0 text-amber-500" /> {p}
                 </li>

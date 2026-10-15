@@ -6,7 +6,7 @@
  * NOTE: written as a solid starting point, not legal advice. Have an
  * Indonesian lawyer review it before a real public launch.
  */
-export const TERMS_VERSION = "2026-10-09.4";
+export const TERMS_VERSION = "2026-10-15.1";
 export const LEGAL_UPDATED = "8 October 2026";
 
 export type LegalSection = { id: string; title: string; body: (string | string[])[] };
@@ -93,7 +93,7 @@ export const TERMS: LegalSection[] = [
     title: "8. VIP subscriptions",
     body: [
       "VIP plans renew automatically at the end of each period until you cancel. When you cancel, VIP stays active until the end of the period you already paid for and then ends. We do not give partial refunds for unused time, except where the law requires it.",
-      "During the launch period PureBloodMD is free: VIP subscriptions are not offered, every member gets 20 swipes and 1 Super Like per day, and chat is unlimited. The service is available in Indonesia only for now. These limits may change, and we will tell you in the app before paid plans start.",
+      "During the launch period PureBloodMD is free: VIP subscriptions are not offered, every member gets 20 swipes and 5 Super Likes per day, and chat is unlimited. The service is available in Indonesia only for now. These limits may change, and we will tell you in the app before paid plans start.",
     ],
   },
   {

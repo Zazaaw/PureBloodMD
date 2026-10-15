@@ -11,8 +11,8 @@ export function PackageInsert({ dailySwipes, vipEnabled }: { dailySwipes: number
     {
       k: "Dosage",
       v: vipEnabled
-        ? `${dailySwipes} swipes a day, unlimited with VIP. One Super Like a day, five with VIP. Do not exceed one crush per ward.`
-        : `${dailySwipes} swipes every 24 hours, one Super Like a day. Do not exceed one crush per ward.`,
+        ? `${dailySwipes} swipes a day, unlimited with VIP. Five Super Likes a day. Do not exceed one crush per ward.`
+        : `${dailySwipes} swipes every 24 hours, five Super Likes a day. Do not exceed one crush per ward.`,
     },
     { k: "Contraindications", v: "Anyone who says \"I'm basically a doctor, I've watched all of House.\" Non-doctors in general. Sorry." },
     { k: "Side effects", v: "Dinner talk about bowel obstruction. A shared on-call calendar. Children with 100% illegible handwriting. A wedding where half the guests get paged." },

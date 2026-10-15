@@ -29,7 +29,7 @@ export function Faq({ flags }: { flags: AppFlags }) {
       q: "How much does it cost?",
       a: flags.vipEnabled
         ? "Free comes with 10 bubbles per consult. VIP starts at Rp 50.000 a month for unlimited chat. Cancel anytime."
-        : `Nothing during launch. ${flags.dailySwipeLimit} swipes and one Super Like a day, unlimited chat, no paywall.`,
+        : `Nothing during launch. ${flags.dailySwipeLimit} swipes and five Super Likes a day, unlimited chat, no paywall.`,
     },
     {
       q: "Where is it available?",
