@@ -323,12 +323,17 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
   // Drag-to-swipe, left/right only. Super Like is the lightning button: an upward drag used to
   // fire it by accident while scrolling. Vertical moves let the page scroll (touch-pan-y).
   // Pointer capture starts only after a real drag, so taps still reach the photo buttons.
-  const SWIPE_AT = 110;
+  // A swipe needs a long drag, or a quick flick: short accidental drags spring back.
+  const SWIPE_AT = 150;
+  const FLICK_AT = 70;
+  const FLICK_SPEED = 0.6; // px per ms
+  const lastMove = useRef<{ x: number; t: number; v: number }>({ x: 0, t: 0, v: 0 });
   const onPointerDown = (e: React.PointerEvent) => {
     // Drags start on the photo only; the action row stays plain buttons.
     if (leaving || e.button !== 0 || (e.target as HTMLElement).closest("[data-no-drag]")) return;
     dragStart.current = { x: e.clientX, y: e.clientY };
     dragged.current = false;
+    lastMove.current = { x: 0, t: e.timeStamp, v: 0 };
   };
   const onPointerMove = (e: React.PointerEvent) => {
     if (!dragStart.current) return;
@@ -342,14 +347,19 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
       dragged.current = true;
       e.currentTarget.setPointerCapture(e.pointerId);
     }
-    if (dragged.current) setDrag({ x, y: 0 });
+    if (dragged.current) {
+      const dt = e.timeStamp - lastMove.current.t;
+      if (dt > 0) lastMove.current = { x, t: e.timeStamp, v: (x - lastMove.current.x) / dt };
+      setDrag({ x, y: 0 });
+    }
   };
   const onPointerUp = () => {
     if (!dragStart.current) return;
     dragStart.current = null;
     if (!dragged.current || !drag) return setDrag(null);
-    if (drag.x > SWIPE_AT) swipe("right");
-    else if (drag.x < -SWIPE_AT) swipe("left");
+    const { v } = lastMove.current;
+    if (drag.x > SWIPE_AT || (drag.x > FLICK_AT && v > FLICK_SPEED)) swipe("right");
+    else if (drag.x < -SWIPE_AT || (drag.x < -FLICK_AT && v < -FLICK_SPEED)) swipe("left");
     else setDrag(null);
   };
 
