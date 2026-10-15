@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # PureBloodMD
 
-A parody dating app where doctors match with doctors: swipe triage, Bumble-style chat (female doctors text first), 10 free bubbles then a demo VIP paywall.
+A parody dating app where doctors match with doctors: swipe triage, Bumble-style inbox (anyone writes first, "Your move" when it's your turn), 10 free bubbles then a VIP paywall (off during launch).
 
 ## Stack
 
@@ -65,7 +65,7 @@ h-9    control height
 
 ## Project conventions
 
-- Game rules live in the database (`supabase/migrations/*.sql`, applied in order): Bumble protocol + 10-bubble quota are triggers, swipes/matches go through RPCs. The UI mirrors them but never replaces them.
+- Game rules live in the database (`supabase/migrations/*.sql`, applied in order): message rules (expiry, block, 10-bubble quota) are triggers, swipes/matches go through RPCs. The UI mirrors them but never replaces them.
 - The browser client may only do what RLS allows. The service_role key is used ONLY by `scripts/seed.mjs`, never imported in `src/`.
 - Next.js 16: `middleware` is now `src/proxy.ts`; `params` / `cookies()` are async. Read `node_modules/next/dist/docs/` before using an API you are unsure of.
 - Safety: chat photos live in the PRIVATE `chat-media` bucket (signed URLs); exact user coordinates are never readable by other users (only `distance_to` / `get_candidates` distances).

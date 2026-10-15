@@ -66,7 +66,7 @@ export type InboxRow = {
   last_is_image: boolean | null;
   last_at: string | null;
   last_sender: string | null;
-  /** Counted on the match: survives "delete chat", drives the quota and Bumble rule. */
+  /** Counted on the match: survives "delete chat", drives the quota and the 24 h asystole window. */
   bubble_count: number;
   /** End of the consult: match + 24 h while nobody has written, else last message + 30 days. */
   expires_at: string;

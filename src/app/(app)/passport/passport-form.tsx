@@ -78,7 +78,7 @@ export function PassportForm({ userId, profile, countries }: { userId: string; p
           setDirty(true);
         }}
       >
-        {/* Gender is fixed after onboarding: it drives the Bumble protocol. */}
+        {/* Gender is fixed after onboarding: it drives who sees whom in triage. */}
         <input type="hidden" name="gender" value={profile.gender} />
         <Button type="button" variant="outline" className="mb-4 w-full lg:hidden" onClick={() => setPreviewOpen(true)}>
           <Eye /> Preview your card in triage

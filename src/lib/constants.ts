@@ -1,7 +1,7 @@
 /** Free bubbles per conversation before the VIP paywall. Mirrors the DB trigger. */
 export const FREE_BUBBLE_CAP = 10;
 
-/** Bumble window: hours a new match has before the first incision is "due". */
+/** Asystole window: hours a new match has before the first incision is "due". */
 
 export const SPECIALTIES = {
   Cardiology: { code: "Sp.JP", title: "Cardiologist", joke: "High hemodynamic chemistry" },

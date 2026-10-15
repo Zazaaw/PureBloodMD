@@ -17,7 +17,7 @@ export async function updatePassport(_: PassportState, fd: FormData): Promise<Pa
     return { errors: { photo_url: "Upload your own photos." } };
   }
 
-  // Gender is not updatable (column grant): it drives the Bumble protocol.
+  // Gender is not updatable (column grant): it drives who sees whom in triage.
   const { gender: _gender, ...editable } = data;
   void _gender;
   const { error } = await supabase.from("profiles").update(editable).eq("id", profile.id);

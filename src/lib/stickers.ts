@@ -1,6 +1,6 @@
 /**
  * Stickers are sent as a normal message body "::sticker:<id>::", so they go
- * through the same rules (Bumble, quota, block) and need no extra column.
+ * through the same rules (quota, block, expiry) and need no extra column.
  */
 export const STICKERS = [
   { id: "stat", emoji: "🚨", caption: "STAT!", tone: "red" },

@@ -83,9 +83,8 @@ The comedy is part of the product. Every specialty has its own one-liners, bot d
 - **Keyboard:** `←` pass, `↑` Super Like, `→` like. Drags lock to left, right or up.
 
 ### 💬 Consults (chat)
-- **Bumble-style inbox:** after sign-up it is empty. New matches appear as circles at the top, showing the hours left and whose move it is. Once the first message is sent, the match moves into the conversation list below.
+- **Bumble-style inbox:** after sign-up it is empty. New matches appear as circles at the top, showing the hours left. Anyone can write first, and "Your move" marks the chats where the other doctor wrote last. Once the first message is sent, the match moves into the conversation list below.
 - Realtime messages, **photos** (private bucket, signed URLs), an **emoji picker** and **medical stickers**.
-- **Bumble rule:** in a female x male match, she makes the first incision. This is enforced in the database.
 - **Unlimited chat** during launch. With VIP switched on: 10 free bubbles per consult, then the VIP paywall.
 - **Personal info guard:**
   - phone numbers and chat-app links are masked with `****` automatically
@@ -184,7 +183,6 @@ VIP includes unlimited bubbles and unlimited rewinds. If you cancel, VIP stays a
 | Security | Email confirmation, Supabase Auth rate limits, RLS on every table, security-definer RPCs |
 
 The game rules live **in the database**, not just the UI. These are all enforced by Postgres triggers and RPCs, so a modified client can't skip them:
-- the Bumble rule
 - the bubble quota
 - Super Like and Rewind limits
 - contact-info masking
