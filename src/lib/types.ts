@@ -75,6 +75,10 @@ export type InboxRow = {
   other_gallery?: string[] | null;
   /** I deleted this chat for me (hide_consult) and nobody wrote since: circle only, no list row. */
   chat_hidden?: boolean;
+  /** Their messages since I last opened this consult. */
+  unread?: number;
+  /** I have opened this consult at least once. */
+  opened?: boolean;
 };
 
 export type Message = {

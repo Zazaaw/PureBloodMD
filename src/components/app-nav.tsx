@@ -9,6 +9,7 @@ import { DoctorPhoto } from "@/components/doctor-photo";
 import { LogoMark } from "@/components/logo";
 import { Dock, DockIcon } from "@/components/magicui/dock";
 import { useEmrUnread } from "@/components/emr/use-emr-unread";
+import { useChatUnread } from "@/components/use-chat-unread";
 import { VipDialog } from "@/components/vip-dialog";
 import { cn } from "@/lib/utils";
 
@@ -57,6 +58,7 @@ function ActiveDot({ vertical }: { vertical: boolean }) {
  */
 export function AppNav({ country, name, photo, isVip, vipEnabled, consults, meId, emrUnread }: Props) {
   const emrCount = useEmrUnread(meId, emrUnread);
+  const chatCount = useChatUnread(meId, consults);
   const pathname = usePathname();
   const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
@@ -89,9 +91,9 @@ export function AppNav({ country, name, photo, isVip, vipEnabled, consults, meId
                 {emrCount > 99 ? "99+" : emrCount}
               </span>
             ) : null}
-            {href === "/chat" && consults > 0 ? (
+            {href === "/chat" && chatCount > 0 ? (
               <span className="pointer-events-none absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-primary px-1 text-center text-caption font-semibold leading-4 text-primary-foreground tabular-nums">
-                {consults > 99 ? "99+" : consults}
+                {chatCount > 99 ? "99+" : chatCount}
               </span>
             ) : null}
             {active ? <ActiveDot vertical={vertical} /> : null}
