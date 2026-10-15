@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { DotPattern } from "@/components/effects/dot-pattern";
 import { FounderBadge } from "@/components/founder-badge";
+import { stripTitle } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 const ECG = "M0 70 H220 l14 -34 l18 70 l16 -80 l14 44 H520 l12 -26 l14 52 l14 -62 l12 36 H900 l14 -34 l18 70 l16 -80 l14 44 H1400";
@@ -37,7 +38,7 @@ export function AdminHero({
 }) {
   const waiting = queues.reduce((n, q) => n + q.n, 0);
   const today = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "Asia/Jakarta" }).format(new Date());
-  const firstName = name.replace(/^dr\.?\s*/i, "").split(/[ ,]/)[0];
+  const firstName = stripTitle(name).split(/[ ,]/)[0];
 
   return (
     <section className="relative isolate overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-950 p-6 text-white shadow-sm sm:p-8">

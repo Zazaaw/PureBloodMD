@@ -18,7 +18,7 @@ import { StatusPill } from "@/components/status-pill";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { VipDialog } from "@/components/vip-dialog";
-import { ASYSTOLE_HOURS, CONSULT_DORMANT_DAYS, FREE_BUBBLE_CAP, QUICK_FLIRTS } from "@/lib/constants";
+import { ASYSTOLE_HOURS, CONSULT_DORMANT_DAYS, FREE_BUBBLE_CAP, QUICK_FLIRTS, stripTitle } from "@/lib/constants";
 import { sounds } from "@/lib/sounds";
 import { detectPersonalInfo, parseSticker, stickerBody, willMaskNumbers } from "@/lib/stickers";
 import { createClient } from "@/lib/supabase/client";
@@ -87,7 +87,7 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
   const quotaGone = capped && used >= FREE_BUBBLE_CAP;
   const locked = mustWait || quotaGone || flatlined;
 
-  const firstName = useMemo(() => room.other_name.replace(/^dr\.\s*/i, "").split(/[ ,]/)[0], [room.other_name]);
+  const firstName = useMemo(() => stripTitle(room.other_name).split(/[ ,]/)[0], [room.other_name]);
   const other: StoryPerson = {
     id: room.other_id,
     name: room.other_name,

@@ -14,6 +14,7 @@ import { SwipeRow } from "@/components/swipe-row";
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/ui/page-header";
 import { createClient } from "@/lib/supabase/client";
+import { stripTitle } from "@/lib/constants";
 import { previewText } from "@/lib/stickers";
 import type { InboxRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -154,7 +155,7 @@ export function ChatShell({ me, inbox, children }: { me: Me; inbox: InboxRow[]; 
                           </span>
                         ) : null}
                       </span>
-                      <span className="mt-1 text-caption font-medium leading-tight">{r.other_name.replace(/^dr\.?\s*/i, "").split(/[ ,]/)[0]}</span>
+                      <span className="mt-1 text-caption font-medium leading-tight">{stripTitle(r.other_name).split(/[ ,]/)[0]}</span>
                       {move ? (
                         <span className={cn("text-caption leading-tight", move !== "Her move" ? "text-primary" : "text-muted-foreground")}>{move}</span>
                       ) : null}
