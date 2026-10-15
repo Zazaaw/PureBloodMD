@@ -90,7 +90,7 @@ The comedy is part of the product. Every specialty has its own one-liners, bot d
 - **Personal info guard:**
   - phone numbers and chat-app links are masked with `****` automatically
   - a warning appears before you send anything that looks like an NIK, a bank account or an OTP
-- **Unmatch** and **delete chat** for both sides. On phones, swipe a conversation left to delete it.
+- **Unmatch** deletes the consult for both sides and puts the pair back in each other's triage (Block is the permanent option). On phones, swipe a conversation left to delete the chat for you only; the match stays.
 - **Asystole:** if nobody writes within 24 hours of a match, it flatlines. The room is deleted, and the two doctors can meet again in triage for a second chance. A live countdown shows how long is left, and it disappears after the first message.
 - **Dormant consults:** once people have talked, a consult only ends after 30 days without a message.
 - **Online dot** through Realtime Presence.

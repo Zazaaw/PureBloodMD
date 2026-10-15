@@ -653,8 +653,8 @@ export function ChatRoom({ room, me, initialMessages }: { room: InboxRow; me: Me
             <HeartBreak className="size-8 text-muted-foreground" />
             <h2 id="confirm-title" className="mt-3 text-lead font-bold">Unmatch {firstName}?</h2>
             <p className="mt-2 text-body-sm text-muted-foreground">
-              The consult and every message disappear for both of you, and you won&apos;t be shown to each other in triage again.
-              This can&apos;t be undone.
+              The consult and every message disappear for both of you. You may meet again in triage later and match again.
+              Never want to see them again? Use Block instead.
             </p>
             <div className="mt-6 grid gap-2 sm:grid-cols-2">
               <Button variant="destructive" onClick={unmatch} disabled={busy}>{busy ? "Unmatching…" : "Unmatch"}</Button>

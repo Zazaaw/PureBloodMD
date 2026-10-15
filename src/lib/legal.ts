@@ -6,7 +6,7 @@
  * NOTE: written as a solid starting point, not legal advice. Have an
  * Indonesian lawyer review it before a real public launch.
  */
-export const TERMS_VERSION = "2026-10-15.2";
+export const TERMS_VERSION = "2026-10-15.3";
 export const LEGAL_UPDATED = "8 October 2026";
 
 export type LegalSection = { id: string; title: string; body: (string | string[])[] };
@@ -84,7 +84,7 @@ export const TERMS: LegalSection[] = [
     title: "7. Your content",
     body: [
       "You keep ownership of the photos and messages you post. You give us a limited license to store, display and process them only to run the app (for example, showing your profile and delivering your messages).",
-      "Chat photos are visible only to the two people in the conversation. If nobody writes within 24 hours of a match, the match ends automatically (we call it asystole): it is deleted for both people and you may see each other in triage again. Once anyone has written, a conversation ends only after 30 days without a message. Unmatch deletes it for both people. Delete chat (swipe left in the list) only hides the messages so far for you; the match stays.",
+      "Chat photos are visible only to the two people in the conversation. If nobody writes within 24 hours of a match, the match ends automatically (we call it asystole): it is deleted for both people and you may see each other in triage again. Once anyone has written, a conversation ends only after 30 days without a message. Unmatch deletes it for both people, and you may see each other again in triage. Delete chat (swipe left in the list) only hides the messages so far for you; the match stays.",
       "EMR (Electronic Medical Record) is a feed every signed-in member can read. Threads, replies and photos you post there are visible to all members except people you blocked or who blocked you. Never post patient data, medical records or anything that could identify a patient. You can delete your own posts at any time; a post that already has replies is replaced by a removal notice so the conversation under it stays readable.",
     ],
   },
