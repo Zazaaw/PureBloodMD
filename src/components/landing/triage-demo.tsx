@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/react";
-import { ArrowFatLeft, ArrowFatRight, ArrowFatUp, type Icon } from "@phosphor-icons/react";
+import { ArrowFatLeft, ArrowFatRight, Lightning, type Icon } from "@phosphor-icons/react";
 import { DoctorPhoto } from "@/components/doctor-photo";
 import { cn } from "@/lib/utils";
 import type { LandingDoctor } from "./doctors";
@@ -16,7 +16,7 @@ const CYCLE_MS = 2600;
 const GESTURES: { dir: Dir; icon: Icon; label: string; body: string }[] = [
   { dir: "right", icon: ArrowFatRight, label: "Prescribed", body: "Swipe right to like. If they like you back, it's a match." },
   { dir: "left", icon: ArrowFatLeft, label: "Discharged", body: "Swipe left to pass. Changed your mind? Rewind once a day." },
-  { dir: "super", icon: ArrowFatUp, label: "Defibrillated", body: "Swipe up for a Super Like. You land first in their deck." },
+  { dir: "super", icon: Lightning, label: "Defibrillated", body: "Tap the lightning for a Super Like, 5 a day. You land first in their deck." },
 ];
 
 // Same stamps as the real deck in /discover, so the demo looks like the app.

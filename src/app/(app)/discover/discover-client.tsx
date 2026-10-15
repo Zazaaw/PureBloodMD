@@ -97,7 +97,6 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
   const dragStart = useRef<{ x: number; y: number } | null>(null);
   const dragged = useRef(false);
   // A drag commits to one axis: sideways (pass / like) or upward (Super Like). Downward does nothing.
-  const dragAxis = useRef<"x" | "up" | null>(null);
 
   const [index, setIndex] = useState(0);
   const [leaving, setLeaving] = useState<Direction | null>(null);
@@ -230,13 +229,8 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
       }
       if (dir === "super" && superLeft === 0) {
         toast(
-          me.is_vip
-            ? "All 5 Super Likes used today. They recharge 24 hours after each one."
-            : vipEnabled
-              ? "Your free Super Like is used for today. VIP gets 5 a day."
-              : `Your Super Like for today is used. It recharges at ${rechargeAt(quota.next_at)}.`
+          `All ${quota.quota ?? 5} Super Likes used today. The next one recharges at ${rechargeAt(quota.next_at)}.`
         );
-        if (vipEnabled && !me.is_vip) setVipOpen(true);
         setDrag(null);
         return;
       }
@@ -282,7 +276,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
         toast(`Prescribed. Waiting for ${doc.display_name.split(",")[0]}'s rhythm to sync.`);
       }
     },
-    [current, leaving, supabase, router, superLeft, me.is_vip, me.intent, swipesLeft, swipes, quota.next_at, vipEnabled]
+    [current, leaving, supabase, router, superLeft, me.is_vip, me.intent, swipesLeft, swipes, quota.next_at, quota.quota, vipEnabled]
   );
 
   useEffect(() => {
@@ -291,10 +285,6 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
       if (["INPUT", "SELECT", "TEXTAREA"].includes(target.tagName) || radarOpen) return;
       if (e.key === "ArrowLeft") swipe("left");
       if (e.key === "ArrowRight") swipe("right");
-      if (e.key === "ArrowUp") {
-        e.preventDefault();
-        swipe("super");
-      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -330,29 +320,29 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
     toast.success(`${name} readmitted to triage.`);
   };
 
-  // Drag-to-swipe. Pointer capture starts only after a real drag, so taps still reach the photo buttons.
+  // Drag-to-swipe, left/right only. Super Like is the lightning button: an upward drag used to
+  // fire it by accident while scrolling. Vertical moves let the page scroll (touch-pan-y).
+  // Pointer capture starts only after a real drag, so taps still reach the photo buttons.
   const SWIPE_AT = 110;
   const onPointerDown = (e: React.PointerEvent) => {
     // Drags start on the photo only; the action row stays plain buttons.
     if (leaving || e.button !== 0 || (e.target as HTMLElement).closest("[data-no-drag]")) return;
     dragStart.current = { x: e.clientX, y: e.clientY };
     dragged.current = false;
-    dragAxis.current = null;
   };
   const onPointerMove = (e: React.PointerEvent) => {
     if (!dragStart.current) return;
     const x = e.clientX - dragStart.current.x;
     const y = e.clientY - dragStart.current.y;
     if (!dragged.current && Math.hypot(x, y) > 8) {
-      dragAxis.current = Math.abs(x) >= Math.abs(y) ? "x" : y < 0 ? "up" : null;
-      if (!dragAxis.current) {
-        dragStart.current = null; // downward: not a swipe
+      if (Math.abs(x) < Math.abs(y)) {
+        dragStart.current = null; // vertical: a scroll, not a swipe
         return;
       }
       dragged.current = true;
       e.currentTarget.setPointerCapture(e.pointerId);
     }
-    if (dragged.current) setDrag(dragAxis.current === "x" ? { x, y: 0 } : { x: 0, y: Math.min(0, y) });
+    if (dragged.current) setDrag({ x, y: 0 });
   };
   const onPointerUp = () => {
     if (!dragStart.current) return;
@@ -360,14 +350,13 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
     if (!dragged.current || !drag) return setDrag(null);
     if (drag.x > SWIPE_AT) swipe("right");
     else if (drag.x < -SWIPE_AT) swipe("left");
-    else if (drag.y < -SWIPE_AT) swipe("super");
     else setDrag(null);
   };
 
   const stamp = {
     right: leaving === "right" ? 1 : drag ? Math.min(1, Math.max(0, drag.x / SWIPE_AT)) : 0,
     left: leaving === "left" ? 1 : drag ? Math.min(1, Math.max(0, -drag.x / SWIPE_AT)) : 0,
-    super: leaving === "super" ? 1 : drag && Math.abs(drag.x) < SWIPE_AT ? Math.min(1, Math.max(0, -drag.y / SWIPE_AT)) : 0,
+    super: leaving === "super" ? 1 : 0,
   };
   const cardTransform = leaving
     ? leaving === "super"
@@ -592,7 +581,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
                   current.superliked_me && "border-amber-500/60 ring-2 ring-amber-500/30"
                 )}
               >
-                <DoctorPhotoPanel doc={current} online={currentOnline} priority tapNav className="aspect-[4/5] cursor-grab touch-none select-none active:cursor-grabbing">
+                <DoctorPhotoPanel doc={current} online={currentOnline} priority tapNav className="aspect-[4/5] cursor-grab touch-pan-y select-none active:cursor-grabbing">
                   {/* Prescription stamps: they ink in as the card is dragged. */}
                   <span
                     aria-hidden
@@ -643,7 +632,7 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
                       className="size-16 rounded-full bg-amber-400 text-neutral-900 hover:bg-amber-400/90 [&_svg:not([class*='size-'])]:size-7"
                       onClick={() => swipe("super")}
                       aria-label={`Defibrillate: Super Like (${superLeft === Infinity ? "unlimited" : `${superLeft} left today`})`}
-                      title="Defibrillate: Super Like (↑)"
+                      title="Defibrillate: Super Like"
                     >
                       <Lightning weight="fill" />
                     </Button>
@@ -723,21 +712,13 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
                   : superLeft > 0
                   ? `${superLeft} of ${quota.quota} Super ${quota.quota === 1 ? "Like" : "Likes"} left today`
                   : `Super Likes recharge ${quota.next_at ? new Date(quota.next_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "tomorrow"}`}
-                {vipEnabled && !me.is_vip ? (
-                  <>
-                    {", "}
-                    <button type="button" className="font-medium text-foreground underline underline-offset-4" onClick={() => setVipOpen(true)}>
-                      VIP gets 5 a day
-                    </button>
-                  </>
-                ) : null}
               </p>
               <p className="flex flex-wrap items-center justify-center gap-x-3">
                 <span>{filtered.length} doctors in triage</span>
                 <span className="lg:hidden">Drag the photo to swipe, scroll for the full chart</span>
                 <span className="flex items-center gap-1"><SealCheck weight="fill" className="size-3.5 text-sky-500" /> ID and license verified</span>
               </p>
-              <p className="hidden lg:block">Keys: ← pass, ↑ super like, → like. Or drag the photo.</p>
+              <p className="hidden lg:block">Keys: ← pass, → like. Or drag the photo sideways. Super Like with the lightning button.</p>
             </div>
           </section>
         </div>
