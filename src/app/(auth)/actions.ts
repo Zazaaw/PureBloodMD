@@ -28,7 +28,7 @@ export async function signIn(state: AuthState, formData: FormData): Promise<Auth
       email: creds.email,
       unconfirmed: error.message.includes("Email not confirmed"),
       error: error.message.toLowerCase().includes("banned")
-        ? "This account is suspended for breaking the PureBloodMD Terms."
+        ? "This account is suspended for breaking the PureBloodMD Terms. Think it's a mistake? DM @purebloodmd on Instagram."
         : error.message.includes("Email not confirmed")
           ? "Confirm your email first. Check your inbox for the link."
           : "Wrong email or password. Even residents get this one wrong.",
