@@ -19,11 +19,15 @@ export const SPECIALTIES = {
   Pediatrics: { code: "Sp.A", title: "Pediatrician", joke: "Patient & gentle soul" },
   Pulmonology: { code: "Sp.P", title: "Pulmonologist", joke: "Takes your breath away" },
   GeneralPractitioner: { code: "dr. (GP)", title: "General Practitioner", joke: "Knows a little about every organ" },
+  Dentist: { code: "drg.", title: "Dentist", joke: "Guaranteed to make you smile" },
   MedicalStudent: { code: "S.Ked (Koas)", title: "Medical Student (Koas)", joke: "Pureblood in progress" },
 } as const;
 
 export type SpecialtyKey = keyof typeof SPECIALTIES;
 export const SPECIALTY_KEYS = Object.keys(SPECIALTIES) as SpecialtyKey[];
+
+/** Drops a leading "dr." / "drg." title (not the "Dr" in "Drew"). */
+export const stripTitle = (name: string) => name.replace(/^drg?(\.\s*|\s+)/i, "");
 
 /** Display label for a specialty key ("PlasticSurgery" -> "Plastic Surgery"). */
 export const specialtyLabel = (k: SpecialtyKey) =>

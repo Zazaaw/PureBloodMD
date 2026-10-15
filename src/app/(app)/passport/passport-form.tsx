@@ -12,7 +12,7 @@ import { Modal } from "@/components/modal";
 import { Input } from "@/components/ui/input";
 import { CountrySelect } from "@/components/form/country-select";
 import { IntentPicker, type Intent } from "@/components/form/intent-picker";
-import { SPECIALTIES, SPECIALTY_KEYS, fitSeeking, seekingOptionsFor, specialtyLabel } from "@/lib/constants";
+import { SPECIALTIES, SPECIALTY_KEYS, fitSeeking, seekingOptionsFor, specialtyLabel, stripTitle } from "@/lib/constants";
 import type { Profile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { updatePassport } from "./actions";
@@ -22,11 +22,11 @@ import { updatePassport } from "./actions";
 function previewFrom(form: HTMLFormElement, base: CardDoctor): CardDoctor {
   const fd = new FormData(form);
   const s = (k: string) => String(fd.get(k) ?? "").trim();
-  const name = s("display_name").replace(/^dr\.?\s*/i, "");
+  const name = stripTitle(s("display_name"));
   const age = Number(s("age"));
   return {
     ...base,
-    display_name: name ? (s("specialty") === "MedicalStudent" ? name : `${s("specialty") === "GeneralPractitioner" ? "dr." : "Dr."} ${name}`) : base.display_name,
+    display_name: name ? (s("specialty") === "MedicalStudent" ? name : `${s("specialty") === "GeneralPractitioner" ? "dr." : s("specialty") === "Dentist" ? "drg." : "Dr."} ${name}`) : base.display_name,
     age: Number.isFinite(age) && age > 0 ? age : base.age,
     specialty_title: s("specialty_title") || base.specialty_title,
     hospital: s("hospital") || base.hospital,
@@ -99,7 +99,7 @@ export function PassportForm({ userId, profile, countries }: { userId: string; p
           <Section title="About you">
             <div className="grid gap-5 sm:grid-cols-[1fr_8rem]">
               <Field id="display_name" label="Full name" error={e.display_name}>
-                <Input id="display_name" name="display_name" defaultValue={profile.display_name.replace(/^dr\.\s*/i, "")} />
+                <Input id="display_name" name="display_name" defaultValue={stripTitle(profile.display_name)} />
               </Field>
               <Field id="age" label="Age" error={e.age}>
                 <Input id="age" name="age" type="number" min={21} max={90} defaultValue={profile.age} />

@@ -1,4 +1,4 @@
-import { COUNTRY_CODES, SPECIALTY_KEYS, type SpecialtyKey } from "@/lib/constants";
+import { COUNTRY_CODES, SPECIALTY_KEYS, stripTitle, type SpecialtyKey } from "@/lib/constants";
 import type { Gender, Seeking } from "@/lib/types";
 
 export type ProfileInput = {
@@ -26,7 +26,7 @@ const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
 /** Shared by onboarding and the passport editor. Returns field errors, never throws. */
 export function parseProfile(fd: FormData, supabaseUrl: string, activeCountries: readonly string[] = COUNTRY_CODES) {
   const errors: Record<string, string> = {};
-  const rawName = str(fd, "display_name").replace(/^dr\.?\s*/i, "");
+  const rawName = stripTitle(str(fd, "display_name"));
   if (rawName.length < 2) errors.display_name = "Your name, Doctor.";
 
   const gender = str(fd, "gender") as Gender;
@@ -52,7 +52,7 @@ export function parseProfile(fd: FormData, supabaseUrl: string, activeCountries:
 
   // Specialists are "Dr.", GPs are "dr." (Indonesian convention), students have no title yet.
   const name =
-    specialty === "MedicalStudent" ? rawName : specialty === "GeneralPractitioner" ? `dr. ${rawName}` : `Dr. ${rawName}`;
+    specialty === "MedicalStudent" ? rawName : specialty === "GeneralPractitioner" ? `dr. ${rawName}` : specialty === "Dentist" ? `drg. ${rawName}` : `Dr. ${rawName}`;
 
   const bio = str(fd, "bio");
   if (bio.length > 400) errors.bio = "Keep it under 400 characters. Like a good discharge summary.";
