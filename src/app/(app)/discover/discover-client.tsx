@@ -646,12 +646,15 @@ export function DiscoverClient({ me, initialCandidates, hasLocation: serverHasLo
                     >
                       <Lightning weight="fill" />
                     </Button>
-                    <span
-                      aria-hidden
-                      className="absolute -right-1 -top-1 grid size-6 place-items-center rounded-full border-2 border-card bg-foreground text-caption font-bold text-background tabular-nums"
-                    >
-                      {superLeft === Infinity ? "∞" : superLeft}
-                    </span>
+                    {/* Founders are unlimited: no counter to show. */}
+                    {superLeft === Infinity ? null : (
+                      <span
+                        aria-hidden
+                        className="absolute -right-1 -top-1 grid size-6 place-items-center rounded-full border-2 border-card bg-foreground text-caption font-bold text-background tabular-nums"
+                      >
+                        {superLeft}
+                      </span>
+                    )}
                   </div>
                   <Button
                     variant="secondary"
