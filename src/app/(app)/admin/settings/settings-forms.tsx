@@ -61,7 +61,7 @@ export function LaunchSwitches({ vip, limit, countries }: { vip: boolean; limit:
 
       <div>
         <p className="font-medium">Open countries</p>
-        <p className="mb-2 text-body-sm text-muted-foreground">Who can sign up and which triage decks exist. Indonesia only during launch.</p>
+        <p className="mb-2 text-body-sm text-muted-foreground">Who can sign up and which triage decks exist. Each country has its own deck.</p>
         <div className="flex max-h-44 flex-wrap gap-1.5 overflow-y-auto">
           {COUNTRY_CODES.map((c) => {
             const on = open.has(c);

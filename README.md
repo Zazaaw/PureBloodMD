@@ -124,7 +124,7 @@ PureBloodMD is in its free launch phase, controlled by switches in the `app_conf
 |---|---|---|
 | `vip_enabled` | `false` | No VIP plans or paywall, and chat is unlimited. All VIP code and subscription data stay in place |
 | `daily_swipe_limit` | `20` | Swipes per rolling 24 hours (VIP is unlimited once enabled). 5 Super Likes a day, button only |
-| `active_countries` | `["ID"]` | Indonesia only for sign-up, passports and the triage deck |
+| `active_countries` | all 34 (since 2026-10-15) | Countries open for sign-up, passports and triage decks. Change in /admin/settings |
 
 Founders (`founder_emails`) always get every VIP perk with no limits on swipes, Super Likes or rewinds, whatever the switches say.
 
