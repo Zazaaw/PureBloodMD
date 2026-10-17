@@ -83,6 +83,7 @@ The comedy is part of the product. Every specialty has its own one-liners, bot d
 - **Keyboard:** `←` pass, `↑` Super Like, `→` like. Drags lock to left, right or up.
 
 ### 💬 Consults (chat)
+- **Push notifications:** a ping on the phone for a new match or message, even with the app closed (Android Chrome; iPhone once the app is on the home screen, iOS 16.4+). Turn on from the one-time prompt or Passport > Settings. The database triggers send to the `push` Edge Function, which signs with the VAPID key; set up with `npm run supabase:push -- push`.
 - **Bumble-style inbox:** after sign-up it is empty. New matches appear as circles at the top, showing the hours left. Anyone can write first, and "Your move" marks the chats where the other doctor wrote last. Once the first message is sent, the match moves into the conversation list below.
 - Realtime messages, **photos** (private bucket, signed URLs), an **emoji picker** and **medical stickers**.
 - **Unlimited chat** during launch. With VIP switched on: 10 free bubbles per consult, then the VIP paywall.
