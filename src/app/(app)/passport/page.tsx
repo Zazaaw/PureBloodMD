@@ -4,6 +4,7 @@ import { ArrowSquareOut, Crown, LockSimple, Prohibit, ShieldCheck, ShieldWarning
 import BlurFade from "@/components/effects/blur-fade";
 import { BlockedList } from "@/components/blocked-list";
 import { InstallApp } from "@/components/pwa";
+import { PushCard } from "@/components/push-toggle";
 import { StatusPill } from "@/components/status-pill";
 import { VerificationCard } from "@/components/verification-card";
 import { VipToggle } from "@/components/vip-toggle";
@@ -150,6 +151,7 @@ export default async function PassportPage({ searchParams }: { searchParams: Pro
             </div>
           </CardContent>
         </Card>
+        <PushCard />
         <InstallApp />
         <Card>
           <CardHeader>

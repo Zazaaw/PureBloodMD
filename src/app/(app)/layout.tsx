@@ -4,6 +4,7 @@ import { FlashToast } from "@/components/flash-toast";
 import { PausedBanner } from "@/components/paused-banner";
 import { PresenceProvider } from "@/components/presence";
 import { InstallNudge } from "@/components/pwa";
+import { PushNudge } from "@/components/push-toggle";
 import { SetupNotice } from "@/components/setup-notice";
 import { requireProfile } from "@/lib/auth";
 import { getSupabaseEnv } from "@/lib/env";
@@ -33,6 +34,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         {children}
       </div>
       <InstallNudge />
+      <PushNudge />
     </PresenceProvider>
   );
 }

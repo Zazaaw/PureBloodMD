@@ -5,7 +5,7 @@
  * - Everything else (Supabase API, auth, images from other hosts, Server Actions):
  *   never touched, so private data is never stored by the service worker.
  */
-const VERSION = "pbmd-v2";
+const VERSION = "pbmd-v3";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const OFFLINE_URL = "/offline.html";
@@ -64,21 +64,43 @@ self.addEventListener("fetch", (event) => {
   }
 });
 
-// Ready for web push later: show the notification and focus the app on click.
+// Web push (supabase/functions/push): new matches and messages. Skipped when that
+// consult is already open and visible; one notification per consult (tag), replaced
+// by the newest message.
 self.addEventListener("push", (event) => {
   if (!event.data) return;
-  const data = event.data.json();
+  let data = {};
+  try {
+    data = event.data.json();
+  } catch {
+    data = { body: event.data.text() };
+  }
+  const url = data.url || "/chat";
   event.waitUntil(
-    self.registration.showNotification(data.title || "PureBloodMD", {
-      body: data.body,
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
-      data: { url: data.url || "/chat" },
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((wins) => {
+      const watching = wins.some((w) => w.visibilityState === "visible" && new URL(w.url).pathname === url);
+      if (watching) return;
+      return self.registration.showNotification(data.title || "PureBloodMD", {
+        body: data.body,
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        tag: data.tag,
+        renotify: Boolean(data.tag),
+        data: { url },
+      });
     })
   );
 });
 
+// Tap: reuse an open app window if there is one, else open a new one.
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  event.waitUntil(self.clients.openWindow(event.notification.data?.url || "/chat"));
+  const url = event.notification.data?.url || "/chat";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((wins) => {
+      const win = wins.find((w) => new URL(w.url).origin === self.location.origin);
+      if (win) return win.focus().then(() => win.navigate(url));
+      return self.clients.openWindow(url);
+    })
+  );
 });
