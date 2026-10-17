@@ -45,3 +45,6 @@ next-env.d.ts
 
 # local editor/agent pointer (AGENTS.md is the shared one)
 CLAUDE.md
+
+# Supabase CLI cache
+supabase/.temp/
