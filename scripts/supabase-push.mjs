@@ -6,7 +6,9 @@
 //   npm run supabase:push -- sql 0005          run supabase/migrations/0005_*.sql
 //   npm run supabase:push -- email             confirm-signup template + subject + Site URL + redirects
 //   npm run supabase:push -- all 0005          both
+//   npm run supabase:push -- push              web push: function secrets, Vault secret, URL, deploy
 import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 
 const env = Object.fromEntries(
   [".env", ".env.local"]
@@ -148,11 +150,51 @@ async function pushAppEmails(template, smtp) {
   }
 }
 
+/** Web push (0026): Edge Function secrets + deploy, and the URL/secret the database uses. */
+async function pushSetup() {
+  const pub = env.NEXT_PUBLIC_VAPID_PUBLIC_KEY, priv = env.VAPID_PRIVATE_KEY, secret = env.PUSH_WEBHOOK_SECRET;
+  if (!pub || !priv || !secret) throw new Error("Missing NEXT_PUBLIC_VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY or PUSH_WEBHOOK_SECRET in .env.local");
+  for (const v of [pub, priv, secret]) if (!/^[A-Za-z0-9_-]+$/.test(v)) throw new Error("Unexpected characters in a push key");
+
+  const res = await api("/secrets", {
+    method: "POST",
+    body: JSON.stringify([
+      { name: "VAPID_PUBLIC_KEY", value: pub },
+      { name: "VAPID_PRIVATE_KEY", value: priv },
+      { name: "PUSH_WEBHOOK_SECRET", value: secret },
+    ]),
+  });
+  if (!res.ok) throw new Error(`Function secrets: ${res.status} ${await res.text()}`);
+  console.log("Updated: Edge Function secrets (VAPID keys, webhook secret)");
+
+  const sql = (q) => api("/database/query", { method: "POST", body: JSON.stringify({ query: q }) }).then(async (r) => {
+    if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
+  });
+  await sql(`do $$ begin
+      if exists (select 1 from vault.secrets where name = 'push_webhook_secret') then
+        perform vault.update_secret((select id from vault.secrets where name = 'push_webhook_secret'), '${secret}');
+      else
+        perform vault.create_secret('${secret}', 'push_webhook_secret');
+      end if;
+    end $$;
+    insert into public.app_config (key, value) values ('push_url', to_jsonb('${url}/functions/v1/push'::text))
+    on conflict (key) do update set value = excluded.value, updated_at = now();`);
+  console.log("Updated: push webhook secret in Vault and push_url in app_config");
+
+  const deploy = spawnSync("npx", ["-y", "supabase@2", "functions", "deploy", "push", "--project-ref", ref, "--no-verify-jwt", "--use-api"], {
+    stdio: "inherit",
+    env: { ...process.env, SUPABASE_ACCESS_TOKEN: token },
+  });
+  if (deploy.status !== 0) throw new Error("Edge Function deploy failed");
+  console.log("Deployed: Edge Function push");
+}
+
 const [cmd, arg] = process.argv.slice(2);
 try {
   if (cmd === "sql" || cmd === "all") await runSql(arg);
   if (cmd === "email" || cmd === "all") await pushEmail();
-  if (!["sql", "email", "all"].includes(cmd)) console.log("Usage: npm run supabase:push -- sql 0005 | email | all 0005");
+  if (cmd === "push") await pushSetup();
+  if (!["sql", "email", "all", "push"].includes(cmd)) console.log("Usage: npm run supabase:push -- sql 0005 | email | all 0005 | push");
 } catch (e) {
   console.error(e.message);
   process.exit(1);
